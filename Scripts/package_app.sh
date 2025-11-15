@@ -23,11 +23,16 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
     <key>CFBundleVersion</key><string>1</string>
     <key>LSMinimumSystemVersion</key><string>15.0</string>
     <key>LSUIElement</key><true/>
+    <key>CFBundleIconFile</key><string>Icon</string>
 </dict>
 </plist>
 PLIST
 
 cp ".build/$CONF/Trimmy" "$APP/Contents/MacOS/Trimmy"
 chmod +x "$APP/Contents/MacOS/Trimmy"
+# Icon
+if [[ -f "$ROOT/Icon.icns" ]]; then
+  cp "$ROOT/Icon.icns" "$APP/Contents/Resources/Icon.icns"
+fi
 
 echo "Created $APP"
