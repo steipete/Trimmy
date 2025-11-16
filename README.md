@@ -13,6 +13,7 @@
 - Optional "Keep blank lines" so scripts with intentional spacing stay readable.
 - Manual "Trim Clipboard Now" button if you just want to force a flatten.
 - Uses a marker pasteboard type to avoid reprocessing its own writes; polls with a lightweight timer and a small grace delay to catch promised pasteboard data.
+- Safety valve: skips auto-flatten if the copy is more than 10 lines (even on High) to avoid mangling big blobs.\n
 
 ## Quick start
 1. Build: `swift build -c release` (Swift 6, macOS 15+).
