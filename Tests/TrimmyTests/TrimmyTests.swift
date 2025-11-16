@@ -15,8 +15,9 @@ final class TrimmyTests: XCTestCase {
         """
 
         let flattened = detector.transformIfCommand(input)
-        XCTAssertEqual(flattened,
-                       "cd /Users/steipete/Projects/Peekaboo && NODE_PATH=../poltergeist/node_modules ./runner pnpm --dir ../poltergeist exec tsx ../poltergeist/src/polter.ts")
+        XCTAssertEqual(
+            flattened,
+            "cd /Users/steipete/Projects/Peekaboo && NODE_PATH=../poltergeist/node_modules ./runner pnpm --dir ../poltergeist exec tsx ../poltergeist/src/polter.ts")
     }
 
     func testLeavesSingleLineAlone() {
