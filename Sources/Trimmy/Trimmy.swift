@@ -24,6 +24,7 @@ final class AppSettings: ObservableObject {
     @AppStorage("aggressiveness") var aggressiveness: Aggressiveness = .normal
     @AppStorage("preserveBlankLines") var preserveBlankLines: Bool = false
     @AppStorage("autoTrimEnabled") var autoTrimEnabled: Bool = true
+    @AppStorage("removeBoxDrawing") var removeBoxDrawing: Bool = true
     @AppStorage("launchAtLogin") var launchAtLogin: Bool = false {
         didSet { LaunchAtLoginManager.setEnabled(self.launchAtLogin) }
     }
@@ -39,6 +40,14 @@ final class AppSettings: ObservableObject {
 @MainActor
 struct CommandDetector {
     let settings: AppSettings
+
+    func cleanBoxDrawingCharacters(_ text: String) -> String? {
+        guard settings.removeBoxDrawing else { return nil }
+        let pattern = "│ │"
+        guard text.contains(pattern) else { return nil }
+        let cleaned = text.replacingOccurrences(of: pattern, with: "")
+        return cleaned == text ? nil : cleaned
+    }
 
     func transformIfCommand(_ text: String) -> String? {
         guard text.contains("\n") else { return nil }
@@ -138,18 +147,28 @@ final class ClipboardMonitor: ObservableObject {
         guard let text = readTextFromPasteboard() else { return false }
         guard self.settings.autoTrimEnabled || force else { return false }
 
-        let transformed: String
-        if force {
-            transformed = self.detector.transformIfCommand(text) ?? text
-            if transformed == text, !text.contains("\\\n"), !text.contains("\n") { return false }
-        } else {
-            guard let candidate = detector.transformIfCommand(text) else { return false }
-            transformed = candidate
+        var currentText = text
+        var wasTransformed = false
+
+        if let cleaned = detector.cleanBoxDrawingCharacters(currentText) {
+            currentText = cleaned
+            wasTransformed = true
         }
 
-        self.writeTrimmed(transformed)
+        if let commandTransformed = detector.transformIfCommand(currentText) {
+            currentText = commandTransformed
+            wasTransformed = true
+        } else if force {
+            if !wasTransformed, !text.contains("\\\n"), !text.contains("\n") {
+                return false
+            }
+        } else if !wasTransformed {
+            return false
+        }
+
+        self.writeTrimmed(currentText)
         self.lastSeenChangeCount = self.pasteboard.changeCount
-        self.updateSummary(with: transformed)
+        self.updateSummary(with: currentText)
         return true
     }
 
@@ -173,11 +192,25 @@ final class ClipboardMonitor: ObservableObject {
 
         guard self.settings.autoTrimEnabled else { return }
         guard let text = readTextFromPasteboard(), !text.isEmpty else { return }
-        guard let transformed = detector.transformIfCommand(text) else { return }
 
-        self.writeTrimmed(transformed)
+        var currentText = text
+        var wasTransformed = false
+
+        if let cleaned = detector.cleanBoxDrawingCharacters(currentText) {
+            currentText = cleaned
+            wasTransformed = true
+        }
+
+        if let commandTransformed = detector.transformIfCommand(currentText) {
+            currentText = commandTransformed
+            wasTransformed = true
+        }
+
+        guard wasTransformed else { return }
+
+        self.writeTrimmed(currentText)
         self.lastSeenChangeCount = self.pasteboard.changeCount
-        self.updateSummary(with: transformed)
+        self.updateSummary(with: currentText)
     }
 
     private func readTextFromPasteboard() -> String? {
@@ -225,6 +258,7 @@ struct SettingsView: View {
             }
             Toggle("Keep blank lines", isOn: self.$settings.preserveBlankLines)
             Toggle("Auto-trim enabled", isOn: self.$settings.autoTrimEnabled)
+            Toggle("Remove box drawing chars (│ │)", isOn: self.$settings.removeBoxDrawing)
         }
         .padding()
         .frame(width: 320)
@@ -280,10 +314,8 @@ struct MenuContentView: View {
                     }
                 }
                 Toggle("Keep blank lines", isOn: self.$settings.preserveBlankLines)
+                Toggle("Remove box drawing chars (│ │)", isOn: self.$settings.removeBoxDrawing)
                 Toggle("Launch at login", isOn: self.$settings.launchAtLogin)
-                Button("Trim Clipboard Now") {
-                    self.monitor.trimClipboardIfNeeded(force: true)
-                }
                 Toggle("Automatically check for updates", isOn: self.autoUpdateBinding)
                 Button("Check for Updates…") {
                     self.updater.checkForUpdates(nil)
