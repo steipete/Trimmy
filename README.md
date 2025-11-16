@@ -6,7 +6,10 @@
 ## What it does
 - Lives in your macOS menu bar (macOS 15+). No Dock icon.
 - Watches the clipboard and, when it looks like a shell command, removes newlines (respects `\` continuations) and rewrites the clipboard automatically.
-- Aggressiveness levels (Low/Normal/High) to control how eagerly it detects commands.
+- Aggressiveness levels (Low/Normal/High) to control how eagerly it detects commands:
+  - **Low:** only flattens when it’s obviously a command. Example: a long `kubectl ... | jq ...` multi-line snippet.
+  - **Normal (default):** balances caution and helpfulness. Example: a `brew update \ && brew upgrade` copy from a blog post.
+  - **High:** flattens almost any multi-line text that *could* be a command. Example: a quick two-line `ls` + `cd` copied from chat.
 - Optional "Keep blank lines" so scripts with intentional spacing stay readable.
 - Manual "Trim Clipboard Now" button if you just want to force a flatten.
 - Uses a marker pasteboard type to avoid reprocessing its own writes; polls with a lightweight timer and a small grace delay to catch promised pasteboard data.
