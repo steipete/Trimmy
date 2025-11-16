@@ -4,6 +4,9 @@
 - Moved the last-trim preview to sit directly beneath “Trim Clipboard Now” for a faster read.
 - Bumped bundle version/build (0.2.1/5).
 
+## 0.2.2 — 2025-11-16
+- About panel now lists GitHub · Website · Twitter · Email links inline (matches CodexBar).
+
 ## 0.2.0 — 2025-11-16
 - Sparkle auto-updates (Check for Updates…, auto-check toggle) with GitHub feed and signed appcast.
 - Launch-at-login toggle (SMAppService) persisted and applied at startup.

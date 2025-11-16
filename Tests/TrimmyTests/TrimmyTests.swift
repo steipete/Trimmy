@@ -82,4 +82,73 @@ struct TrimmyTests {
         let text = "Shopping list:\napples\noranges"
         #expect(detector.transformIfCommand(text) == nil)
     }
+
+    @Test
+    func lowAggressivenessNeedsClearSignals() {
+        let settings = AppSettings()
+        settings.aggressiveness = .low
+        let detector = CommandDetector(settings: settings)
+        let text = """
+        echo hello
+        world
+        """
+        #expect(detector.transformIfCommand(text) == nil)
+    }
+
+    @Test
+    func highAggressivenessFlattensLooseCommands() {
+        let settings = AppSettings()
+        settings.aggressiveness = .high
+        let detector = CommandDetector(settings: settings)
+        let text = """
+        npm
+        install
+        """
+        #expect(detector.transformIfCommand(text) == "npm install")
+    }
+
+    @Test
+    func normalAggressivenessKeepsNonCommands() {
+        let settings = AppSettings()
+        settings.aggressiveness = .normal
+        let detector = CommandDetector(settings: settings)
+        let text = """
+        Meeting notes:
+        bullet
+        items
+        """
+        #expect(detector.transformIfCommand(text) == "Meeting notes: bullet items")
+    }
+
+    @Test
+    func preserveBlankLinesRoundTrip() {
+        let settings = AppSettings()
+        settings.aggressiveness = .high
+        settings.preserveBlankLines = true
+        let detector = CommandDetector(settings: settings)
+        let text = """
+        echo a \\
+        --flag yes
+
+        echo b
+        """
+        #expect(detector.transformIfCommand(text) == "echo a --flag yes\n\necho b")
+    }
+
+    @Test
+    func backslashWithoutCommandShouldFlattenOnlyWhenHigh() {
+        let settings = AppSettings()
+        settings.aggressiveness = .low
+        let detectorLow = CommandDetector(settings: settings)
+        let text = """
+        Not really a command \\
+        just text
+        """
+        #expect(detectorLow.transformIfCommand(text) == "Not really a command just text")
+
+        let settingsHigh = AppSettings()
+        settingsHigh.aggressiveness = .high
+        let detectorHigh = CommandDetector(settings: settingsHigh)
+        #expect(detectorHigh.transformIfCommand(text) == "Not really a command just text")
+    }
 }
