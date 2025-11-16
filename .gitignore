@@ -30,8 +30,9 @@ fastlane/test_output
 timeline.xctimeline
 playground.xcworkspace
 
-# App bundles and zips
-Trimmy.app
+# App bundles and archives
+*.app
 *.zip
+*.tar.gz
 Trimmy-0.1.0.zip
 Trimmy.app
