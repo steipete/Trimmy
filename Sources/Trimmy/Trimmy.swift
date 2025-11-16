@@ -277,9 +277,12 @@ struct MenuContentView: View {
             Button("Trim Clipboard Now") {
                 self.monitor.trimClipboardIfNeeded(force: true)
             }
-            Toggle("Automatically check for updates", isOn: self.autoUpdateBinding)
-            Button("Check for Updates…") {
-                self.updater.checkForUpdates(nil)
+            Divider()
+            Menu("Settings") {
+                Toggle("Automatically check for updates", isOn: self.autoUpdateBinding)
+                Button("Check for Updates…") {
+                    self.updater.checkForUpdates(nil)
+                }
             }
             Button("About Trimmy") {
                 self.showAbout()
