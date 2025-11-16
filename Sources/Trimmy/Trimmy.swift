@@ -28,7 +28,7 @@ final class AppSettings: ObservableObject {
     }
 
     init() {
-        // Apply stored launch preference at startup.
+        // Apply stored launch preference at startup; keeps SMLoginItem in sync if toggled elsewhere.
         LaunchAtLoginManager.setEnabled(self.launchAtLogin)
     }
 }
@@ -356,6 +356,7 @@ enum LaunchAtLoginManager {
         guard #available(macOS 13, *) else { return }
         let service = SMAppService.mainApp
         if enabled {
+            // Registering is idempotent; safe to call whenever the toggle flips.
             try? service.register()
         } else {
             try? service.unregister()
