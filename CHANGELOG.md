@@ -1,9 +1,5 @@
 # Changelog
 
-## 0.2.4 — 2025-11-17
-- Restored Quit to the menu bar root (aligned with CodexBar layout).
-- Cleaned archive/signing notes.
-
 ## 0.2.3 — 2025-11-17
 - Optional stripping of box-drawing separators (│ │) with whitespace collapse so prompt-style borders paste cleanly.
 - Thanks to @Blueemi for contributing the box-drawing cleaning option.

@@ -4,7 +4,7 @@ set -euo pipefail
 APP_NAME="Trimmy"
 APP_IDENTITY="Developer ID Application: Peter Steinberger (Y5PE65HELJ)"
 APP_BUNDLE="Trimmy.app"
-ZIP_NAME="Trimmy-0.2.4.zip"
+ZIP_NAME="Trimmy-0.2.3.zip"
 
 if [[ -z "${APP_STORE_CONNECT_API_KEY_P8:-}" || -z "${APP_STORE_CONNECT_KEY_ID:-}" || -z "${APP_STORE_CONNECT_ISSUER_ID:-}" ]]; then
   echo "Missing APP_STORE_CONNECT_* env vars (API key, key id, issuer id)." >&2
