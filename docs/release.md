@@ -56,6 +56,7 @@ git tag v0.2.2
 - [ ] `./Scripts/sign-and-notarize.sh`
 - [ ] Generate Sparkle appcast with private key
 - [ ] Upload zip + appcast to feed, publish release/tag
+- [ ] When creating the GitHub release, paste the CHANGELOG entry as a proper Markdown list (one `-` per line, blank line between sections); verify the rendered release notes aren’t collapsed into a single line.
 
 ## Troubleshooting
 - **Notarization invalid / app “damaged”**: repackage/sign with script; when installing locally use `ditto` to avoid `._*` files; verify with `spctl -a -t exec -vv Trimmy.app` and `stapler validate`.
