@@ -59,6 +59,7 @@ git tag v0.2.2
 - [ ] Version continuity: confirm the new version is the immediate next patch/minor (no gaps) and CHANGELOG has no skipped numbers (e.g., after 0.2.0 use 0.2.1, not 0.2.2)
 - [ ] Changelog sanity: single top-level title, no duplicate version sections, versions strictly descending with no repeats
 - [ ] Release pages: title format `Trimmy <version>`, notes as Markdown list (no stray blank lines)
+- [ ] Changelog/release notes are user-facing: avoid internal-only bullets (build numbers, script bumps) and keep entries concise
 - [ ] Verify the release asset: download the uploaded `Trimmy-<ver>.zip`, unzip, run, and confirm code signature stubs in place (spctl + launch).
 - [ ] Confirm `appcast.xml` is updated to the new version and points to the uploaded zip (no stale version/URL).
 - [ ] When creating the GitHub release, paste the CHANGELOG entry as a proper Markdown list (one `-` per line, blank line between sections); verify the rendered release notes aren’t collapsed into a single line.
