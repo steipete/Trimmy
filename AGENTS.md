@@ -3,6 +3,8 @@
 
 Shared guardrails distilled from the various `~/Projects/*/AGENTS.md` files (state as of **November 15, 2025**). This document highlights the rules that show up again and again; still read the repo-local instructions before making changes.
 
+Usage: In repo copies, the shared content lives inside `<shared>…</shared>` and the tool list inside `<tools>…</tools>`. Keep those tagged blocks identical across repos; anything outside them is repo-local and can be customized freely.
+
 ## Codex Global Instructions
 - Keep the system-wide Codex guidance at `~/.codex/AGENTS.md` (the Codex home; override via `CODEX_HOME` if needed) so every task inherits these rules by default.
 
