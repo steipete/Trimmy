@@ -111,7 +111,16 @@ struct GeneralSettingsPane: View {
                 title: "Start at Login",
                 subtitle: "Automatically opens the app when you start your Mac.",
                 binding: self.$settings.launchAtLogin)
-                .padding(.top, 8)
+
+            HStack {
+                Spacer()
+                Button("Quit Trimmy") {
+                    NSApp.terminate(nil)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+            }
+            .padding(.top, 8)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 12)
