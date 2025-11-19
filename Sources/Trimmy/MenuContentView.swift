@@ -48,7 +48,6 @@ struct MenuContentView: View {
     }
 
     private func handleTrimClipboard() {
-        NSApp.activate(ignoringOtherApps: true)
         let didTrim = self.monitor.trimClipboardIfNeeded(force: true)
         if !didTrim {
             self.monitor.lastSummary = "Clipboard not trimmed (nothing command-like detected)."
@@ -56,7 +55,6 @@ struct MenuContentView: View {
     }
 
     private func handleTypeClipboard() {
-        NSApp.activate(ignoringOtherApps: true)
         _ = self.hotkeyManager.typeTrimmedTextNow()
     }
 
