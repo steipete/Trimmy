@@ -1,4 +1,5 @@
 import AppKit
+import KeyboardShortcuts
 import Sparkle
 import SwiftUI
 
@@ -16,8 +17,20 @@ struct MenuContentView: View {
             Button("Trim Clipboard") {
                 self.handleTrimClipboard()
             }
-            Button("Type Clipboard Text") {
+            Button {
                 self.handleTypeClipboard()
+            } label: {
+                if let shortcut = KeyboardShortcuts.getShortcut(for: .typeTrimmed),
+                   self.settings.hotkeyEnabled {
+                    HStack {
+                        Text("Type Clipboard Text")
+                        Spacer()
+                        Text(shortcut.description)
+                            .foregroundStyle(.tertiary)
+                    }
+                } else {
+                    Text("Type Clipboard Text")
+                }
             }
             .disabled(!self.hotkeyManager.hasClipboardText)
             VStack(alignment: .leading, spacing: 2) {
