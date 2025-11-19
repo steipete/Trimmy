@@ -14,7 +14,6 @@ struct SettingsView: View {
     @ObservedObject var hotkeyManager: HotkeyManager
     weak var updater: UpdaterProviding?
     @State private var selectedTab: SettingsTab = .general
-    @State private var contentHeight: CGFloat = SettingsTab.general.preferredHeight
 
     var body: some View {
         TabView(selection: self.$selectedTab) {
@@ -35,7 +34,8 @@ struct SettingsView: View {
                 .tag(SettingsTab.about)
         }
         .padding(12)
-        .frame(width: SettingsTab.windowWidth, height: self.contentHeight)
+        .frame(width: SettingsTab.windowWidth, height: SettingsTab.windowHeight, alignment: .topLeading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .onReceive(NotificationCenter.default.publisher(for: .trimmySelectSettingsTab)) { notification in
             guard let tab = notification.object as? SettingsTab else { return }
             self.select(tab, animate: true)
@@ -43,9 +43,6 @@ struct SettingsView: View {
         .onAppear {
             let initial = SettingsTabRouter.consumePending() ?? self.selectedTab
             self.select(initial, animate: false)
-        }
-        .onChange(of: self.selectedTab) { _, newValue in
-            self.updateHeight(for: newValue, animate: true)
         }
     }
 
@@ -59,33 +56,13 @@ struct SettingsView: View {
         }
     }
 
-    private func updateHeight(for tab: SettingsTab, animate: Bool) {
-        let change = {
-            self.contentHeight = tab.preferredHeight
-        }
-        if animate {
-            withAnimation(.spring(response: 0.32, dampingFraction: 0.85)) {
-                change()
-            }
-        } else {
-            change()
-        }
-    }
 }
 
 enum SettingsTab: String, Hashable, CaseIterable, Codable {
     case general, aggressiveness, shortcuts, about
 
-    static let windowWidth: CGFloat = 480
-
-    var preferredHeight: CGFloat {
-        switch self {
-        case .general: 320
-        case .aggressiveness: 420
-        case .shortcuts: 320
-        case .about: 360
-        }
-    }
+    static let windowWidth: CGFloat = 400
+    static let windowHeight: CGFloat = 378
 }
 
 extension Notification.Name {
@@ -126,6 +103,9 @@ struct GeneralSettingsPane: View {
                 title: "Remove box drawing chars (│ │)",
                 subtitle: "Strip prompt-style box borders before trimming.",
                 binding: self.$settings.removeBoxDrawing)
+
+            Divider()
+                .padding(.vertical, 4)
 
             PreferenceToggleRow(
                 title: "Launch at login",

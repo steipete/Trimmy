@@ -21,7 +21,7 @@ struct TrimmyApp: App {
     }
 
     var body: some Scene {
-        MenuBarExtra("Trimmy", systemImage: "scissors") {
+        MenuBarExtra {
             MenuContentView(
                 monitor: self.monitor,
                 settings: self.settings,
@@ -29,6 +29,11 @@ struct TrimmyApp: App {
                 updater: self.appDelegate.updaterController)
             Divider()
             Button("Quit") { NSApplication.shared.terminate(nil) }
+        } label: {
+            Label("Trimmy", systemImage: "scissors")
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(self.settings.autoTrimEnabled ? .primary : .secondary)
+                .opacity(self.settings.autoTrimEnabled ? 1.0 : 0.45)
         }
         Settings {
             SettingsView(
@@ -40,7 +45,7 @@ struct TrimmyApp: App {
                 }
                 .scenePadding()
         }
-        .defaultSize(width: 480, height: 340)
+        .defaultSize(width: SettingsTab.windowWidth, height: SettingsTab.windowHeight)
         .windowResizability(.contentSize)
         .windowStyle(.titleBar)
     }
