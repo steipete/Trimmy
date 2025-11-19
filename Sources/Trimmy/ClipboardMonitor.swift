@@ -63,7 +63,27 @@ final class ClipboardMonitor: ObservableObject {
 
     private func readTextFromPasteboard(ignoreMarker: Bool = false) -> String? {
         if !ignoreMarker, self.pasteboard.types?.contains(self.trimmyMarker) == true { return nil }
-        return self.pasteboard.string(forType: .string)
+
+        if let direct = self.pasteboard.string(forType: .string) {
+            return direct
+        }
+
+        // Fall back to scanning pasteboard items for any text-like representation.
+        let preferredTypes: [NSPasteboard.PasteboardType] = [
+            .init("public.utf8-plain-text"),
+            .init("public.utf16-external-plain-text"),
+            .init("public.text"),
+            .init("public.rtf"),
+        ]
+
+        for item in self.pasteboard.pasteboardItems ?? [] {
+            for type in preferredTypes {
+                if let value = item.string(forType: type) {
+                    return value
+                }
+            }
+        }
+        return nil
     }
 
     /// Exposes the current clipboard string (nil if empty or Trimmy marker).
