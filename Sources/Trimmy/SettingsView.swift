@@ -286,6 +286,16 @@ struct HotkeySettingsPane: View {
                     .foregroundStyle(.tertiary)
             }
 
+            PreferenceToggleRow(
+                title: "Enable global Auto-Trim toggle hotkey",
+                subtitle: "Quickly turn Auto-Trim on or off without opening the menu.",
+                binding: self.$settings.autoTrimHotkeyEnabled)
+
+            KeyboardShortcuts.Recorder("", name: .toggleAutoTrim)
+                .labelsHidden()
+                .opacity(self.settings.autoTrimHotkeyEnabled ? 1.0 : 0.4)
+                .disabled(!self.settings.autoTrimHotkeyEnabled)
+
             HStack {
                 Spacer()
                 Button("Quit Trimmy") {

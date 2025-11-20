@@ -4,6 +4,7 @@
 - Preferences got the full SwiftUI treatment: toolbar tabs (General, Aggressiveness, Shortcuts, About), window auto-resizing per tab, and richer About content with dimmed update controls for debug builds.
 - Shortcuts pane focuses on the Trim Clipboard hotkey (with glyphs) and lets you toggle or rebind it.
 - Global “Trim Clipboard” shortcut ships with a default of ⌥⌘T; you can change or disable it in Settings → Shortcuts and it shows in the menu.
+- New optional global hotkey lets you toggle Auto-Trim on/off without opening the menu (disabled by default; configurable in Shortcuts).
 - Menu bar entry mirrors the new Settings window—actions for Trim Clipboard, Settings…, About Trimmy, plus a multi-line “Last” preview instead of the old submenu.
 - Menu bar icon dims automatically when Auto-Trim is disabled so it’s obvious the service is paused.
 - Trimmy now runs as a single instance to avoid double clipboard watchers or duplicate menu bar icons.

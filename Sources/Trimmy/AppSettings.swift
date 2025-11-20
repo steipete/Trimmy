@@ -59,7 +59,12 @@ final class AppSettings: ObservableObject {
         didSet { self.trimHotkeyEnabledChanged?(self.trimHotkeyEnabled) }
     }
 
+    @AppStorage("autoTrimHotkeyEnabled") var autoTrimHotkeyEnabled: Bool = false {
+        didSet { self.autoTrimHotkeyEnabledChanged?(self.autoTrimHotkeyEnabled) }
+    }
+
     var trimHotkeyEnabledChanged: ((Bool) -> Void)?
+    var autoTrimHotkeyEnabledChanged: ((Bool) -> Void)?
 
     init() {
         LaunchAtLoginManager.setEnabled(self.launchAtLogin)
