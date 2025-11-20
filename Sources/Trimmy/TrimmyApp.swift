@@ -34,12 +34,7 @@ struct TrimmyApp: App {
             Divider()
             Button("Quit") { NSApplication.shared.terminate(nil) }
         } label: {
-            Label("Trimmy", systemImage: "scissors")
-                .symbolRenderingMode(.hierarchical)
-                .symbolEffect(.pulse, options: .repeat(1).speed(1.15), value: self.monitor.trimPulseID)
-                .foregroundStyle(
-                    self.settings.autoTrimEnabled ? AnyShapeStyle(.primary) : AnyShapeStyle(.secondary))
-                .opacity(self.settings.autoTrimEnabled ? 1.0 : 0.45)
+            ScissorStatusLabel(monitor: self.monitor, isEnabled: self.settings.autoTrimEnabled)
         }
         Settings {
             SettingsView(
@@ -68,6 +63,22 @@ struct TrimmyApp: App {
 extension TrimmyApp {
     private func applyStatusItemAppearance() {
         self.statusItem?.button?.appearsDisabled = !self.settings.autoTrimEnabled
+    }
+}
+
+// MARK: - Status item label
+
+private struct ScissorStatusLabel: View {
+    @ObservedObject var monitor: ClipboardMonitor
+    var isEnabled: Bool
+
+    var body: some View {
+        Label("Trimmy", systemImage: "scissors")
+            .symbolRenderingMode(.hierarchical)
+            .symbolEffect(.pulse, options: .repeat(1).speed(1.15), value: self.monitor.trimPulseID)
+            .animation(.easeOut(duration: 0.2), value: self.monitor.trimPulseID)
+            .foregroundStyle(self.isEnabled ? AnyShapeStyle(.primary) : AnyShapeStyle(.secondary))
+            .opacity(self.isEnabled ? 1.0 : 0.45)
     }
 }
 

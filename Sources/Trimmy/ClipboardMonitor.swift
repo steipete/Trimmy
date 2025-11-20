@@ -1,6 +1,7 @@
 import AppKit
 import Carbon.HIToolbox
 import Foundation
+import SwiftUI
 
 @MainActor
 final class ClipboardMonitor: ObservableObject {
@@ -375,7 +376,9 @@ extension ClipboardMonitor {
     }
 
     private func registerTrimEvent() {
-        self.trimPulseID &+= 1
+        withAnimation(.easeOut(duration: 0.18)) {
+            self.trimPulseID &+= 1
+        }
     }
 }
 
