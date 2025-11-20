@@ -24,10 +24,12 @@ struct MenuContentView: View {
                 Text("Last:")
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
-                MenuWrappingText(
-                    text: self.lastSummary,
-                    width: 260,
-                    maxLines: 5)
+                Text(self.lastSummary)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: 260, alignment: .leading)
+                    .lineLimit(5)
             }
             Divider()
             Button("Settings…") {
@@ -203,48 +205,4 @@ extension EventModifiers {
     }
 }
 
-// MARK: - Multiline preview helper
-
-private struct MenuWrappingText: NSViewRepresentable {
-    var text: String
-    var width: CGFloat
-    var maxLines: Int
-    var font: NSFont = .systemFont(ofSize: NSFont.smallSystemFontSize)
-    var color: NSColor = .secondaryLabelColor
-
-    func makeNSView(context: Context) -> NSTextField {
-        let field = NSTextField(wrappingLabelWithString: text)
-        field.isSelectable = false
-        field.backgroundColor = .clear
-        field.textColor = self.color
-        field.font = self.font
-        field.lineBreakMode = .byWordWrapping
-        field.maximumNumberOfLines = self.maxLines
-        field.setFrameSize(self.size(for: self.text))
-        return field
-    }
-
-    func updateNSView(_ field: NSTextField, context: Context) {
-        field.stringValue = self.text
-        field.textColor = self.color
-        field.font = self.font
-        field.maximumNumberOfLines = self.maxLines
-        field.setFrameSize(self.size(for: self.text))
-    }
-
-    private func size(for string: String) -> NSSize {
-        let paragraph = NSMutableParagraphStyle()
-        paragraph.lineBreakMode = .byWordWrapping
-        let attributes: [NSAttributedString.Key: Any] = [
-            .font: self.font,
-            .paragraphStyle: paragraph,
-        ]
-        let rect = (string as NSString).boundingRect(
-            with: NSSize(width: self.width, height: .greatestFiniteMagnitude),
-            options: [.usesLineFragmentOrigin, .usesFontLeading],
-            attributes: attributes)
-        let lineHeight = ceil(font.ascender - self.font.descender + self.font.leading)
-        let maxHeight = lineHeight * CGFloat(max(1, self.maxLines))
-        return NSSize(width: self.width, height: min(ceil(rect.height), maxHeight))
-    }
-}
+// Previously used an AppKit wrapping label; we now rely on SwiftUI Text to avoid menu rendering issues.
