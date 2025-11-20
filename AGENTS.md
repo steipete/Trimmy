@@ -37,7 +37,6 @@ READ ~/Projects/agent-scripts/{AGENTS.MD,TOOLS.MD} BEFORE ANYTHING (skip if file
 - Do not edit generated bundles directly—regenerate via scripts. Preserve per-tab settings animation behavior when touching settings views.
 
 # Building Trimmy
-- Run Trimmy via `Scripts/compile_and_run.sh` (handles kill/build/test/package/launch) after code changes and before handoff.
-- To guarantee the right bundle is running after a rebuild, use: `pkill -x CodexBar || pkill -f CodexBar.app || true; cd ~/Users/steipete~/Projects/codexbar && open -n ~/Projects/codexbar/CodexBar.app`.
-- After any code change that affects the app, always rebuild with `Scripts/package_app.sh` and restart the app using the command above before validating behavior.
+- Preferred workflow: run `Scripts/compile_and_run.sh` after code changes. It kills any running instance, runs build + tests, packages a debug app, and relaunches the menu bar app.
+- Use `Scripts/package_app.sh release` + `Scripts/sign-and-notarize.sh` only when preparing a signed release build.
 - Settings tabs once animated per tab (spring + `contentHeight`/`preferredHeight`); restore from pre-2025-11-19 ~18:40 commit if needed.
