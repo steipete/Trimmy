@@ -11,7 +11,7 @@
   - **High:** flattens almost any multi-line text that *could* be a command. Example: a quick two-line `ls` + `cd` copied from chat.
 - Optional "Keep blank lines" so scripts with intentional spacing stay readable.
 - Optional "Remove box drawing chars (│ │)" to clean prompt-style borders and collapse the leftover whitespace.
-- "Paste Trimmed" button + hotkey trims on-the-fly and pastes without permanently altering the clipboard (uses High aggressiveness).
+- "Paste Trimmed" button + hotkey trims on-the-fly and pastes without permanently altering the clipboard (uses High aggressiveness); shows the target app (e.g., “Paste Trimmed to Ghostty”).
 - "Paste Original" button + hotkey pastes the untouched copy even after auto-trim.
 - Optional "Launch at login" toggle (macOS 13+ via SMAppService).
 - Auto-update via Sparkle (Check for Updates… + auto-check toggle; feed from GitHub Releases).

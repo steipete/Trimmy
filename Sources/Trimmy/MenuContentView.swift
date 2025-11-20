@@ -56,6 +56,10 @@ struct MenuContentView: View {
         _ = self.monitor.pasteOriginal()
     }
 
+    private var targetAppLabel: String {
+        ClipboardMonitor.ellipsize(self.monitor.frontmostAppName, limit: 22)
+    }
+
     private func open(tab: SettingsTab) {
         SettingsTabRouter.request(tab)
         NSApp.activate(ignoringOtherApps: true)
@@ -107,12 +111,12 @@ struct MenuContentView: View {
 extension MenuContentView {
     private var pasteButtons: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Button("Paste Trimmed") {
+            Button("Paste Trimmed to \(self.targetAppLabel)") {
                 self.handlePasteTrimmed()
             }
             .applyKeyboardShortcut(self.pasteTrimmedKeyboardShortcut)
 
-            Button("Paste Original") {
+            Button("Paste Original to \(self.targetAppLabel)") {
                 self.handlePasteOriginal()
             }
             .applyKeyboardShortcut(self.pasteOriginalKeyboardShortcut)

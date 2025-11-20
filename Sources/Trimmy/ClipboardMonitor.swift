@@ -19,6 +19,7 @@ final class ClipboardMonitor: ObservableObject {
     private var lastOriginalText: String?
 
     @Published var lastSummary: String = ""
+    @Published var frontmostAppName: String = "current app"
 
     init(
         settings: AppSettings,
@@ -31,6 +32,16 @@ final class ClipboardMonitor: ObservableObject {
         self.pasteRestoreDelay = pasteRestoreDelay
         self.pasteIntoFrontmostApp = pasteAction ?? ClipboardMonitor.sendPasteCommand
         self.lastSeenChangeCount = self.pasteboard.changeCount
+        self.updateFrontmostAppName(NSWorkspace.shared.frontmostApplication)
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self,
+            selector: #selector(self.handleAppActivation(_:)),
+            name: NSWorkspace.didActivateApplicationNotification,
+            object: nil)
+    }
+
+    deinit {
+        NSWorkspace.shared.notificationCenter.removeObserver(self)
     }
 
     func start() {
@@ -153,6 +164,23 @@ final class ClipboardMonitor: ObservableObject {
         text
             .replacingOccurrences(of: "\r\n", with: "\n")
             .replacingOccurrences(of: "\r", with: "\n")
+    }
+
+    @objc
+    private func handleAppActivation(_ notification: Notification) {
+        let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication
+        self.updateFrontmostAppName(app)
+    }
+
+    private func updateFrontmostAppName(_ app: NSRunningApplication?) {
+        guard let app else {
+            self.frontmostAppName = "current app"
+            return
+        }
+        if app.bundleIdentifier == Bundle.main.bundleIdentifier {
+            return
+        }
+        self.frontmostAppName = app.localizedName ?? "current app"
     }
 }
 
