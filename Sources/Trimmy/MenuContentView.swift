@@ -23,7 +23,8 @@ struct MenuContentView: View {
             self.previewLine
                 .font(.caption2).monospaced()
                 .foregroundStyle(.secondary)
-                .lineLimit(1)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
                 .truncationMode(.middle)
                 .frame(maxWidth: 260, alignment: .leading)
             Divider()
