@@ -56,7 +56,7 @@ struct ClipboardMonitorTests {
         let didTrim = monitor.trimClipboardIfNeeded()
         #expect(didTrim == false)
         let clipboard = pasteboard.string(forType: .string)
-        #expect(clipboard?.contains(where: { $0.isNewline }) == true)
+        #expect(clipboard?.contains(where: \.isNewline) == true)
     }
 
     @Test
@@ -74,7 +74,7 @@ struct ClipboardMonitorTests {
         let firstTrimmed = monitor.trimClipboardIfNeeded()
         #expect(firstTrimmed == true)
         let afterFirst = pasteboard.string(forType: .string)
-        #expect(afterFirst?.contains(where: { $0.isNewline }) == false)
+        #expect(afterFirst?.contains(where: \.isNewline) == false)
 
         settings.autoTrimEnabled = false
 
@@ -86,6 +86,6 @@ struct ClipboardMonitorTests {
         let secondTrimmed = monitor.trimClipboardIfNeeded()
         #expect(secondTrimmed == false)
         let afterSecond = pasteboard.string(forType: .string)
-        #expect(afterSecond?.contains(where: { $0.isNewline }) == true)
+        #expect(afterSecond?.contains(where: \.isNewline) == true)
     }
 }

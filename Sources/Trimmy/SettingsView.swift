@@ -55,7 +55,6 @@ struct SettingsView: View {
             self.selectedTab = tab
         }
     }
-
 }
 
 enum SettingsTab: String, Hashable, CaseIterable, Codable {
@@ -111,7 +110,6 @@ struct GeneralSettingsPane: View {
                 title: "Start at Login",
                 subtitle: "Automatically opens the app when you start your Mac.",
                 binding: self.$settings.launchAtLogin)
-
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 12)
@@ -126,7 +124,12 @@ struct AggressivenessSettingsPane: View {
         VStack(alignment: .leading, spacing: 14) {
             AggressivenessRow(selection: self.$settings.aggressiveness)
 
-            Text("Automatic trimming uses this aggressiveness level. Manual “Trim Clipboard” always runs at High for maximum flattening.")
+            Text(
+                """
+                Automatic trimming uses this aggressiveness level. Manual “Trim Clipboard” always runs at High \
+                for maximum flattening.
+                """
+            )
                 .font(.footnote)
                 .foregroundStyle(.tertiary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -208,7 +211,10 @@ struct AboutPane: View {
             }
 
             VStack(alignment: .center, spacing: 6) {
-                AboutLinkRow(icon: "chevron.left.slash.chevron.right", title: "GitHub", url: "https://github.com/steipete/Trimmy")
+                AboutLinkRow(
+                    icon: "chevron.left.slash.chevron.right",
+                    title: "GitHub",
+                    url: "https://github.com/steipete/Trimmy")
                 AboutLinkRow(icon: "globe", title: "Website", url: "https://steipete.me")
                 AboutLinkRow(icon: "bird", title: "Twitter", url: "https://twitter.com/steipete")
                 AboutLinkRow(icon: "envelope", title: "Email", url: "mailto:peter@steipete.me")
@@ -376,7 +382,6 @@ private struct AggressivenessPreview: View {
             }
         }
     }
-
 }
 
 enum AggressivenessPreviewEngine {
@@ -446,29 +451,29 @@ struct AggressivenessExample {
                 title: "Low only flattens obvious shell commands",
                 caption: "Continuations plus pipes are obvious enough to collapse.",
                 sample: """
-ls -la \\
-  | grep '^d' \\
-  > dirs.txt
-""",
+                ls -la \\
+                  | grep '^d' \\
+                  > dirs.txt
+                """,
                 note: "Because of the continuation, pipe, and redirect, even Low collapses this into one line.")
         case .normal:
             AggressivenessExample(
                 title: "Normal flattens typical blog commands",
                 caption: "Perfect for README snippets with pipes or continuations.",
                 sample: """
-kubectl get pods \\
-  -n kube-system \\
-  | jq '.items[].metadata.name'
-""",
+                kubectl get pods \\
+                  -n kube-system \\
+                  | jq '.items[].metadata.name'
+                """,
                 note: "Normal trims this to a single runnable line.")
         case .high:
             AggressivenessExample(
                 title: "High collapses almost anything command-shaped",
                 caption: "Use when you want Trimmy to be bold. Even short two-liners get flattened.",
                 sample: """
-echo "hello"
-print status
-""",
+                echo "hello"
+                print status
+                """,
                 note: "High trims this even though it barely looks like a command.")
         }
     }

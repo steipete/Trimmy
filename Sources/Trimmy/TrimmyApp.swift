@@ -63,8 +63,8 @@ struct TrimmyApp: App {
     }
 }
 
-private extension TrimmyApp {
-    func applyStatusItemAppearance() {
+extension TrimmyApp {
+    private func applyStatusItemAppearance() {
         self.statusItem?.button?.appearsDisabled = !self.settings.autoTrimEnabled
     }
 }
@@ -86,7 +86,11 @@ struct StartupDiagnostics {
         let exec = Bundle.main.executableURL?.path ?? "nil"
         Telemetry.accessibility
             .info(
-                "Startup AX trusted=\(trusted, privacy: .public) bundle=\(bundle, privacy: .public) exec=\(exec, privacy: .public)")
+                """
+                Startup AX trusted=\(trusted, privacy: .public) bundle=\(bundle, privacy: .public) \
+                exec=\(exec, privacy: .public)
+                """
+            )
     }
 }
 

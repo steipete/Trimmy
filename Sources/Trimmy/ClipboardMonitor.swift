@@ -127,7 +127,10 @@ final class ClipboardMonitor: ObservableObject {
 
         let overrideAggressiveness: Aggressiveness? = force ? .high : nil
 
-        if let commandTransformed = self.detector.transformIfCommand(currentText, aggressivenessOverride: overrideAggressiveness) {
+        if let commandTransformed = self.detector.transformIfCommand(
+            currentText,
+            aggressivenessOverride: overrideAggressiveness)
+        {
             currentText = commandTransformed
             wasTransformed = true
         } else if force {

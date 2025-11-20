@@ -48,6 +48,7 @@ struct AggressivenessPreviewExamplesTests {
             level: .normal,
             preserveBlankLines: false,
             removeBoxDrawing: true)
-        #expect(flattened == "ssh steipete@192.168.64.2 'chmod 600 ~/.ssh/github_rsa && chmod 644 ~/.ssh/github_rsa.pub'")
+        #expect(flattened ==
+            "ssh steipete@192.168.64.2 'chmod 600 ~/.ssh/github_rsa && chmod 644 ~/.ssh/github_rsa.pub'")
     }
 }

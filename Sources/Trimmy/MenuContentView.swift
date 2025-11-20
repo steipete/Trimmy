@@ -101,24 +101,24 @@ struct MenuContentView: View {
     }
 }
 
-private extension MenuContentView {
-    var trimClipboardButton: some View {
+extension MenuContentView {
+    private var trimClipboardButton: some View {
         Button("Trim Clipboard") {
             self.handleTrimClipboard()
         }
         .applyKeyboardShortcut(self.trimKeyboardShortcut)
     }
 
-    var trimKeyboardShortcut: KeyboardShortcut? {
+    private var trimKeyboardShortcut: KeyboardShortcut? {
         guard self.settings.trimHotkeyEnabled,
               let shortcut = KeyboardShortcuts.getShortcut(for: .trimClipboard) else { return nil }
         return shortcut.swiftUIShortcut
     }
 }
 
-private extension View {
+extension View {
     @ViewBuilder
-    func applyKeyboardShortcut(_ shortcut: KeyboardShortcut?) -> some View {
+    fileprivate func applyKeyboardShortcut(_ shortcut: KeyboardShortcut?) -> some View {
         if let shortcut {
             self.keyboardShortcut(shortcut)
         } else {
@@ -127,73 +127,73 @@ private extension View {
     }
 }
 
-private extension KeyboardShortcuts.Shortcut {
-    var swiftUIShortcut: KeyboardShortcut? {
+extension KeyboardShortcuts.Shortcut {
+    fileprivate var swiftUIShortcut: KeyboardShortcut? {
         guard let keyEquivalent = self.key?.swiftUIKeyEquivalent else { return nil }
         let modifiers = EventModifiers(self.modifiers)
         return KeyboardShortcut(keyEquivalent, modifiers: modifiers)
     }
 }
 
-private extension KeyboardShortcuts.Key {
-    var swiftUIKeyEquivalent: KeyEquivalent? {
+extension KeyboardShortcuts.Key {
+    fileprivate var swiftUIKeyEquivalent: KeyEquivalent? {
         switch self {
-        case .a: return KeyEquivalent("a")
-        case .b: return KeyEquivalent("b")
-        case .c: return KeyEquivalent("c")
-        case .d: return KeyEquivalent("d")
-        case .e: return KeyEquivalent("e")
-        case .f: return KeyEquivalent("f")
-        case .g: return KeyEquivalent("g")
-        case .h: return KeyEquivalent("h")
-        case .i: return KeyEquivalent("i")
-        case .j: return KeyEquivalent("j")
-        case .k: return KeyEquivalent("k")
-        case .l: return KeyEquivalent("l")
-        case .m: return KeyEquivalent("m")
-        case .n: return KeyEquivalent("n")
-        case .o: return KeyEquivalent("o")
-        case .p: return KeyEquivalent("p")
-        case .q: return KeyEquivalent("q")
-        case .r: return KeyEquivalent("r")
-        case .s: return KeyEquivalent("s")
-        case .t: return KeyEquivalent("t")
-        case .u: return KeyEquivalent("u")
-        case .v: return KeyEquivalent("v")
-        case .w: return KeyEquivalent("w")
-        case .x: return KeyEquivalent("x")
-        case .y: return KeyEquivalent("y")
-        case .z: return KeyEquivalent("z")
-        case .zero: return KeyEquivalent("0")
-        case .one: return KeyEquivalent("1")
-        case .two: return KeyEquivalent("2")
-        case .three: return KeyEquivalent("3")
-        case .four: return KeyEquivalent("4")
-        case .five: return KeyEquivalent("5")
-        case .six: return KeyEquivalent("6")
-        case .seven: return KeyEquivalent("7")
-        case .eight: return KeyEquivalent("8")
-        case .nine: return KeyEquivalent("9")
-        case .comma: return KeyEquivalent(",")
-        case .period: return KeyEquivalent(".")
-        case .slash: return KeyEquivalent("/")
-        case .semicolon: return KeyEquivalent(";")
-        case .quote: return KeyEquivalent("\"")
-        case .leftBracket: return KeyEquivalent("[")
-        case .rightBracket: return KeyEquivalent("]")
-        case .minus: return KeyEquivalent("-")
-        case .equal: return KeyEquivalent("=")
-        case .space: return .space
-        case .tab: return .tab
-        case .return: return .return
-        case .escape: return .escape
-        default: return nil
+        case .a: KeyEquivalent("a")
+        case .b: KeyEquivalent("b")
+        case .c: KeyEquivalent("c")
+        case .d: KeyEquivalent("d")
+        case .e: KeyEquivalent("e")
+        case .f: KeyEquivalent("f")
+        case .g: KeyEquivalent("g")
+        case .h: KeyEquivalent("h")
+        case .i: KeyEquivalent("i")
+        case .j: KeyEquivalent("j")
+        case .k: KeyEquivalent("k")
+        case .l: KeyEquivalent("l")
+        case .m: KeyEquivalent("m")
+        case .n: KeyEquivalent("n")
+        case .o: KeyEquivalent("o")
+        case .p: KeyEquivalent("p")
+        case .q: KeyEquivalent("q")
+        case .r: KeyEquivalent("r")
+        case .s: KeyEquivalent("s")
+        case .t: KeyEquivalent("t")
+        case .u: KeyEquivalent("u")
+        case .v: KeyEquivalent("v")
+        case .w: KeyEquivalent("w")
+        case .x: KeyEquivalent("x")
+        case .y: KeyEquivalent("y")
+        case .z: KeyEquivalent("z")
+        case .zero: KeyEquivalent("0")
+        case .one: KeyEquivalent("1")
+        case .two: KeyEquivalent("2")
+        case .three: KeyEquivalent("3")
+        case .four: KeyEquivalent("4")
+        case .five: KeyEquivalent("5")
+        case .six: KeyEquivalent("6")
+        case .seven: KeyEquivalent("7")
+        case .eight: KeyEquivalent("8")
+        case .nine: KeyEquivalent("9")
+        case .comma: KeyEquivalent(",")
+        case .period: KeyEquivalent(".")
+        case .slash: KeyEquivalent("/")
+        case .semicolon: KeyEquivalent(";")
+        case .quote: KeyEquivalent("\"")
+        case .leftBracket: KeyEquivalent("[")
+        case .rightBracket: KeyEquivalent("]")
+        case .minus: KeyEquivalent("-")
+        case .equal: KeyEquivalent("=")
+        case .space: .space
+        case .tab: .tab
+        case .return: .return
+        case .escape: .escape
+        default: nil
         }
     }
 }
 
-private extension EventModifiers {
-    init(_ flags: NSEvent.ModifierFlags) {
+extension EventModifiers {
+    fileprivate init(_ flags: NSEvent.ModifierFlags) {
         var value: EventModifiers = []
         if flags.contains(.command) { value.insert(.command) }
         if flags.contains(.option) { value.insert(.option) }
@@ -216,35 +216,35 @@ private struct MenuWrappingText: NSViewRepresentable {
         let field = NSTextField(wrappingLabelWithString: text)
         field.isSelectable = false
         field.backgroundColor = .clear
-        field.textColor = color
-        field.font = font
+        field.textColor = self.color
+        field.font = self.font
         field.lineBreakMode = .byWordWrapping
-        field.maximumNumberOfLines = maxLines
-        field.setFrameSize(self.size(for: text))
+        field.maximumNumberOfLines = self.maxLines
+        field.setFrameSize(self.size(for: self.text))
         return field
     }
 
     func updateNSView(_ field: NSTextField, context: Context) {
-        field.stringValue = text
-        field.textColor = color
-        field.font = font
-        field.maximumNumberOfLines = maxLines
-        field.setFrameSize(self.size(for: text))
+        field.stringValue = self.text
+        field.textColor = self.color
+        field.font = self.font
+        field.maximumNumberOfLines = self.maxLines
+        field.setFrameSize(self.size(for: self.text))
     }
 
     private func size(for string: String) -> NSSize {
         let paragraph = NSMutableParagraphStyle()
         paragraph.lineBreakMode = .byWordWrapping
         let attributes: [NSAttributedString.Key: Any] = [
-            .font: font,
+            .font: self.font,
             .paragraphStyle: paragraph,
         ]
         let rect = (string as NSString).boundingRect(
-            with: NSSize(width: width, height: .greatestFiniteMagnitude),
+            with: NSSize(width: self.width, height: .greatestFiniteMagnitude),
             options: [.usesLineFragmentOrigin, .usesFontLeading],
             attributes: attributes)
-        let lineHeight = ceil(font.ascender - font.descender + font.leading)
-        let maxHeight = lineHeight * CGFloat(max(1, maxLines))
-        return NSSize(width: width, height: min(ceil(rect.height), maxHeight))
+        let lineHeight = ceil(font.ascender - self.font.descender + self.font.leading)
+        let maxHeight = lineHeight * CGFloat(max(1, self.maxLines))
+        return NSSize(width: self.width, height: min(ceil(rect.height), maxHeight))
     }
 }
