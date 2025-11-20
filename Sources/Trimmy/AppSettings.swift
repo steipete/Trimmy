@@ -55,15 +55,20 @@ final class AppSettings: ObservableObject {
         didSet { LaunchAtLoginManager.setEnabled(self.launchAtLogin) }
     }
 
-    @AppStorage("trimHotkeyEnabled") var trimHotkeyEnabled: Bool = true {
-        didSet { self.trimHotkeyEnabledChanged?(self.trimHotkeyEnabled) }
+    @AppStorage("trimHotkeyEnabled") var pasteTrimmedHotkeyEnabled: Bool = true {
+        didSet { self.pasteTrimmedHotkeyEnabledChanged?(self.pasteTrimmedHotkeyEnabled) }
+    }
+
+    @AppStorage("pasteOriginalHotkeyEnabled") var pasteOriginalHotkeyEnabled: Bool = false {
+        didSet { self.pasteOriginalHotkeyEnabledChanged?(self.pasteOriginalHotkeyEnabled) }
     }
 
     @AppStorage("autoTrimHotkeyEnabled") var autoTrimHotkeyEnabled: Bool = false {
         didSet { self.autoTrimHotkeyEnabledChanged?(self.autoTrimHotkeyEnabled) }
     }
 
-    var trimHotkeyEnabledChanged: ((Bool) -> Void)?
+    var pasteTrimmedHotkeyEnabledChanged: ((Bool) -> Void)?
+    var pasteOriginalHotkeyEnabledChanged: ((Bool) -> Void)?
     var autoTrimHotkeyEnabledChanged: ((Bool) -> Void)?
 
     init() {

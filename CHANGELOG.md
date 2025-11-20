@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+- Added “Paste Trimmed” action + global hotkey that trims on-the-fly (High aggressiveness), pastes, and restores your clipboard.
+- Added “Paste Original” action + hotkey so you can paste the untouched copy even after auto-trim; Trimmy now keeps the untrimmed text around for that path.
+
 ## 0.3.0 — 2025-11-20
 - Preferences got the full SwiftUI treatment: toolbar tabs (General, Aggressiveness, Shortcuts, About), window auto-resizing per tab, and richer About content with dimmed update controls for debug builds.
 - Shortcuts pane focuses on the Trim Clipboard hotkey (with glyphs) and lets you toggle or rebind it.

@@ -78,14 +78,20 @@ Why this feels native: `LabeledContent` supplies the left label/right control gr
 ## 4) Shortcuts pane
 ```swift
 struct HotkeySettingsPane: View {
-    @AppStorage("trimHotkeyEnabled") private var trimHotkeyEnabled = true
+    @AppStorage("trimHotkeyEnabled") private var pasteTrimmedHotkeyEnabled = true
+    @AppStorage("pasteOriginalHotkeyEnabled") private var pasteOriginalHotkeyEnabled = false
 
     var body: some View {
         Form {
-            LabeledContent("Enable global “Trim Clipboard” hotkey") {
-                Toggle("", isOn: $trimHotkeyEnabled)
+            LabeledContent("Enable global “Paste Trimmed” hotkey") {
+                Toggle("", isOn: $pasteTrimmedHotkeyEnabled)
             }
-            KeyboardShortcuts.Recorder("Shortcut", name: .trimClipboard)
+            KeyboardShortcuts.Recorder("Shortcut", name: .pasteTrimmed)
+
+            LabeledContent("Enable global “Paste Original” hotkey") {
+                Toggle("", isOn: $pasteOriginalHotkeyEnabled)
+            }
+            KeyboardShortcuts.Recorder("Shortcut", name: .pasteOriginal)
         }
         .formStyle(.grouped)
     }

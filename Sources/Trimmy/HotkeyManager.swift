@@ -3,7 +3,8 @@ import KeyboardShortcuts
 
 @MainActor
 extension KeyboardShortcuts.Name {
-    static let trimClipboard = Self("trimClipboard")
+    static let pasteTrimmed = Self("trimClipboard") // preserve existing user-defaults key
+    static let pasteOriginal = Self("pasteOriginal")
     static let toggleAutoTrim = Self("toggleAutoTrim")
 }
 
@@ -16,7 +17,10 @@ final class HotkeyManager: ObservableObject {
     init(settings: AppSettings, monitor: ClipboardMonitor) {
         self.settings = settings
         self.monitor = monitor
-        self.settings.trimHotkeyEnabledChanged = { [weak self] _ in
+        self.settings.pasteTrimmedHotkeyEnabledChanged = { [weak self] _ in
+            self?.refreshRegistration()
+        }
+        self.settings.pasteOriginalHotkeyEnabledChanged = { [weak self] _ in
             self?.refreshRegistration()
         }
         self.settings.autoTrimHotkeyEnabledChanged = { [weak self] _ in
@@ -29,10 +33,16 @@ final class HotkeyManager: ObservableObject {
 
     func refreshRegistration() {
         self.registerHandlerIfNeeded()
-        if self.settings.trimHotkeyEnabled {
-            KeyboardShortcuts.enable(.trimClipboard)
+        if self.settings.pasteTrimmedHotkeyEnabled {
+            KeyboardShortcuts.enable(.pasteTrimmed)
         } else {
-            KeyboardShortcuts.disable(.trimClipboard)
+            KeyboardShortcuts.disable(.pasteTrimmed)
+        }
+
+        if self.settings.pasteOriginalHotkeyEnabled {
+            KeyboardShortcuts.enable(.pasteOriginal)
+        } else {
+            KeyboardShortcuts.disable(.pasteOriginal)
         }
 
         if self.settings.autoTrimHotkeyEnabled {
@@ -43,14 +53,28 @@ final class HotkeyManager: ObservableObject {
     }
 
     @discardableResult
+    func pasteTrimmedNow() -> Bool {
+        self.handlePasteTrimmedHotkey()
+    }
+
+    @discardableResult
+    func pasteOriginalNow() -> Bool {
+        self.handlePasteOriginalHotkey()
+    }
+
+    // Backwards compatibility for debugging hooks.
+    @discardableResult
     func trimClipboardNow() -> Bool {
-        self.handleTrimClipboardHotkey()
+        self.pasteTrimmedNow()
     }
 
     private func registerHandlerIfNeeded() {
         guard !self.handlerRegistered else { return }
-        KeyboardShortcuts.onKeyUp(for: .trimClipboard) { [weak self] in
-            self?.handleTrimClipboardHotkey()
+        KeyboardShortcuts.onKeyUp(for: .pasteTrimmed) { [weak self] in
+            self?.handlePasteTrimmedHotkey()
+        }
+        KeyboardShortcuts.onKeyUp(for: .pasteOriginal) { [weak self] in
+            self?.handlePasteOriginalHotkey()
         }
         KeyboardShortcuts.onKeyUp(for: .toggleAutoTrim) { [weak self] in
             self?.toggleAutoTrim()
@@ -59,26 +83,25 @@ final class HotkeyManager: ObservableObject {
     }
 
     private func ensureDefaultShortcut() {
-        if KeyboardShortcuts.getShortcut(for: .trimClipboard) == nil {
+        if KeyboardShortcuts.getShortcut(for: .pasteTrimmed) == nil {
             KeyboardShortcuts.setShortcut(
                 .init(.t, modifiers: [.command, .option]),
-                for: .trimClipboard)
+                for: .pasteTrimmed)
         }
         // No default for auto-trim toggle; user can opt in via Settings.
     }
 
     @discardableResult
-    private func handleTrimClipboardHotkey() -> Bool {
-        NSApp.activate(ignoringOtherApps: true)
-        let didTrim = self.monitor.trimClipboardIfNeeded(force: true)
-        if !didTrim {
-            self.monitor.lastSummary = "Clipboard not trimmed (nothing command-like detected)."
-        }
-        return didTrim
+    private func handlePasteTrimmedHotkey() -> Bool {
+        self.monitor.pasteTrimmed()
+    }
+
+    @discardableResult
+    private func handlePasteOriginalHotkey() -> Bool {
+        self.monitor.pasteOriginal()
     }
 
     private func toggleAutoTrim() {
         self.settings.autoTrimEnabled.toggle()
-        NSApp.activate(ignoringOtherApps: true)
     }
 }

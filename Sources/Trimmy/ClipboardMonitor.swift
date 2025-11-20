@@ -1,4 +1,5 @@
 import AppKit
+import Carbon.HIToolbox
 import Foundation
 
 @MainActor
@@ -12,12 +13,23 @@ final class ClipboardMonitor: ObservableObject {
     private let pollInterval: DispatchTimeInterval = .milliseconds(150)
     private let pollLeeway: DispatchTimeInterval = .milliseconds(50)
     private let graceDelay: DispatchTimeInterval = .milliseconds(80)
+    private let pasteRestoreDelay: DispatchTimeInterval
+    private let pasteIntoFrontmostApp: () -> Void
+    private var ignoredChangeCounts: Set<Int> = []
+    private var lastOriginalText: String?
 
     @Published var lastSummary: String = ""
 
-    init(settings: AppSettings, pasteboard: NSPasteboard = NSPasteboard.general) {
+    init(
+        settings: AppSettings,
+        pasteboard: NSPasteboard = NSPasteboard.general,
+        pasteRestoreDelay: DispatchTimeInterval = .milliseconds(200),
+        pasteAction: (() -> Void)? = nil)
+    {
         self.settings = settings
         self.pasteboard = pasteboard
+        self.pasteRestoreDelay = pasteRestoreDelay
+        self.pasteIntoFrontmostApp = pasteAction ?? ClipboardMonitor.sendPasteCommand
         self.lastSeenChangeCount = self.pasteboard.changeCount
     }
 
@@ -42,26 +54,32 @@ final class ClipboardMonitor: ObservableObject {
         let changeCount = self.pasteboard.changeCount
         self.lastSeenChangeCount = changeCount
 
-        if let trimmed = self.trimmedClipboardText(force: force) {
-            self.writeTrimmed(trimmed)
-            self.lastSeenChangeCount = self.pasteboard.changeCount
-            self.updateSummary(with: trimmed)
-            return true
+        guard let variants = self.makeVariants(force: force, ignoreMarker: force) else {
+            // For forced/manual trims, still surface the current clipboard text in “Last” even when
+            // nothing was transformed, so the menu reflects what the user tried to trim.
+            if force, let raw = self.readTextFromPasteboard(ignoreMarker: true) {
+                self.updateSummary(with: raw)
+                return true
+            }
+            return false
         }
 
-        // For forced/manual trims, still surface the current clipboard text in “Last” even when
-        // nothing was transformed, so the menu reflects what the user tried to trim.
-        if force, let raw = self.readTextFromPasteboard(ignoreMarker: true) {
-            self.updateSummary(with: raw)
-            return true
-        }
+        guard self.settings.autoTrimEnabled || force else { return false }
 
-        return false
+        self.writeTrimmed(variants.trimmed)
+        self.lastSeenChangeCount = self.pasteboard.changeCount
+        self.updateSummary(with: variants.trimmed)
+        return true
     }
 
     private func tick() {
         let current = self.pasteboard.changeCount
         guard current != self.lastSeenChangeCount else { return }
+
+        if self.ignoredChangeCounts.remove(current) != nil {
+            self.lastSeenChangeCount = current
+            return
+        }
 
         let observed = current
         // Grace delay lets promised pasteboard data settle before we read/transform.
@@ -116,36 +134,9 @@ final class ClipboardMonitor: ObservableObject {
     }
 
     func trimmedClipboardText(force: Bool = false) -> String? {
-        guard let text = self.readTextFromPasteboard(ignoreMarker: force) else { return nil }
-        guard self.settings.autoTrimEnabled || force else { return nil }
-
-        var currentText = text
-        var wasTransformed = false
-
-        if let cleaned = self.detector.cleanBoxDrawingCharacters(currentText) {
-            currentText = cleaned
-            wasTransformed = true
-        }
-
-        let overrideAggressiveness: Aggressiveness? = force ? .high : nil
-
-        if let commandTransformed = self.detector.transformIfCommand(
-            currentText,
-            aggressivenessOverride: overrideAggressiveness)
-        {
-            currentText = commandTransformed
-            wasTransformed = true
-        } else if force {
-            // For manual/forced trims, fall back to returning what we read so the menu state updates
-            // even when nothing was transformed (single-line or non-command text).
-            if !wasTransformed {
-                return currentText
-            }
-        } else if !wasTransformed {
-            return nil
-        }
-
-        return currentText
+        guard let variants = self.makeVariants(force: force, ignoreMarker: force) else { return nil }
+        if !force, !variants.wasTransformed { return nil }
+        return variants.trimmed
     }
 
     static func ellipsize(_ text: String, limit: Int) -> String {
@@ -162,5 +153,144 @@ final class ClipboardMonitor: ObservableObject {
         text
             .replacingOccurrences(of: "\r\n", with: "\n")
             .replacingOccurrences(of: "\r", with: "\n")
+    }
+}
+
+// MARK: - On-demand pasting
+
+extension ClipboardMonitor {
+    @discardableResult
+    func pasteTrimmed() -> Bool {
+        guard let variants = self.cachedOrCurrentVariantsForPaste(force: true) else {
+            self.lastSummary = "Nothing to paste."
+            return false
+        }
+        self.updateSummary(with: variants.trimmed)
+        self.performPaste(with: variants.trimmed)
+        return true
+    }
+
+    @discardableResult
+    func pasteOriginal() -> Bool {
+        guard let original = self.lastOriginalText ?? self.clipboardText() else {
+            self.lastSummary = "Nothing to paste."
+            return false
+        }
+        self.lastOriginalText = original
+        self.updateSummary(with: original)
+        self.performPaste(with: original)
+        return true
+    }
+}
+
+// MARK: - Helpers
+
+extension ClipboardMonitor {
+    fileprivate struct ClipboardVariants {
+        let original: String
+        let trimmed: String
+        let wasTransformed: Bool
+    }
+
+    private func cachedOrCurrentVariantsForPaste(force: Bool) -> ClipboardVariants? {
+        if let cachedOriginal = self.lastOriginalText {
+            let variants = self.transform(text: cachedOriginal, force: force)
+            self.cache(original: cachedOriginal, trimmed: variants.trimmed)
+            return variants
+        }
+
+        return self.makeVariants(force: force, ignoreMarker: true)
+    }
+
+    private func makeVariants(force: Bool, ignoreMarker: Bool) -> ClipboardVariants? {
+        guard let text = self.readTextFromPasteboard(ignoreMarker: ignoreMarker || force) else {
+            self.cache(original: nil, trimmed: nil)
+            return nil
+        }
+
+        let variants = self.transform(text: text, force: force)
+        self.cache(original: variants.original, trimmed: variants.trimmed)
+
+        if force {
+            return variants
+        }
+        return variants.wasTransformed ? variants : nil
+    }
+
+    private func transform(text: String, force: Bool) -> ClipboardVariants {
+        var currentText = text
+        var wasTransformed = false
+
+        if let cleaned = self.detector.cleanBoxDrawingCharacters(currentText) {
+            currentText = cleaned
+            wasTransformed = true
+        }
+
+        let overrideAggressiveness: Aggressiveness? = force ? .high : nil
+
+        if let commandTransformed = self.detector.transformIfCommand(
+            currentText,
+            aggressivenessOverride: overrideAggressiveness)
+        {
+            currentText = commandTransformed
+            wasTransformed = true
+        }
+
+        return ClipboardVariants(
+            original: text,
+            trimmed: currentText,
+            wasTransformed: wasTransformed)
+    }
+
+    private func cache(original: String?, trimmed: String?) {
+        self.lastOriginalText = original
+    }
+
+    private func performPaste(with text: String) {
+        let previousString = self.clipboardText()
+
+        self.ignoreChangeWhile {
+            self.pasteboard.declareTypes([.string, self.trimmyMarker], owner: nil)
+            self.pasteboard.setString(text, forType: .string)
+            self.pasteboard.setData(Data(), forType: self.trimmyMarker)
+        }
+
+        self.pasteIntoFrontmostApp()
+
+        guard let previousString else { return }
+        self.restorePasteboard(string: previousString)
+    }
+
+    private func ignoreChangeWhile(_ work: () -> Void) {
+        let before = self.pasteboard.changeCount
+        work()
+        let after = self.pasteboard.changeCount
+        if after != before {
+            self.ignoredChangeCounts.insert(after)
+            self.lastSeenChangeCount = after
+        }
+    }
+
+    private func restorePasteboard(string: String) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + self.pasteRestoreDelay) { [weak self] in
+            guard let self else { return }
+            self.ignoreChangeWhile {
+                self.pasteboard.clearContents()
+                self.pasteboard.setString(string, forType: .string)
+            }
+        }
+    }
+
+    fileprivate static func sendPasteCommand() {
+        guard let source = CGEventSource(stateID: .combinedSessionState) else { return }
+        let keyCode = CGKeyCode(kVK_ANSI_V)
+
+        let down = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: true)
+        down?.flags = .maskCommand
+        down?.post(tap: .cghidEventTap)
+
+        let up = CGEvent(keyboardEventSource: source, virtualKey: keyCode, keyDown: false)
+        up?.flags = .maskCommand
+        up?.post(tap: .cghidEventTap)
     }
 }

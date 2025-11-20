@@ -17,12 +17,12 @@
    - Normal (default): require ≥2 hits
    - High: require ≥1 hit (most eager)
 4. **Blank-line handling** (checkbox): when enabled, empty lines are preserved during flattening; otherwise all newlines collapse to spaces.
-5. **Auto-trim toggle**: enable/disable automatic rewrite without quitting the app; manual "Trim Now" command works regardless.
-6. **Self-write marker**: Trimmy writes an extra pasteboard type (`dev.peter.trimmy`) so subsequent polls can ignore its own writes and only react to user changes.
+5. **Auto-trim toggle**: enable/disable automatic rewrite without quitting the app; manual "Paste Trimmed" works regardless and does not permanently alter the clipboard.
+6. **Self-write marker**: Trimmy writes an extra pasteboard type (`com.steipete.trimmy`) so subsequent polls can ignore its own writes and only react to user changes.
 7. **Grace delay**: small (~80ms) deferred read after detecting a changeCount bump to allow promised/late pasteboard data to become available; skipped if changeCount moves again.
 8. **Robust text read**: prefers `readObjects(forClasses:[NSString.self])`, falls back to common public text UTI types before declaring “no text”.
 9. **UI**
-   - Menu bar icon/text "Trimmy" with menu items: Auto-Trim toggle, "Trim Clipboard Now", status line showing last trimmed preview, Quit.
+   - Menu bar icon/text "Trimmy" with menu items: Auto-Trim toggle, "Paste Trimmed", "Paste Original", status line showing last action preview, Quit.
    - SwiftUI Settings window (macOS-standard Settings scene) with Aggressiveness picker (Low/Normal/High), Keep blank lines checkbox, Auto-trim checkbox.
 7. **Last action preview**: menu shows truncated (~70 chars) version of last trimmed command.
 8. **Accessory app**: no Dock icon, lives in menu bar; quit from menu.

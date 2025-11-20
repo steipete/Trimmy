@@ -19,7 +19,7 @@ struct MenuContentView: View {
             }
             .toggleStyle(.checkbox)
 
-            self.trimClipboardButton
+            self.pasteButtons
             VStack(alignment: .leading, spacing: 2) {
                 Text("Last:")
                     .font(.caption2)
@@ -45,14 +45,15 @@ struct MenuContentView: View {
     }
 
     private var lastSummary: String {
-        self.monitor.lastSummary.isEmpty ? "No trims yet" : self.monitor.lastSummary
+        self.monitor.lastSummary.isEmpty ? "No actions yet" : self.monitor.lastSummary
     }
 
-    private func handleTrimClipboard() {
-        let didTrim = self.monitor.trimClipboardIfNeeded(force: true)
-        if !didTrim {
-            self.monitor.lastSummary = "Clipboard not trimmed (nothing command-like detected)."
-        }
+    private func handlePasteTrimmed() {
+        _ = self.monitor.pasteTrimmed()
+    }
+
+    private func handlePasteOriginal() {
+        _ = self.monitor.pasteOriginal()
     }
 
     private func open(tab: SettingsTab) {
@@ -104,16 +105,29 @@ struct MenuContentView: View {
 }
 
 extension MenuContentView {
-    private var trimClipboardButton: some View {
-        Button("Trim Clipboard") {
-            self.handleTrimClipboard()
+    private var pasteButtons: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Button("Paste Trimmed") {
+                self.handlePasteTrimmed()
+            }
+            .applyKeyboardShortcut(self.pasteTrimmedKeyboardShortcut)
+
+            Button("Paste Original") {
+                self.handlePasteOriginal()
+            }
+            .applyKeyboardShortcut(self.pasteOriginalKeyboardShortcut)
         }
-        .applyKeyboardShortcut(self.trimKeyboardShortcut)
     }
 
-    private var trimKeyboardShortcut: KeyboardShortcut? {
-        guard self.settings.trimHotkeyEnabled,
-              let shortcut = KeyboardShortcuts.getShortcut(for: .trimClipboard) else { return nil }
+    private var pasteTrimmedKeyboardShortcut: KeyboardShortcut? {
+        guard self.settings.pasteTrimmedHotkeyEnabled,
+              let shortcut = KeyboardShortcuts.getShortcut(for: .pasteTrimmed) else { return nil }
+        return shortcut.swiftUIShortcut
+    }
+
+    private var pasteOriginalKeyboardShortcut: KeyboardShortcut? {
+        guard self.settings.pasteOriginalHotkeyEnabled,
+              let shortcut = KeyboardShortcuts.getShortcut(for: .pasteOriginal) else { return nil }
         return shortcut.swiftUIShortcut
     }
 }

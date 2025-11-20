@@ -10,10 +10,9 @@ struct AggressivenessSettingsPane: View {
 
             Text(
                 """
-                Automatic trimming uses this aggressiveness level. Manual “Trim Clipboard” always runs at High \
+                Automatic trimming uses this aggressiveness level. Manual “Paste Trimmed” always runs at High \
                 for maximum flattening.
-                """
-            )
+                """)
                 .font(.footnote)
                 .foregroundStyle(.tertiary)
                 .fixedSize(horizontal: false, vertical: true)

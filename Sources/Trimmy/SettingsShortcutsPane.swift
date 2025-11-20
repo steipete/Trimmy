@@ -1,5 +1,5 @@
-import SwiftUI
 import KeyboardShortcuts
+import SwiftUI
 
 @MainActor
 struct HotkeySettingsPane: View {
@@ -9,17 +9,29 @@ struct HotkeySettingsPane: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             PreferenceToggleRow(
-                title: "Enable global “Trim Clipboard” hotkey",
-                subtitle: "Instantly trims the clipboard without opening the menu.",
-                binding: self.$settings.trimHotkeyEnabled)
+                title: "Enable global “Paste Trimmed” hotkey",
+                subtitle: "Trim on-the-fly and paste without permanently changing the clipboard.",
+                binding: self.$settings.pasteTrimmedHotkeyEnabled)
 
             VStack(alignment: .leading, spacing: 6) {
-                KeyboardShortcuts.Recorder("", name: .trimClipboard)
+                KeyboardShortcuts.Recorder("", name: .pasteTrimmed)
                     .labelsHidden()
-                Text("Manual trims ignore the Aggressiveness setting and always use High.")
+                    .opacity(self.settings.pasteTrimmedHotkeyEnabled ? 1.0 : 0.4)
+                    .disabled(!self.settings.pasteTrimmedHotkeyEnabled)
+                Text("Paste Trimmed always uses High aggressiveness and then restores your clipboard.")
                     .font(.footnote)
                     .foregroundStyle(.tertiary)
             }
+
+            PreferenceToggleRow(
+                title: "Enable global “Paste Original” hotkey",
+                subtitle: "Paste the unedited copy even if Trimmy already auto-trimmed it.",
+                binding: self.$settings.pasteOriginalHotkeyEnabled)
+
+            KeyboardShortcuts.Recorder("", name: .pasteOriginal)
+                .labelsHidden()
+                .opacity(self.settings.pasteOriginalHotkeyEnabled ? 1.0 : 0.4)
+                .disabled(!self.settings.pasteOriginalHotkeyEnabled)
 
             PreferenceToggleRow(
                 title: "Enable global Auto-Trim toggle hotkey",

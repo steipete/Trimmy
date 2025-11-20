@@ -89,8 +89,7 @@ struct StartupDiagnostics {
                 """
                 Startup AX trusted=\(trusted, privacy: .public) bundle=\(bundle, privacy: .public) \
                 exec=\(exec, privacy: .public)
-                """
-            )
+                """)
     }
 }
 

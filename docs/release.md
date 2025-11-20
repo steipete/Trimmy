@@ -2,6 +2,8 @@
 
 SwiftPM only; manual package/sign/notarize. Sparkle feed served from GitHub Releases.
 
+**Must read first:** open the master macOS release guide at `~/Projects/agent-scripts/docs/RELEASING-MAC.md` alongside this file and reconcile any differences in favor of Trimmy specifics before starting a release.
+
 ## Expectations
 - When asked to “release” a version, execute the full, end-to-end flow: bump versions/CHANGELOG, build, sign & notarize, upload the zip to the GitHub release, generate/update the appcast with the new signature, publish the release/tag, and verify the enclosure downloads successfully via HTTP (no 404s) and installs.
 
@@ -54,6 +56,7 @@ git tag v0.2.2
 ```
 
 ## Checklist (quick)
+- [ ] Read both this file and `~/Projects/agent-scripts/docs/RELEASING-MAC.md`; resolve any conflicts toward Trimmy’s specifics.
 - [ ] Update versions (Package scripts, About text, CHANGELOG)
 - [ ] `swiftformat`, `swiftlint`, `swift test` (ensure zero warnings/errors)
 - [ ] `./Scripts/build_icon.sh` if icon changed
@@ -70,6 +73,7 @@ git tag v0.2.2
 - [ ] Ensure `sparkle:edSignature` is present for the enclosure in appcast (generate with `sign_update`/ed25519 key)
 - [ ] When creating the GitHub release, paste the CHANGELOG entry as a proper Markdown list (one `-` per line, blank line between sections); verify the rendered release notes aren’t collapsed into a single line.
 - [ ] After publishing, open the GitHub release page and visually confirm bullets render correctly (no literal `\n`, no duplicated/merged entries); fix via “Edit release” if anything is off.
+- [ ] Post-publish housekeeping: bump `CHANGELOG.md` by moving the shipped notes under the released version, incrementing its patch number, and add a new `Unreleased` section for the next iteration.
 - [ ] Keep an older signed build in `/Applications/Trimmy.app` (e.g., previous version) to manually verify Sparkle delta/full update to the new release.
 - [ ] For Sparkle verification: if replacing `/Applications/Trimmy.app`, first quit Trimmy, then replace the app bundle, and relaunch from `/Applications`. If a previous version is already installed there, leave it and just use it to test the update path.
 - [ ] Manual Gatekeeper sanity: after packaging, `find Trimmy.app -name '._*'` is empty, `spctl --assess --type execute --verbose Trimmy.app` and `codesign --verify --deep --strict --verbose Trimmy.app` succeed

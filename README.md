@@ -11,7 +11,8 @@
   - **High:** flattens almost any multi-line text that *could* be a command. Example: a quick two-line `ls` + `cd` copied from chat.
 - Optional "Keep blank lines" so scripts with intentional spacing stay readable.
 - Optional "Remove box drawing chars (│ │)" to clean prompt-style borders and collapse the leftover whitespace.
-- Manual "Trim Clipboard Now" button if you just want to force a flatten.
+- "Paste Trimmed" button + hotkey trims on-the-fly and pastes without permanently altering the clipboard (uses High aggressiveness).
+- "Paste Original" button + hotkey pastes the untouched copy even after auto-trim.
 - Optional "Launch at login" toggle (macOS 13+ via SMAppService).
 - Auto-update via Sparkle (Check for Updates… + auto-check toggle; feed from GitHub Releases).
 - Uses a marker pasteboard type to avoid reprocessing its own writes; polls with a lightweight timer and a small grace delay to catch promised pasteboard data.
@@ -23,7 +24,7 @@ Get the precompiled binary from [Releases](https://github.com/steipete/Trimmy/re
 
 1. Build: `swift build -c release` (Swift 6, macOS 15+).
 2. Bundle: `./Scripts/package_app.sh release` → `Trimmy.app`.
-3. Launch: open `Trimmy.app` (or add to Login Items). Menu shows Auto-Trim toggle, Aggressiveness submenu, Keep blank lines toggle, Trim Now, and last-trim status.
+3. Launch: open `Trimmy.app` (or add to Login Items). Menu shows Auto-Trim toggle, Aggressiveness submenu, Keep blank lines toggle, Paste Trimmed/Paste Original actions, and a last-action status.
 
 ![Trimmy UI](trimmy-screenshot.png)
 

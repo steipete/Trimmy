@@ -88,4 +88,57 @@ struct ClipboardMonitorTests {
         let afterSecond = pasteboard.string(forType: .string)
         #expect(afterSecond?.contains(where: \.isNewline) == true)
     }
+
+    @Test
+    func pasteTrimmedKeepsOriginalForLater() {
+        let settings = AppSettings()
+        settings.autoTrimEnabled = false
+        var pasteTriggered = false
+        let pasteboard = makeTestPasteboard()
+        let monitor = ClipboardMonitor(
+            settings: settings,
+            pasteboard: pasteboard,
+            pasteRestoreDelay: .milliseconds(0))
+        {
+            pasteTriggered = true
+        }
+
+        pasteboard.setString(
+            """
+            echo hi \\
+            ls -la
+            """,
+            forType: .string)
+
+        let didPaste = monitor.pasteTrimmed()
+        #expect(didPaste)
+        #expect(pasteTriggered)
+
+        let didPasteOriginal = monitor.pasteOriginal()
+        #expect(didPasteOriginal)
+        #expect(monitor.lastSummary.contains("echo hi"))
+    }
+
+    @Test
+    func pasteOriginalUsesCachedPreTrimCopy() {
+        let settings = AppSettings()
+        settings.autoTrimEnabled = true
+        let pasteboard = makeTestPasteboard()
+        let monitor = ClipboardMonitor(
+            settings: settings,
+            pasteboard: pasteboard,
+            pasteRestoreDelay: .milliseconds(0),
+            pasteAction: {})
+
+        let original = """
+        echo hi \\
+        ls -la
+        """
+        pasteboard.setString(original, forType: .string)
+        _ = monitor.trimClipboardIfNeeded() // auto-trim saves original, writes trimmed
+
+        let didPasteOriginal = monitor.pasteOriginal()
+        #expect(didPasteOriginal)
+        #expect(monitor.lastSummary.contains("echo hi"))
+    }
 }

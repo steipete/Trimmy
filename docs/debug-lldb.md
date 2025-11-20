@@ -12,7 +12,7 @@ tmux send-keys -t trimdebug "process interrupt" C-m
 # drive Trimmy without UI clicks
 tmux send-keys -t trimdebug "expr -l Swift -- import AppKit; import Trimmy" C-m
 tmux send-keys -t trimdebug "expr -l Swift -- _ = NSPasteboard.general.setString(\"echo test\\\\nls -l\", forType: .string)" C-m
-tmux send-keys -t trimdebug "expr -l Swift -- Trimmy.DebugHooks.hotkeyManager?.trimClipboardNow()" C-m
+tmux send-keys -t trimdebug "expr -l Swift -- Trimmy.DebugHooks.hotkeyManager?.pasteTrimmedNow()" C-m
 tmux send-keys -t trimdebug "expr -l Swift -- Trimmy.DebugHooks.monitor?.lastSummary" C-m
 # when finished
 tmux send-keys -t trimdebug "quit" C-m
@@ -21,17 +21,16 @@ pkill -f \"Trimmy.app/Contents/MacOS/Trimmy\" || true
 ```
 
 ## What the commands do
-- `DebugHooks.hotkeyManager?.trimClipboardNow()` calls the same path as the “Trim Clipboard” button/hotkey (force trim + summary update).
+- `DebugHooks.hotkeyManager?.pasteTrimmedNow()` calls the same path as the “Paste Trimmed” button/hotkey (force trim at High + summary update).
 - `DebugHooks.monitor?.lastSummary` reads the string shown under “Last:” in the menu.
 - You can clear/reset with `DebugHooks.monitor?.lastSummary = ""` if needed.
 
 ## Breakpoints to inspect trimming
 Inside LLDB:
 ```
-breakpoint set --file ClipboardMonitor.swift --line 50   # trimClipboardIfNeeded
-breakpoint set --file ClipboardMonitor.swift --line 90   # readTextFromPasteboard
-breakpoint set --file ClipboardMonitor.swift --line 110  # writeTrimmed
-breakpoint set --name Trimmy.ClipboardMonitor.recordSummary
+breakpoint set --name Trimmy.ClipboardMonitor.trimClipboardIfNeeded
+breakpoint set --name Trimmy.ClipboardMonitor.readTextFromPasteboard
+breakpoint set --name Trimmy.ClipboardMonitor.writeTrimmed
 continue
 ```
 Use `frame variable` and `bt` at stops to inspect flow; `force` should be `true` for manual trims.
