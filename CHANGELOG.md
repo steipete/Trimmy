@@ -5,6 +5,8 @@
 - Added “Paste Original” action + hotkey so you can paste the untouched copy even after auto-trim; Trimmy now keeps the untrimmed text around for that path.
 - Paste actions now show the destination app (e.g., “Paste Trimmed to Ghostty”) so you know where the keystroke will land.
 - Last preview now renders the original line with strike-through on removed characters for a quick diff-at-a-glance.
+- Each paste action now shows its own preview: trimmed text under “Paste Trimmed” and struck-out original under “Paste Original.”
+- Auto-Trim toggle moved below the divider to keep primary actions grouped at the top of the menu.
 - Box-drawing stripping now handles any number of leading/trailing gutter bars (│┃ etc., most-line majority) while leaving real pipeline `|` characters intact; more regression tests cover single-line, majority, and both-sides cases, and previews mirror the runtime cleaner.
 
 ## 0.3.0 — 2025-11-20
