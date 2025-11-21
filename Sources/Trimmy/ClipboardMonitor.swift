@@ -225,10 +225,10 @@ extension ClipboardMonitor {
 
     func trimmedPreviewText() -> String {
         if let trimmed = self.lastTrimmedText {
-            return ClipboardMonitor.displayString(trimmed)
+            return PreviewMetrics.displayString(trimmed)
         }
         if !self.lastSummary.isEmpty {
-            return ClipboardMonitor.displayString(self.lastSummary)
+            return PreviewMetrics.displayString(self.lastSummary)
         }
         return "No trimmed text yet"
     }
@@ -355,8 +355,8 @@ extension ClipboardMonitor {
     }
 
     static func struck(original: String, trimmed: String) -> AttributedString {
-        let displayOriginal = self.displayString(original)
-        let displayTrimmed = self.displayString(trimmed)
+        let displayOriginal = PreviewMetrics.displayString(original)
+        let displayTrimmed = PreviewMetrics.displayString(trimmed)
         let base = NSMutableAttributedString(string: displayOriginal)
 
         let origChars = Array(displayOriginal)
@@ -375,24 +375,6 @@ extension ClipboardMonitor {
         }
 
         return AttributedString(base)
-    }
-
-    static func displayString(_ text: String) -> String {
-        text
-            .replacingOccurrences(of: "\n", with: "⏎ ")
-            .replacingOccurrences(of: "\t", with: "⇥ ")
-    }
-}
-
-enum PreviewMetrics {
-    static func charCountSuffix(count: Int) -> String {
-        if count >= 1000 {
-            let k = Double(count) / 1000.0
-            let formatted = k >= 10 ? String(format: "%.0fk", k) : String(format: "%.1fk", k)
-            return " (\(formatted) chars)"
-        } else {
-            return " (\(count) chars)"
-        }
     }
 }
 
