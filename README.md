@@ -46,5 +46,9 @@ Get the precompiled binary from [Releases](https://github.com/steipete/Trimmy/re
 - Polling: ~150ms with leeway; grace delay ~80ms to let promised data arrive.
 - Clipboard writes tag themselves with `com.steipete.trimmy` to avoid loops.
 
+## Related
+- CodexBar: keep Codex and Claude usage visible from the menu bar. Download at [codexbar.app](https://codexbar.app).
+- Trimmy: get the latest build at [trimmy.app](https://trimmy.app).
+
 ## License
 MIT
