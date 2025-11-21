@@ -50,6 +50,7 @@ Get the precompiled binary from [Releases](https://github.com/steipete/Trimmy/re
 - 🟦🟩 [CodexBar](https://codexbar.app) — Keep Codex token windows visible in your macOS menu bar.
 - ✂️ [Trimmy](https://trimmy.app) — “Paste once, run once.” Flatten multi-line shell snippets so they paste and run.
 - 🧳 [MCPorter](https://mcporter.dev) — TypeScript toolkit + CLI for Model Context Protocol servers.
+- 🧿 [Oracle](https://github.com/steipete/oracle) — Prompt bundler/CLI for GPT-5.1/Claude/Gemini with multi-model support.
 
 ## License
 MIT
