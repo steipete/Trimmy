@@ -142,16 +142,16 @@ extension MenuContentView {
     }
 
     private var trimmedStatsSuffix: String {
-        self.statsSuffix(for: self.monitor.trimmedPreviewSource())
+        self.statsSuffix(for: self.monitor.trimmedPreviewSource(), showTruncations: true)
     }
 
     private var originalStatsSuffix: String {
-        self.statsSuffix(for: self.monitor.originalPreviewSource())
+        self.statsSuffix(for: self.monitor.originalPreviewSource(), showTruncations: false)
     }
 
-    private func statsSuffix(for text: String?) -> String {
+    private func statsSuffix(for text: String?, showTruncations: Bool) -> String {
         guard let text else { return "" }
-        return PreviewMetrics.charCountSuffix(count: text.count, limit: 50)
+        return PreviewMetrics.charCountSuffix(count: text.count, limit: 50, showTruncations: showTruncations)
     }
 }
 

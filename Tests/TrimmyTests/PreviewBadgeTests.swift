@@ -24,4 +24,10 @@ struct PreviewBadgeTests {
         #expect(PreviewMetrics.charCountSuffix(count: 149, limit: 50) == " (149 chars, 2 truncations)")
         #expect(PreviewMetrics.charCountSuffix(count: 2500, limit: 50) == " (2.5k chars, 49 truncations)")
     }
+
+    @Test
+    func suppressesTruncationsWhenAsked() {
+        #expect(PreviewMetrics.charCountSuffix(count: 149, limit: 50, showTruncations: false) == " (149 chars)")
+        #expect(PreviewMetrics.charCountSuffix(count: 2500, limit: 50, showTruncations: false) == " (2.5k chars)")
+    }
 }

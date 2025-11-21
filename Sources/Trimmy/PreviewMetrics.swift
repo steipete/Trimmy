@@ -1,8 +1,8 @@
 import Foundation
 
 enum PreviewMetrics {
-    static func charCountSuffix(count: Int, limit: Int? = nil) -> String {
-        let truncations = limit.map { self.truncationCount(for: count, limit: $0) } ?? 0
+    static func charCountSuffix(count: Int, limit: Int? = nil, showTruncations: Bool = true) -> String {
+        let truncations = showTruncations ? (limit.map { self.truncationCount(for: count, limit: $0) } ?? 0) : 0
         if count >= 1000 {
             let k = Double(count) / 1000.0
             let formatted = k >= 10 ? String(format: "%.0fk", k) : String(format: "%.1fk", k)
