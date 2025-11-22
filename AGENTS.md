@@ -1,6 +1,6 @@
 # Repository Guidelines
 
-READ ~/Projects/agent-scripts/{AGENTS.MD,TOOLS.MD} BEFORE ANYTHING (skip if files missing).
+YOU MUST READ ~/Projects/agent-scripts/AGENTS.MD BEFORE ANYTHING (skip if file missing).
 
 ## Project Structure & Module Organization
 - `Sources/Trimmy`: Swift 6 macOS menu-bar app (clipboard watcher, command detector, settings panes; entry `TrimmyApp.swift`).
