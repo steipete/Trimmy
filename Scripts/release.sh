@@ -1,25 +1,29 @@
 #!/usr/bin/env bash
 # Trimmy one-shot release helper.
-# Usage: Scripts/release.sh <marketing_version> <build_number> [release-notes-file]
-# Example: Scripts/release.sh 0.4.2 11 notes.md
+# Usage: Scripts/release.sh [marketing_version] [build_number] [release-notes-file]
+# If no version/build args are provided, values from version.env are used.
 
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
+source "$ROOT/version.env"
 
 LOG() { printf "==> %s\n" "$*"; }
 ERR() { printf "ERROR: %s\n" "$*" >&2; exit 1; }
 
-if [[ $# -lt 2 ]]; then
-  ERR "Usage: $0 <marketing_version> <build_number> [release-notes-file]"
+if [[ $# -ge 2 ]]; then
+  VERSION="$1"
+  BUILD="$2"
+  NOTES_FILE="${3:-}"
+else
+  VERSION="$MARKETING_VERSION"
+  BUILD="$BUILD_NUMBER"
+  NOTES_FILE="${1:-}"
 fi
 
-VERSION="$1"
-BUILD="$2"
-NOTES_FILE="${3:-}"
 ZIP_NAME="Trimmy-${VERSION}.zip"
-DSYM_ZIP=".build/Trimmy-${VERSION}.dSYM.zip"
+DSYM_ZIP="Trimmy-${VERSION}.dSYM.zip"
 
 require() {
   command -v "$1" >/dev/null || ERR "Missing required command: $1"
@@ -94,12 +98,15 @@ build_and_notarize() {
 }
 
 zip_dsym() {
+  if [[ -f "$DSYM_ZIP" ]]; then
+    LOG "dSYM zip already present ($DSYM_ZIP)"
+    return
+  fi
   LOG "Zipping dSYM"
   local dsym_dir=".build/arm64-apple-macosx/release/Trimmy.dSYM"
   [[ -d "$dsym_dir" ]] || ERR "dSYM not found at $dsym_dir"
-  mkdir -p "$(dirname "$DSYM_ZIP")"
   rm -f "$DSYM_ZIP"
-  (cd "$(dirname "$dsym_dir")" && zip -r "../../Trimmy-${VERSION}.dSYM.zip" "$(basename "$dsym_dir")") >/dev/null
+  /usr/bin/ditto -c -k --keepParent "$dsym_dir" "$DSYM_ZIP"
 }
 
 sign_zip() {

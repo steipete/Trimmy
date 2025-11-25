@@ -4,7 +4,10 @@ set -euo pipefail
 APP_NAME="Trimmy"
 APP_IDENTITY="Developer ID Application: Peter Steinberger (Y5PE65HELJ)"
 APP_BUNDLE="Trimmy.app"
-ZIP_NAME="Trimmy-0.4.1.zip"
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+source "$ROOT/version.env"
+ZIP_NAME="Trimmy-${MARKETING_VERSION}.zip"
+DSYM_ZIP="Trimmy-${MARKETING_VERSION}.dSYM.zip"
 
 if [[ -z "${APP_STORE_CONNECT_API_KEY_P8:-}" || -z "${APP_STORE_CONNECT_KEY_ID:-}" || -z "${APP_STORE_CONNECT_ISSUER_ID:-}" ]]; then
   echo "Missing APP_STORE_CONNECT_* env vars (API key, key id, issuer id)." >&2
@@ -42,4 +45,12 @@ xcrun stapler staple "$APP_BUNDLE"
 spctl -a -t exec -vv "$APP_BUNDLE"
 stapler validate "$APP_BUNDLE"
 
-echo "Done: $ZIP_NAME"
+echo "Packaging dSYM"
+DSYM_PATH=".build/arm64-apple-macosx/release/Trimmy.dSYM"
+if [[ ! -d "$DSYM_PATH" ]]; then
+  echo "Missing dSYM at $DSYM_PATH" >&2
+  exit 1
+fi
+"$DITTO_BIN" -c -k --keepParent "$DSYM_PATH" "$DSYM_ZIP"
+
+echo "Done: $ZIP_NAME and $DSYM_ZIP"
