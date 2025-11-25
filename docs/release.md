@@ -1,3 +1,10 @@
+---
+summary: "Trimmy release checklist: package, sign, notarize, Sparkle appcast, and assets."
+read_when:
+  - Cutting or validating a Trimmy release
+  - Updating appcast or signing/notarization steps
+---
+
 # Release process (Trimmy)
 
 SwiftPM only; manual package/sign/notarize. Sparkle feed served from GitHub Releases.

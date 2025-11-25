@@ -1,3 +1,10 @@
+---
+summary: "LLDB/tmux script to drive Trimmy headlessly and inspect clipboard paths."
+read_when:
+  - Debugging Trimmy without UI access (remote/ssh)
+  - Investigating clipboard trimming behavior interactively
+---
+
 # Trimmy LLDB Drive-by Debugging
 
 Use this when you can’t click the UI (e.g., remote session) but need to exercise menu actions and inspect state end-to-end.

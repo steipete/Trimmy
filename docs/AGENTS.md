@@ -1,3 +1,10 @@
+---
+summary: "Trimmy repo guardrails, build/lint/test commands, and release expectations."
+read_when:
+  - Starting work on Trimmy
+  - Before running builds, tests, or changing tooling
+---
+
 # Repository Guidelines
 
 ## Project Structure & Module Organization

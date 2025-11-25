@@ -1,3 +1,11 @@
+---
+summary: "Trimmy product/technical spec: goals, heuristics, settings, and build notes."
+read_when:
+  - Planning or scoping new Trimmy features
+  - Changing clipboard detection heuristics or settings behavior
+  - Reviewing product scope or requirements
+---
+
 # Trimmy Specification (draft)
 
 ## Purpose

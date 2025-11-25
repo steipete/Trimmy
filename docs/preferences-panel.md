@@ -1,3 +1,10 @@
+---
+summary: "SwiftUI Settings window recipe for Trimmy with toolbar tabs and grouped forms."
+read_when:
+  - Modifying settings UI or Preferences window behavior
+  - Adding new settings panes or controls
+---
+
 # SwiftUI-native Preferences Window (macOS 15+)
 
 Goal: ship a real macOS Settings window (⌘,) using only SwiftUI—no custom AppKit controllers. You get toolbar-style tabs, grouped two-column rows, and modern window behavior out of the box.
