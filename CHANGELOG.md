@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.3 — Unreleased
+- Pending changes.
+
 ## 0.4.2 — 2025-11-25
 - Menu “Paste Trimmed” and “Paste Original” previews now share the same 50-character middle ellipsis and badge stats for consistent clipping.
 - Settings window is slightly taller so previews and tabs fit without clipping.
