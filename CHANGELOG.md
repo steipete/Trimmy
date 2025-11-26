@@ -1,6 +1,9 @@
 # Changelog
 
-## 0.4.3 — Unreleased
+## 0.4.4 — Unreleased
+- Pending changes.
+
+## 0.4.3 — 2025-11-26
 - Clipboard flattening now rejoins hyphen-wrapped tokens (e.g., `...-9bd2-\nf1a4...png`) without inserting spaces, fixing QR/path copies from chats.
 - Guarded against treating markdown bullet lists as hyphen continuations so list snippets don’t get glued together when flattened.
 
