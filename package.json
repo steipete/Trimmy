@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "start": "./Scripts/compile_and_run.sh",
-    "start:release": "sh -c './Scripts/package_app.sh release && (pkill -x Trimmy || pkill -f Trimmy.app || true) && cd /Users/steipete/Projects/trimmy && open -n /Users/steipete/Projects/trimmy/Trimmy.app'",
+    "start:release": "sh -c './Scripts/package_app.sh release && ./Scripts/kill_trimmy.sh && open /Users/steipete/Projects/Trimmy/Trimmy.app'",
     "format": "swiftformat .",
     "lint": "swiftlint lint --fix",
     "check": "swiftformat . --lint && swiftlint lint",
@@ -12,6 +12,6 @@
     "test": "swift test",
     "release": "./Scripts/package_app.sh release",
     "restart": "pnpm start",
-    "stop": "pkill -x Trimmy || pkill -f Trimmy.app || true"
+    "stop": "./Scripts/kill_trimmy.sh || true"
   }
 }
