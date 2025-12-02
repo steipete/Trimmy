@@ -3,6 +3,9 @@
 ## 0.4.7 — 2025-12-02
 - Packaging: SwiftPM resource bundles are now symlinked to the app root so `KeyboardShortcuts`’ `Bundle.module` resolves in user builds (prevents Settings → Shortcuts crash).
 
+## 0.4.8 — Unreleased
+- Fixed strike-through preview: removed decorative pipes (│) now strike correctly even when another `|` remains; added regression tests.
+
 ## 0.4.6 — 2025-12-02
 - Further tightened box-glyph cleanup so terminal-wrapped URLs (e.g., `releases/ │ download/...`) rejoin correctly without extra spaces.
 

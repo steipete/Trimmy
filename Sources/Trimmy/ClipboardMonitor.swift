@@ -371,19 +371,35 @@ extension ClipboardMonitor {
         let displayTrimmed = limit.map { ClipboardMonitor.ellipsize(baseTrimmed, limit: $0) } ?? baseTrimmed
         let base = NSMutableAttributedString(string: displayOriginal)
 
-        let origChars = Array(displayOriginal)
-        let trimmedChars = Array(displayTrimmed)
-        let diff = origChars.difference(from: trimmedChars)
+        // Two-pointer diff so we only strike characters that are truly removed,
+        // instead of allowing the longest-common-subsequence algorithm to
+        // rematch identical symbols later in the string (which can hide removed
+        // box-drawing/pipe glyphs when another pipe remains).
+        let o = Array(displayOriginal)
+        let t = Array(displayTrimmed)
+        var i = 0
+        var j = 0
+        var removed = [Int]()
 
-        for change in diff {
-            if case let .remove(offset, _, _) = change,
-               offset < base.length
-            {
-                let range = NSRange(location: offset, length: 1)
-                base.addAttributes([
-                    .strikethroughStyle: NSUnderlineStyle.single.rawValue,
-                ], range: range)
+        while i < o.count, j < t.count {
+            if o[i] == t[j] {
+                i += 1
+                j += 1
+            } else {
+                removed.append(i)
+                i += 1
             }
+        }
+        // Anything left in the original after the trimmed string ends was removed.
+        while i < o.count {
+            removed.append(i)
+            i += 1
+        }
+
+        for idx in removed where idx < base.length {
+            base.addAttributes([
+                .strikethroughStyle: NSUnderlineStyle.single.rawValue,
+            ], range: NSRange(location: idx, length: 1))
         }
 
         return AttributedString(base)

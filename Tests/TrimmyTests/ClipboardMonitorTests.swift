@@ -184,4 +184,34 @@ struct ClipboardMonitorTests {
         #expect(didPasteOriginal)
         #expect(monitor.lastSummary.contains("echo hi"))
     }
+
+    @Test
+    func struckMarksRemovedDecorativePipe() {
+        let original = "foo │ bar | baz"
+        let trimmed = "foo bar | baz"
+
+        let attributed = ClipboardMonitor.struck(original: original, trimmed: trimmed)
+        let ns = NSAttributedString(attributed)
+
+        let decorativeRange = (original as NSString).range(of: "│")
+        #expect(decorativeRange.location != NSNotFound)
+
+        let strike = ns.attribute(.strikethroughStyle, at: decorativeRange.location, effectiveRange: nil) as? Int
+        #expect(strike == NSUnderlineStyle.single.rawValue)
+    }
+
+    @Test
+    func struckDoesNotStrikeSurvivingPipe() {
+        let original = "foo │ bar | baz"
+        let trimmed = "foo bar | baz"
+
+        let attributed = ClipboardMonitor.struck(original: original, trimmed: trimmed)
+        let ns = NSAttributedString(attributed)
+
+        let pipeRange = (original as NSString).range(of: "| baz")
+        #expect(pipeRange.location != NSNotFound)
+
+        let strike = ns.attribute(.strikethroughStyle, at: pipeRange.location, effectiveRange: nil) as? Int
+        #expect(strike == nil)
+    }
 }
