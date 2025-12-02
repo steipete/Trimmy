@@ -1,6 +1,9 @@
 # Changelog
 
-## 0.4.6 — Unreleased
+## 0.4.7 — Unreleased
+- Pending changes.
+
+## 0.4.6 — 2025-12-02
 - Further tightened box-glyph cleanup so terminal-wrapped URLs (e.g., `releases/ │ download/...`) rejoin correctly without extra spaces.
 
 ## 0.4.5 — 2025-12-02

@@ -142,7 +142,18 @@ extension MenuContentView {
     }
 
     private var trimmedStatsSuffix: String {
-        self.statsSuffix(for: self.monitor.trimmedPreviewSource(), showTruncations: true)
+        guard let trimmed = self.monitor.trimmedPreviewSource() else { return "" }
+        let base = PreviewMetrics.prettyBadge(
+            count: trimmed.count,
+            limit: MenuPreview.limit,
+            showTruncations: true)
+        if let original = self.monitor.originalPreviewSource(),
+           original.count > trimmed.count
+        {
+            let removed = original.count - trimmed.count
+            return "\(base) · \(removed) trimmed"
+        }
+        return base
     }
 
     private var originalStatsSuffix: String {
