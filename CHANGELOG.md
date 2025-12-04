@@ -1,6 +1,9 @@
 # Changelog
 
-## 0.6.0 — 2025-12-042025-12-04
+## 0.6.1 — Unreleased
+- _TBD_
+
+## 0.6.0 — 2025-12-04
 
 - Added in-app Accessibility permission prompts and menu/settings callouts so “Paste Trimmed/Original” explains how to enable ⌘V injection when permission is missing.
 - Added CLI installer in Settings → General that symlinks the bundled TrimmyCLI into /usr/local/bin and /opt/homebrew/bin as `trimmy`.
