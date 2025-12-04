@@ -13,6 +13,12 @@ struct CommandDetector {
     ]
 
     nonisolated static func stripBoxDrawingCharacters(in text: String) -> String? {
+        // If there are no box-drawing glyphs at all, skip immediately so we don't collapse
+        // intentional spacing (e.g. indentation in JSON or YAML).
+        guard text.range(of: #"\#(boxDrawingCharacterClass)"#, options: .regularExpression) != nil else {
+            return nil
+        }
+
         var result = text
 
         // Legacy mid-line cleanup for paired gutters that show up as "│ │".
