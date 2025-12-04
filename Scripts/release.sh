@@ -65,9 +65,10 @@ print(build or '')
 PY
 }
 read_appcast_head() {
-  mapfile -t APPCAST_HEAD < <(get_appcast_head)
-  APPCAST_TOP_VERSION=${APPCAST_HEAD[0]:-0.0.0}
-  APPCAST_TOP_BUILD=${APPCAST_HEAD[1]:-0}
+  local parts
+  parts=($(get_appcast_head))
+  APPCAST_TOP_VERSION=${parts[0]:-0.0.0}
+  APPCAST_TOP_BUILD=${parts[1]:-0}
 }
 
 read_appcast_head
