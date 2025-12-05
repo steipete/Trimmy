@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.6.1 — Unreleased
+## 0.6.1 — 2025-12-05
 - Command detection now keeps multi-line command blocks intact when there are three or more standalone command-looking lines and no explicit joiners (\, |, &&, ||, ;); pipelines/continuations still flatten as before.
 - Align app and CLI heuristics so both respect the above guard; CLI High/manual overrides still flatten.
 - Added regression tests covering structured JSON copies and the pyenv init snippet to prevent unintended flattening in Normal mode.
