@@ -40,4 +40,18 @@ struct BoxDrawingCleanupTests {
         let cleaned = CommandDetector.stripBoxDrawingCharacters(in: input)
         #expect(cleaned == nil, "No box glyphs present → no change")
     }
+
+    @Test
+    func preservesIndentationWhenNoBoxDrawing() {
+        let input = """
+        {
+          \"Version\": \"2012-10-17\",
+          \"Statement\": [
+            { \"Effect\": \"Allow\" }
+          ]
+        }
+        """
+        let cleaned = CommandDetector.stripBoxDrawingCharacters(in: input)
+        #expect(cleaned == nil, "No box glyphs present → keep original spacing")
+    }
 }
