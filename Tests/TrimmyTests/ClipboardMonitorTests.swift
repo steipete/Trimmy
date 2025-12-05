@@ -1,5 +1,6 @@
 import AppKit
 import Testing
+import TrimmyCore
 @testable import Trimmy
 
 @MainActor

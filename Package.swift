@@ -14,9 +14,15 @@ let package = Package(
         .package(url: "https://github.com/orchetect/MenuBarExtraAccess", exact: "1.2.2"),
     ],
     targets: [
+        .target(
+            name: "TrimmyCore",
+            swiftSettings: [
+                .enableUpcomingFeature("StrictConcurrency"),
+            ]),
         .executableTarget(
             name: "Trimmy",
             dependencies: [
+                "TrimmyCore",
                 .product(name: "Sparkle", package: "Sparkle"),
                 .product(name: "KeyboardShortcuts", package: "KeyboardShortcuts"),
                 .product(name: "MenuBarExtraAccess", package: "MenuBarExtraAccess"),
@@ -27,20 +33,21 @@ let package = Package(
         .executableTarget(
             name: "TrimmyCLI",
             dependencies: [
+                "TrimmyCore",
             ],
             swiftSettings: [
                 .enableUpcomingFeature("StrictConcurrency"),
             ]),
         .testTarget(
             name: "TrimmyCLITests",
-            dependencies: ["TrimmyCLI"],
+            dependencies: ["TrimmyCLI", "TrimmyCore"],
             swiftSettings: [
                 .enableUpcomingFeature("StrictConcurrency"),
                 .enableExperimentalFeature("SwiftTesting"),
             ]),
         .testTarget(
             name: "TrimmyTests",
-            dependencies: ["Trimmy"],
+            dependencies: ["Trimmy", "TrimmyCore"],
             swiftSettings: [
                 .enableUpcomingFeature("StrictConcurrency"),
                 .enableExperimentalFeature("SwiftTesting"),

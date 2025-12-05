@@ -6,7 +6,7 @@ APP_IDENTITY="Developer ID Application: Peter Steinberger (Y5PE65HELJ)"
 APP_BUNDLE="Trimmy.app"
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 source "$ROOT/version.env"
-ZIP_NAME="Trimmy-0.6.0.zip"
+ZIP_NAME="Trimmy-0.6.1.zip"
 DSYM_ZIP="Trimmy-${MARKETING_VERSION}.dSYM.zip"
 
 if [[ -z "${APP_STORE_CONNECT_API_KEY_P8:-}" || -z "${APP_STORE_CONNECT_KEY_ID:-}" || -z "${APP_STORE_CONNECT_ISSUER_ID:-}" ]]; then

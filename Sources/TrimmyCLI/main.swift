@@ -1,9 +1,8 @@
 import Foundation
-
-enum CLIAggressiveness: String { case low, normal, high }
+import TrimmyCore
 
 struct CLISettings {
-    var aggressiveness: CLIAggressiveness = .normal
+    var aggressiveness: Aggressiveness = .normal
     var preserveBlankLines: Bool = false
     var removeBoxDrawing: Bool = true
 }
@@ -43,7 +42,7 @@ struct TrimmyCLI {
             case "--json":
                 json = true
             case "--aggressiveness":
-                if idx + 1 < args.count, let aggr = CLIAggressiveness(rawValue: args[idx + 1].lowercased()) {
+                if idx + 1 < args.count, let aggr = Aggressiveness(rawValue: args[idx + 1].lowercased()) {
                     settings.aggressiveness = aggr; idx += 1
                 }
             case "--preserve-blank-lines":
@@ -152,139 +151,12 @@ struct TrimmyCLI {
 // MARK: - Trimming pipeline (standalone, mirrors app heuristics)
 
 func cliTrim(_ text: String, settings: CLISettings, force: Bool) -> CLITrimResult {
-    var current = text
-    var transformed = false
-
-    if settings.removeBoxDrawing, let cleaned = cleanBoxDrawing(current) {
-        current = cleaned; transformed = true
-    }
-
-    if let stripped = stripPromptPrefixes(current) {
-        current = stripped; transformed = true
-    }
-
-    if let repairedURL = repairWrappedURL(current) {
-        current = repairedURL; transformed = true
-    }
-
-    let override = force ? CLIAggressiveness.high : settings.aggressiveness
-    if let command = transformIfCommand(
-        current,
-        aggressiveness: override,
-        preserveBlankLines: settings.preserveBlankLines)
-    {
-        current = command; transformed = true
-    }
-
-    return CLITrimResult(original: text, trimmed: current, transformed: transformed)
-}
-
-private func cleanBoxDrawing(_ text: String) -> String? {
-    let pattern = #"[\u2500-\u257F\u2580-\u259F]+"#
-    let cleaned = text.replacingOccurrences(of: pattern, with: " ", options: .regularExpression)
-    return cleaned == text ? nil : cleaned
-}
-
-private func stripPromptPrefixes(_ text: String) -> String? {
-    var lines = text.split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
-    var changed = false
-    for idx in lines.indices {
-        let line = lines[idx]
-        let trimmed = line.trimmingCharacters(in: .whitespaces)
-        guard trimmed.hasPrefix("$") || trimmed.hasPrefix("#") else { continue }
-        let dropped = trimmed.dropFirst().drop { $0.isWhitespace }
-        guard !dropped.isEmpty else { continue }
-        lines[idx] = Substring(dropped)
-        changed = true
-    }
-    guard changed else { return nil }
-    return lines.joined(separator: "\n")
-}
-
-private func repairWrappedURL(_ text: String) -> String? {
-    let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-    let lower = trimmed.lowercased()
-    let schemeCount = (lower.components(separatedBy: "https://").count - 1) +
-        (lower.components(separatedBy: "http://").count - 1)
-    guard schemeCount == 1 else { return nil }
-    guard lower.hasPrefix("http://") || lower.hasPrefix("https://") else { return nil }
-
-    let collapsed = trimmed.replacingOccurrences(of: #"\s+"#, with: "", options: .regularExpression)
-    guard collapsed != trimmed else { return nil }
-    let valid = #"^https?://[A-Za-z0-9._~:/?#\[\]@!$&'()*+,;=%-]+$"#
-    guard collapsed.range(of: valid, options: .regularExpression) != nil else { return nil }
-    return collapsed
-}
-
-private func transformIfCommand(
-    _ text: String,
-    aggressiveness: CLIAggressiveness,
-    preserveBlankLines: Bool) -> String?
-{
-    guard text.contains("\n") else { return nil }
-    let lines = text.split(whereSeparator: { $0.isNewline })
-    guard lines.count >= 2 else { return nil }
-    if lines.count > 10 { return nil }
-
-    let strongSignals = text.contains("\\\n")
-        || text.range(of: #"[|&]{1,2}"#, options: .regularExpression) != nil
-        || text.range(of: #"(^|\n)\s*\$"#, options: .regularExpression) != nil
-        || text.range(of: #"[A-Za-z0-9._~-]+/[A-Za-z0-9._~-]+"#, options: .regularExpression) != nil
-
-    let looksLikeCode = isLikelySourceCode(text)
-    if aggressiveness != .high, looksLikeCode, !strongSignals { return nil }
-
-    var score = 0
-    if text.contains("\\\n") { score += 1 }
-    if text.range(of: #"[|&]{1,2}"#, options: .regularExpression) != nil { score += 1 }
-    if text.range(of: #"(^|\n)\s*\$"#, options: .regularExpression) != nil { score += 1 }
-    if lines.allSatisfy(isLikelyCommandLine(_:)) { score += 1 }
-    if text.range(of: #"(?m)^\s*(sudo\s+)?[A-Za-z0-9./~_-]+"#, options: .regularExpression) != nil { score += 1 }
-
-    let threshold = switch aggressiveness {
-    case .low: 3
-    case .normal: 2
-    case .high: 1
-    }
-    guard score >= threshold else { return nil }
-
-    return flatten(text, preserveBlankLines: preserveBlankLines)
-}
-
-private func isLikelyCommandLine(_ lineSubstr: Substring) -> Bool {
-    let line = lineSubstr.trimmingCharacters(in: .whitespaces)
-    guard !line.isEmpty else { return false }
-    if line.last == "." { return false }
-    let pattern = #"^(sudo\s+)?[A-Za-z0-9./~_-]+(?:\s+|\z)"#
-    return line.range(of: pattern, options: .regularExpression) != nil
-}
-
-private func isLikelySourceCode(_ text: String) -> Bool {
-    let hasBraces = text.contains("{") || text.contains("}") || text.lowercased().contains("begin")
-    let keywordPattern = #"(?m)^\s*(import|package|namespace|using|template|class|struct|enum|"#
-        + #"extension|protocol|interface|func|def|fn|let|var|public|private|internal|"#
-        + #"open|protected|if|for|while)\b"#
-    let hasKeywords = text.range(of: keywordPattern, options: .regularExpression) != nil
-    return hasBraces && hasKeywords
-}
-
-private func flatten(_ text: String, preserveBlankLines: Bool) -> String {
-    let placeholder = "__BLANK_SEP__"
-    var result = text
-    if preserveBlankLines {
-        result = result.replacingOccurrences(of: "\n\\s*\n", with: placeholder, options: .regularExpression)
-    }
-
-    let lines = result.split(omittingEmptySubsequences: false, whereSeparator: { $0.isNewline })
-    let trimmedLines = lines.map { $0.trimmingCharacters(in: .whitespaces) }
-    result = trimmedLines.joined(separator: " ")
-    result = result.replacingOccurrences(of: #"\\\s*\n\s*"#, with: " ", options: .regularExpression)
-    result = result.replacingOccurrences(of: "\n", with: " ")
-    result = result.replacingOccurrences(of: "  +", with: " ", options: .regularExpression)
-
-    if preserveBlankLines {
-        result = result.replacingOccurrences(of: placeholder, with: "\n\n")
-    }
-
-    return result.trimmingCharacters(in: .whitespaces)
+    let cleaner = TextCleaner()
+    let override: Aggressiveness? = force ? .high : nil
+    let cfg = TrimConfig(
+        aggressiveness: settings.aggressiveness,
+        preserveBlankLines: settings.preserveBlankLines,
+        removeBoxDrawing: settings.removeBoxDrawing)
+    let result = cleaner.transform(text, config: cfg, aggressivenessOverride: override)
+    return CLITrimResult(original: result.original, trimmed: result.trimmed, transformed: result.wasTransformed)
 }

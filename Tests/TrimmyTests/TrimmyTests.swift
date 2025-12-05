@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import TrimmyCore
 @testable import Trimmy
 
 @MainActor
@@ -30,6 +31,33 @@ struct TrimmyTests {
         let detector = CommandDetector(settings: settings)
         let blob = Array(repeating: "echo hi", count: 11).joined(separator: "\n")
         #expect(detector.transformIfCommand(blob) == nil)
+    }
+
+    @Test
+    func leavesStructuredJsonAlone() {
+        let settings = AppSettings()
+        settings.aggressiveness = .normal
+        let detector = CommandDetector(settings: settings)
+        let json = """
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:GetObject",
+                "s3:PutObject",
+                "s3:ListBucket"
+              ],
+              "Resource": [
+                "arn:aws:s3:::bucket-in-account-a",
+                "arn:aws:s3:::bucket-in-account-a/*"
+              ]
+            }
+          ]
+        }
+        """
+        #expect(detector.transformIfCommand(json) == nil)
     }
 
     @Test
@@ -138,6 +166,22 @@ struct TrimmyTests {
         let detector = CommandDetector(settings: settings)
         let text = "Shopping list:\napples\noranges"
         #expect(detector.transformIfCommand(text) == nil)
+    }
+
+    @Test
+    func pyenvInitStaysMultilineAtNormal() {
+        let settings = AppSettings()
+        settings.aggressiveness = .normal
+        let detector = CommandDetector(settings: settings)
+        let text = """
+        export PYENV_ROOT="$HOME/.pyenv"
+        [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+        eval "$(pyenv init - zsh)"
+        """
+        #expect(detector.transformIfCommand(text) == nil)
+
+        let forced = detector.transformIfCommand(text, aggressivenessOverride: .high)
+        #expect(forced?.contains("\n") == false)
     }
 
     @Test

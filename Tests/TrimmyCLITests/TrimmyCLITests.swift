@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import TrimmyCore
 @testable import TrimmyCLI
 
 struct TrimmyCLITests {
@@ -38,6 +39,50 @@ struct TrimmyCLITests {
         let input = "a\n\nb"
         let result = cliTrim(input, settings: CLISettings(preserveBlankLines: true), force: false)
         #expect(result.trimmed.contains("\n\n"))
+    }
+
+    @Test
+    func ignoresStructuredJson() {
+        let input = """
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:GetObject",
+                "s3:PutObject",
+                "s3:ListBucket"
+              ],
+              "Resource": [
+                "arn:aws:s3:::bucket-in-account-a",
+                "arn:aws:s3:::bucket-in-account-a/*"
+              ]
+            }
+          ]
+        }
+        """
+        let result = cliTrim(input, settings: CLISettings(), force: false)
+        #expect(result.transformed == false)
+        #expect(result.trimmed == input)
+    }
+
+    @Test
+    func pyenvInitStaysMultilineWhenSafer() {
+        let input = """
+        export PYENV_ROOT="$HOME/.pyenv"
+        [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+        eval "$(pyenv init - zsh)"
+        """
+        let normal = CLISettings(aggressiveness: .normal, preserveBlankLines: false, removeBoxDrawing: true)
+        let resultNormal = cliTrim(input, settings: normal, force: false)
+        #expect(resultNormal.transformed == false)
+        #expect(resultNormal.trimmed == input)
+
+        let high = CLISettings(aggressiveness: .high, preserveBlankLines: false, removeBoxDrawing: true)
+        let resultHigh = cliTrim(input, settings: high, force: false)
+        #expect(resultHigh.transformed == true)
+        #expect(!resultHigh.trimmed.contains("\n"))
     }
 
     @Test

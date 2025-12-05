@@ -1,6 +1,7 @@
 import AppKit
 import Carbon.HIToolbox
 import Foundation
+import TrimmyCore
 
 @MainActor
 final class ClipboardMonitor: ObservableObject {
