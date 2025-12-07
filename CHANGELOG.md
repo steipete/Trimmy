@@ -1,7 +1,8 @@
 # Changelog
 
 ## 0.6.2 — Unreleased
-- _TBD_
+- Box-drawing cleanup now skips when no box glyphs are present, preserving JSON/YAML indentation and spacing (thanks @ahmedasmar).
+- TrimmyCLI now writes errors via `FileHandle.standardError` to satisfy Swift 6/Linux concurrency checks while keeping the same stderr output and exit codes (thanks @JaviSoto).
 
 ## 0.6.1 — 2025-12-05
 - Command detection now keeps multi-line command blocks intact when there are three or more standalone command-looking lines and no explicit joiners (\, |, &&, ||, ;); pipelines/continuations still flatten as before.
