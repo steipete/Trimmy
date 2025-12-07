@@ -61,7 +61,7 @@ struct TrimmyCLI {
         }
 
         guard let input = readInput(path: inputPath) else {
-            fputs("No input provided. Use --trim <file> or pipe to stdin.\n", stderr)
+            FileHandle.standardError.write(Data("No input provided. Use --trim <file> or pipe to stdin.\n".utf8))
             exit(1)
         }
 
@@ -78,7 +78,7 @@ struct TrimmyCLI {
                 FileHandle.standardOutput.write(data)
                 FileHandle.standardOutput.write(Data([0x0A]))
             } catch {
-                fputs("Failed to encode JSON: \(error)\n", stderr)
+                FileHandle.standardError.write(Data("Failed to encode JSON: \(error)\n".utf8))
                 exit(3)
             }
         } else {
