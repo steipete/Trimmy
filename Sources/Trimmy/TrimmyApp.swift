@@ -78,11 +78,9 @@ private struct ScissorStatusLabel: View {
     var isEnabled: Bool
 
     var body: some View {
-        Label("Trimmy", systemImage: "scissors")
-            .symbolRenderingMode(.hierarchical)
+        Image(systemName: "scissors")
+            .symbolRenderingMode(.monochrome)
             .symbolEffect(.pulse, options: .repeat(1).speed(1.15), value: self.monitor.trimPulseID)
-            .foregroundStyle(self.isEnabled ? AnyShapeStyle(.primary) : AnyShapeStyle(.secondary))
-            .opacity(self.isEnabled ? 1.0 : 0.45)
     }
 }
 
