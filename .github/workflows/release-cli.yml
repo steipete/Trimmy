@@ -1,0 +1,88 @@
+name: Release CLI
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref to build (tag/sha/branch)."
+        required: false
+        default: ""
+      tag:
+        description: "Release tag to upload to (only used for release uploads)."
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  build-linux-cli:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.ref }}
+
+      - name: Setup Swift 6.2.1
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: "6.2.1"
+
+      - name: Build TrimmyCLI (release)
+        run: swift build -c release --product TrimmyCLI
+
+      - name: Package Linux CLI
+        id: pkg
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TAG="${{ github.event.release.tag_name || inputs.tag }}"
+          if [[ -z "$TAG" ]]; then
+            TAG="dev"
+          fi
+
+          BIN_DIR="$(swift build -c release --product TrimmyCLI --show-bin-path)"
+          OUT_DIR="$RUNNER_TEMP/trimmy-cli-out"
+          mkdir -p "$OUT_DIR"
+
+          ARCH="$(uname -m)"
+          case "$ARCH" in
+            x86_64|amd64) ARCH="x86_64" ;;
+            aarch64|arm64) ARCH="aarch64" ;;
+          esac
+
+          ASSET="TrimmyCLI-${TAG}-linux-${ARCH}.tar.gz"
+          (cd "$BIN_DIR" && tar czf "$OUT_DIR/$ASSET" TrimmyCLI)
+
+          sha256sum "$OUT_DIR/$ASSET" > "$OUT_DIR/$ASSET.sha256"
+
+          {
+            echo "tag=$TAG"
+            echo "out_dir=$OUT_DIR"
+            echo "asset=$ASSET"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Upload to GitHub Release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.pkg.outputs.tag }}"
+          OUT_DIR="${{ steps.pkg.outputs.out_dir }}"
+          ASSET="${{ steps.pkg.outputs.asset }}"
+
+          gh release upload "$TAG" "$OUT_DIR/$ASSET" "$OUT_DIR/$ASSET.sha256" --clobber
+
+      - name: Upload workflow artifact (manual runs)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: trimmycli-linux
+          path: |
+            ${{ steps.pkg.outputs.out_dir }}/${{ steps.pkg.outputs.asset }}
+            ${{ steps.pkg.outputs.out_dir }}/${{ steps.pkg.outputs.asset }}.sha256
