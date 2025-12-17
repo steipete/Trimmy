@@ -1,6 +1,9 @@
 # Changelog
 
-## 0.6.2 — 2025-12-172025-12-17
+## 0.6.3 — Unreleased
+- _TBD_
+
+## 0.6.2 — 2025-12-17
 - Box-drawing cleanup now skips when no box glyphs are present, preserving JSON/YAML indentation and spacing (thanks @ahmedasmar).
 - TrimmyCLI now writes errors via `FileHandle.standardError` to satisfy Swift 6/Linux concurrency checks while keeping the same stderr output and exit codes (thanks @JaviSoto).
 - Trimmy is now available via Homebrew: `brew install --cask steipete/tap/trimmy` (updates via `brew upgrade --cask steipete/tap/trimmy`).
