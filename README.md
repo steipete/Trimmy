@@ -51,7 +51,7 @@
 ## Quick start
 Get the precompiled binary from [Releases](https://github.com/steipete/Trimmy/releases) or install via Homebrew:
 
-- Homebrew (UI app; Sparkle disabled): `brew install --cask steipete/tap/trimmy` (update via `brew upgrade --cask steipete/tap/trimmy`)
+- Homebrew: `brew install --cask steipete/tap/trimmy` (update via `brew upgrade --cask steipete/tap/trimmy`)
 
 
 1. Build: `swift build -c release` (Swift 6, macOS 15+).

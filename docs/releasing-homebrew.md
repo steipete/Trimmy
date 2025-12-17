@@ -7,7 +7,7 @@ read_when:
 
 # Homebrew (Trimmy)
 
-Homebrew ships the UI app via Cask. When installed via Homebrew, Trimmy disables Sparkle and shows an “update via brew” hint in About.
+Homebrew ships the UI app via Cask.
 
 ## Prereqs
 - Homebrew installed.
@@ -33,4 +33,3 @@ open -a Trimmy
 
 ## 4) Push tap changes
 Commit + push in the tap repo.
-
