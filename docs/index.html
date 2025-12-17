@@ -1,222 +1,101 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Trimmy — Paste once, run once</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700&family=IBM+Plex+Mono:wght@500&display=swap');
-    :root {
-      --bg: #06070d;
-      --panel: rgba(14,16,26,0.82);
-      --glass: rgba(15,18,28,0.62);
-      --border: rgba(255,255,255,0.08);
-      --text: #f5f7ff;
-      --muted: #a8b3c8;
-      --accent: #7ef3c7;
-      --accent-2: #89a7ff;
-      --radius: 18px;
-      --shadow: 0 24px 60px rgba(0,0,0,0.35);
-      --sans: "Manrope", "Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-      --mono: "IBM Plex Mono", SFMono-Regular, ui-monospace, Menlo, Consolas, monospace;
-      --maxw: 1200px;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background:
-        radial-gradient(circle at 20% 15%, rgba(137,167,255,0.12), transparent 22%),
-        radial-gradient(circle at 82% 8%, rgba(126,243,199,0.14), transparent 25%),
-        radial-gradient(circle at 70% 75%, rgba(137,167,255,0.08), transparent 30%),
-        var(--bg);
-      color: var(--text);
-      font-family: var(--sans);
-      display: flex;
-      justify-content: center;
-      padding: 36px 18px 42px;
-    }
-    main {
-      width: 100%;
-      max-width: var(--maxw);
-      background: linear-gradient(160deg, rgba(18,21,32,0.9), rgba(10,12,20,0.92));
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 28px;
-      backdrop-filter: blur(16px);
-    }
-    header {
-      display: grid;
-      grid-template-columns: 72px 1fr;
-      gap: 18px;
-      align-items: center;
-      margin-bottom: 18px;
-    }
-    .logo {
-      width: 72px;
-      height: 72px;
-      border-radius: 16px;
-      background: conic-gradient(from 120deg, #89a7ff, #7ef3c7, #89a7ff);
-      display: grid;
-      place-items: center;
-      color: #0b1120;
-      font-weight: 800;
-      font-size: 26px;
-      box-shadow: 0 16px 40px rgba(137,167,255,0.35);
-    }
-    h1 {
-      margin: 0;
-      font-size: 30px;
-      letter-spacing: -0.02em;
-    }
-    .lede {
-      margin: 8px 0 16px;
-      color: var(--muted);
-      max-width: 800px;
-      font-size: 16px;
-      line-height: 1.6;
-    }
-    .cta-row {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .cta {
-      display: inline-flex;
-      gap: 10px;
-      align-items: center;
-      padding: 12px 18px;
-      border-radius: 12px;
-      border: 1px solid var(--accent);
-      color: var(--text);
-      text-decoration: none;
-      background: linear-gradient(135deg, rgba(126,243,199,0.22), rgba(137,167,255,0.14));
-      box-shadow: 0 12px 30px rgba(126,243,199,0.25);
-      font-weight: 700;
-    }
-    .meta {
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
-      color: var(--muted);
-      font-size: 13px;
-    }
-    .pill {
-      padding: 6px 10px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      background: var(--glass);
-    }
-    .panel {
-      margin: 26px 0;
-      padding: 18px;
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 18px;
-    }
-    .panel h2 {
-      margin: 0 0 10px;
-      font-size: 16px;
-      letter-spacing: -0.01em;
-    }
-    ul {
-      margin: 0;
-      padding-left: 18px;
-      color: var(--muted);
-      line-height: 1.55;
-      font-size: 14px;
-    }
-    code {
-      font-family: var(--mono);
-      background: rgba(255,255,255,0.06);
-      padding: 2px 6px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      color: #b8c5ff;
-    }
-    .shots {
-      display: grid;
-      gap: 18px;
-      grid-template-columns: 1fr;
-      margin-top: 12px;
-    }
-    .shot {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 10px;
-      box-shadow: var(--shadow);
-    }
-    .shot img {
-      width: 100%;
-      border-radius: 12px;
-      display: block;
-    }
-    footer {
-      margin-top: 24px;
-      color: var(--muted);
-      font-size: 13px;
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-  </style>
-</head>
-<body>
-  <main>
-    <header>
-      <div class="logo">✂️</div>
-      <div>
-        <h1>Trimmy — Paste once, run once</h1>
-        <p class="lede">Flatten multi-line shell snippets automatically, keep originals on demand, and see exactly what will paste into your target app.</p>
-        <div class="cta-row">
-          <a class="cta" href="https://github.com/steipete/Trimmy/releases/latest">Download latest release</a>
-          <div class="meta">
-            <span class="pill">macOS 15+</span>
-            <span class="pill">Swift 6 · Sparkle updates</span>
-            <span class="pill">Menu bar • no Dock icon</span>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Trimmy</title>
+    <meta
+      name="description"
+      content="Tiny macOS menu bar app that flattens multi-line shell snippets so they paste and run."
+    />
+    <meta name="theme-color" content="#07080e" />
+    <link rel="canonical" href="https://trimmy.app/" />
+
+    <meta property="og:title" content="Trimmy" />
+    <meta
+      property="og:description"
+      content="Paste once, run once. Trimmy flattens multi-line shell snippets so they paste and run."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://trimmy.app/" />
+    <meta property="og:image" content="https://trimmy.app/trimmy.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" href="./icon.png" type="image/png" />
+    <link rel="apple-touch-icon" href="./icon.png" />
+    <link rel="stylesheet" href="./site.css?v=20251217" />
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="top" data-animate="1">
+        <a class="brand" href="https://github.com/steipete/Trimmy" aria-label="Trimmy on GitHub">
+          <img class="mark" src="./icon.png" alt="" aria-hidden="true" width="44" height="44" />
+          <span class="name">
+            <h1 class="title">Trimmy</h1>
+            <p class="tagline">Paste once, run once.</p>
+          </span>
+        </a>
+        <nav class="links" aria-label="Links">
+          <a class="btn primary" href="https://github.com/steipete/Trimmy/releases/latest">Download</a>
+          <a class="btn ghost" href="https://github.com/steipete/Trimmy">Source</a>
+        </nav>
+      </header>
+
+      <section class="hero" aria-label="Overview">
+        <div class="copy" data-animate="2">
+          <div class="badges" aria-label="Highlights">
+            <span class="badge">macOS 15+</span>
+            <span class="badge">Free &amp; open source</span>
+            <span class="badge">Menu bar • no Dock icon</span>
           </div>
+          <h2>Trim multi-line commands automatically.</h2>
+          <p>
+            Trimmy watches your clipboard and turns wrapped shell snippets into a single clean line, so they paste and
+            run exactly once.
+          </p>
+          <div class="cta">
+            <a class="btn primary" href="https://github.com/steipete/Trimmy/releases/latest">Download latest</a>
+            <a class="btn" href="https://github.com/steipete/Trimmy#readme">Read the docs</a>
+          </div>
+          <ul class="bullets" aria-label="What it does">
+            <li>Auto-trim when it looks like a command (respects <code>\</code> continuations).</li>
+            <li>One-click “Paste Trimmed” + “Paste Original” with global hotkeys.</li>
+            <li>Preview shows what will paste, and what gets removed.</li>
+          </ul>
         </div>
-      </div>
-    </header>
+        <figure class="shot" data-animate="3">
+          <img src="./trimmy.png" alt="Trimmy menu showing Paste Trimmed and Paste Original." />
+        </figure>
+      </section>
 
-    <div class="panel">
-      <div>
-        <h2>What it does</h2>
-        <ul>
-          <li>Detects shell-like copies and flattens newlines (respects <code>\</code> continuations).</li>
-          <li>Strips prompt gutters and decorative box glyphs (│) that terminals inject.</li>
-          <li>Shows “X trimmed” on Paste Trimmed; Paste Original leaves your copy untouched.</li>
-          <li>Three aggressiveness levels + toggles for blank lines and box stripping.</li>
-          <li>Global hotkeys for both trimmed and original paste paths.</li>
-        </ul>
-      </div>
-      <div>
-        <h2>Why it’s handy</h2>
-        <ul>
-          <li>Run docs/chat snippets without hand-fixing line wraps.</li>
-          <li>Fixes terminal-wrapped URLs/pipelines that pick up stray box characters.</li>
-          <li>Menu previews show the target app and what will paste.</li>
-          <li>Auto-updates via Sparkle; optional launch-at-login.</li>
-        </ul>
-      </div>
-    </div>
+      <section class="details" aria-label="Details" data-animate="4">
+        <div class="card">
+          <h3>Smart cleanup</h3>
+          <p>Strips prompt gutters, optional box-drawing chars, and keeps blank lines when you want them.</p>
+        </div>
+        <div class="card">
+          <h3>On-device</h3>
+          <p>No network calls. Everything happens locally on your Mac.</p>
+        </div>
+        <div class="card">
+          <h3>CLI</h3>
+          <p>Includes a headless trimmer for scripts: <code>swift run TrimmyCLI</code>.</p>
+        </div>
+      </section>
 
-    <div class="shots">
-      <div class="shot"><img src="trimmy.png" alt="Trimmy menu showcasing Paste Trimmed and Paste Original"></div>
-      <div class="shot"><img src="term-example.png" alt="Terminal example showing trimmed command output"></div>
-    </div>
+      <section class="wide" aria-label="Terminal example" data-animate="5">
+        <figure class="shot wide-shot">
+          <img src="./term-example.png" alt="Terminal example showing a wrapped command flattened into one line." />
+        </figure>
+      </section>
 
-    <footer>
-      <span>Trimmy is open source on GitHub.</span>
-      <span>“Paste once, run once.”</span>
-    </footer>
-  </main>
-</body>
+      <footer class="foot" data-animate="6">
+        <p>
+          Built by <a href="https://github.com/steipete">Peter Steinberger</a> •
+          <a href="https://github.com/steipete/Trimmy/blob/main/CHANGELOG.md">Changelog</a> •
+          <a href="https://github.com/steipete/Trimmy/blob/main/LICENSE">MIT</a>
+        </p>
+      </footer>
+    </main>
+  </body>
 </html>
