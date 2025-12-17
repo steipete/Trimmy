@@ -1,7 +1,5 @@
 # Repository Guidelines
 
-YOU MUST READ ~/Projects/agent-scripts/AGENTS.MD BEFORE ANYTHING (skip if file missing).
-
 ## Project Structure & Module Organization
 - `Sources/Trimmy`: Swift 6 macOS menu-bar app (clipboard watcher, command detector, settings panes; entry `TrimmyApp.swift`).
 - `Tests/TrimmyTests`: Swift Testing suites (e.g., `ClipboardMonitorTests`, `AggressivenessPreviewExamplesTests`) covering heuristics and pasteboard safety.
