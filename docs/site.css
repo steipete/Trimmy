@@ -1,13 +1,13 @@
 :root {
   color-scheme: light dark;
-  --bg: #07080e;
+  --bg: #0b0908;
   --panel: rgba(12, 14, 22, 0.78);
-  --panel-solid: #0c0e16;
+  --panel-solid: #0d0b0a;
   --text: rgba(245, 247, 255, 0.93);
   --muted: rgba(177, 189, 212, 0.78);
   --line: rgba(255, 255, 255, 0.1);
-  --accent: #7ef3c7;
-  --accent2: #89a7ff;
+  --accent: #ffb020;
+  --accent2: #ff3d7f;
   --shadow: rgba(0, 0, 0, 0.42);
   --radius: 18px;
   --radius-sm: 14px;
@@ -15,7 +15,7 @@
 
 @media (prefers-color-scheme: light) {
   :root {
-    --bg: #f7fbff;
+    --bg: #fff7f0;
     --panel: rgba(255, 255, 255, 0.72);
     --panel-solid: #ffffff;
     --text: rgba(11, 16, 22, 0.92);
@@ -43,9 +43,9 @@ body {
   font: 16px/1.55 ui-sans-serif, "Avenir Next", Avenir, "Segoe UI", "Helvetica Neue", sans-serif;
   color: var(--text);
   background:
-    radial-gradient(1100px 800px at 18% 12%, rgba(126, 243, 199, 0.18), transparent 58%),
-    radial-gradient(980px 780px at 86% 18%, rgba(137, 167, 255, 0.18), transparent 60%),
-    radial-gradient(900px 700px at 42% 92%, rgba(126, 243, 199, 0.06), transparent 60%),
+    radial-gradient(1050px 760px at 12% 10%, rgba(255, 176, 32, 0.18), transparent 58%),
+    radial-gradient(980px 780px at 88% 16%, rgba(255, 61, 127, 0.16), transparent 60%),
+    radial-gradient(900px 700px at 44% 92%, rgba(255, 176, 32, 0.06), transparent 60%),
     repeating-linear-gradient(
       90deg,
       rgba(255, 255, 255, 0.04),
@@ -152,7 +152,7 @@ code {
 
 .btn.primary {
   border-color: transparent;
-  background: linear-gradient(135deg, rgba(126, 243, 199, 0.6), rgba(137, 167, 255, 0.58));
+  background: linear-gradient(135deg, rgba(255, 176, 32, 0.7), rgba(255, 61, 127, 0.6));
 }
 
 .btn.ghost {
@@ -184,8 +184,8 @@ code {
   position: absolute;
   inset: -1px;
   background:
-    radial-gradient(560px 320px at 10% 15%, rgba(126, 243, 199, 0.18), transparent 55%),
-    radial-gradient(520px 300px at 92% 18%, rgba(137, 167, 255, 0.18), transparent 55%);
+    radial-gradient(560px 320px at 10% 15%, rgba(255, 176, 32, 0.18), transparent 55%),
+    radial-gradient(520px 300px at 92% 18%, rgba(255, 61, 127, 0.18), transparent 55%);
   pointer-events: none;
   opacity: 0.9;
 }
