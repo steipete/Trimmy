@@ -68,7 +68,7 @@ struct AboutPane: View {
                     .foregroundStyle(.secondary)
             }
 
-            VStack(alignment: .center, spacing: 6) {
+            VStack(alignment: .center, spacing: 10) {
                 AboutLinkRow(
                     icon: "chevron.left.slash.chevron.right",
                     title: "GitHub",
@@ -103,8 +103,10 @@ struct AboutPane: View {
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .padding(.top, 4)
+
+            Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .padding(.top, 4)
         .padding(.horizontal, 24)
         .padding(.bottom, 24)
@@ -146,14 +148,16 @@ private struct AboutLinkRow: View {
                 NSWorkspace.shared.open(url)
             }
         } label: {
-            HStack(spacing: 6) {
+            HStack(spacing: 8) {
                 Image(systemName: self.icon)
                 Text(self.title)
                     .underline(self.hovering, color: .accentColor)
             }
+            .padding(.vertical, 4)
             .foregroundColor(.accentColor)
         }
         .buttonStyle(.plain)
+        .contentShape(Rectangle())
         .onHover { self.hovering = $0 }
     }
 }
