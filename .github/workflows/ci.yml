@@ -41,3 +41,40 @@ jobs:
 
       - name: Swift Test
         run: swift test --parallel
+
+  build-linux-cli:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Swift 6.2.1
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: "6.2.1"
+
+      - name: Build TrimmyCLI (release, static Swift stdlib)
+        run: swift build -c release --product TrimmyCLI --static-swift-stdlib
+
+      - name: Smoke test TrimmyCLI
+        shell: bash
+        run: |
+          set -euo pipefail
+          BIN_DIR="$(swift build -c release --product TrimmyCLI --static-swift-stdlib --show-bin-path)"
+          BIN="$BIN_DIR/TrimmyCLI"
+
+          "$BIN" --help >/dev/null
+
+          OUT="$(
+            printf 'echo hi \\\\\nls -la\n' | "$BIN" --json
+          )"
+
+          OUT="$OUT" python3 - <<'PY'
+import json, os, sys
+out = os.environ["OUT"]
+payload = json.loads(out)
+expected = "echo hi ls -la"
+trimmed = payload.get("trimmed")
+if trimmed != expected:
+    print(f"Unexpected trim result: {trimmed!r} (expected {expected!r})", file=sys.stderr)
+    sys.exit(1)
+PY
