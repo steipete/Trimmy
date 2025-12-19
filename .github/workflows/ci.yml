@@ -68,13 +68,4 @@ jobs:
             printf 'echo hi \\\\\nls -la\n' | "$BIN" --json
           )"
 
-          OUT="$OUT" python3 - <<'PY'
-import json, os, sys
-out = os.environ["OUT"]
-payload = json.loads(out)
-expected = "echo hi ls -la"
-trimmed = payload.get("trimmed")
-if trimmed != expected:
-    print(f"Unexpected trim result: {trimmed!r} (expected {expected!r})", file=sys.stderr)
-    sys.exit(1)
-PY
+          OUT="$OUT" python3 -c 'import json, os, sys; payload=json.loads(os.environ["OUT"]); expected="echo hi ls -la"; trimmed=payload.get("trimmed"); ok=(trimmed==expected); (not ok) and print(f"Unexpected trim result: {trimmed!r} (expected {expected!r})", file=sys.stderr); sys.exit(0 if ok else 1)'
