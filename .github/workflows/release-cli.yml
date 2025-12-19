@@ -32,7 +32,7 @@ jobs:
           swift-version: "6.2.1"
 
       - name: Build TrimmyCLI (release)
-        run: swift build -c release --product TrimmyCLI
+        run: swift build -c release --product TrimmyCLI --static-swift-stdlib
 
       - name: Package Linux CLI
         id: pkg
@@ -45,7 +45,7 @@ jobs:
             TAG="dev"
           fi
 
-          BIN_DIR="$(swift build -c release --product TrimmyCLI --show-bin-path)"
+          BIN_DIR="$(swift build -c release --product TrimmyCLI --static-swift-stdlib --show-bin-path)"
           OUT_DIR="$RUNNER_TEMP/trimmy-cli-out"
           mkdir -p "$OUT_DIR"
 
