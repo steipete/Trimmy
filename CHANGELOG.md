@@ -1,7 +1,8 @@
 # Changelog
 
 ## 0.6.3 — Unreleased
-- _TBD_
+- CI: publish Linux `TrimmyCLI` release assets (`.tar.gz` + `.sha256`) so Linux users can install without building from source.
+- Thanks to @JaviSoto for contributing the workflow.
 
 ## 0.6.2 — 2025-12-17
 - Box-drawing cleanup now skips when no box glyphs are present, preserving JSON/YAML indentation and spacing (thanks @ahmedasmar).
