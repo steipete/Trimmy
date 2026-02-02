@@ -2,7 +2,7 @@
 ![Trimmy logo](trimmy-logo.png)
 > "Paste once, run once." — Trimmy flattens those multi-line shell snippets you copy so they actually paste and run.
 
-**Install via Homebrew:** `brew install --cask steipete/tap/trimmy`
+**Install via Homebrew:** `brew install --cask trimmy`
 
 ![Trimmy menu showing trimmed/original actions](trimmy.png)
 ![Terminal example before/after trimming](term-example.png)
@@ -58,7 +58,7 @@ Terminals:
 ## Quick start
 Get the precompiled binary from [Releases](https://github.com/steipete/Trimmy/releases) or install via Homebrew:
 
-- Homebrew: `brew install --cask steipete/tap/trimmy` (update via `brew upgrade --cask steipete/tap/trimmy`)
+- Homebrew: `brew install --cask trimmy` (update via `brew upgrade --cask trimmy`)
 
 
 1. Build: `swift build -c release` (Swift 6, macOS 15+).
