@@ -7,7 +7,6 @@ public struct TrimResult: Sendable {
 }
 
 public struct TextCleaner: Sendable {
-    private static let boxDrawingCharacterClass = "[│┃╎╏┆┇┊┋╽╿￨｜]"
     private static let knownCommandPrefixes: [String] = [
         "sudo", "./", "~/", "apt", "brew", "git", "python", "pip", "pnpm", "npm", "yarn", "cargo",
         "bundle", "rails", "go", "make", "xcodebuild", "swift", "kubectl", "docker", "podman", "aws",
@@ -17,9 +16,9 @@ public struct TextCleaner: Sendable {
 
     public init() {}
 
-    public func cleanBoxDrawingCharacters(_ text: String, enabled: Bool) -> String? {
-        guard enabled else { return nil }
-        return Self.stripBoxDrawingCharacters(in: text)
+    public func cleanBoxDrawingCharacters(_ text: String, enabled: Bool, chars: String) -> String? {
+        guard enabled, !chars.isEmpty else { return nil }
+        return Self.stripBoxDrawingCharacters(in: text, chars: chars)
     }
 
     public func repairWrappedURL(_ text: String) -> String? {
@@ -92,6 +91,34 @@ public struct TextCleaner: Sendable {
         return "\"\(escaped)\""
     }
 
+    /// Removes trailing colon (and optional line:column suffix) from file paths.
+    /// e.g., "/path/to/file.swift:" → "/path/to/file.swift"
+    /// e.g., "/path/to/file.swift:42:" → "/path/to/file.swift"
+    /// e.g., "/path/to/file.swift:42:10:" → "/path/to/file.swift"
+    public func cleanPathSuffix(_ text: String, enabled: Bool) -> String? {
+        guard enabled else { return nil }
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // Must be single line
+        guard !trimmed.contains("\n") else { return nil }
+
+        // Pattern: path followed by optional :line:col and trailing colon
+        // Matches: /path/file:  or  /path/file:42:  or  /path/file:42:10:
+        let pathPattern = #"^([/~][\S]*?)(:\d+)?(:\d+)?:$"#
+        guard trimmed.range(of: pathPattern, options: .regularExpression) != nil else {
+            return nil
+        }
+
+        // Extract just the path (without line:col suffix)
+        let result = trimmed.replacingOccurrences(
+            of: pathPattern,
+            with: "$1",
+            options: .regularExpression
+        )
+
+        return result == trimmed ? nil : result
+    }
+
     // MARK: - Public pipeline
 
     public func transform(
@@ -102,7 +129,11 @@ public struct TextCleaner: Sendable {
         var currentText = text
         var wasTransformed = false
 
-        if let cleaned = self.cleanBoxDrawingCharacters(currentText, enabled: config.removeBoxDrawing) {
+        if let cleaned = self.cleanBoxDrawingCharacters(
+            currentText,
+            enabled: config.removeBoxDrawing,
+            chars: config.boxDrawingChars)
+        {
             currentText = cleaned
             wasTransformed = true
         }
@@ -117,11 +148,23 @@ public struct TextCleaner: Sendable {
             wasTransformed = true
         }
 
+        if let cleanedPath = self.cleanPathSuffix(currentText, enabled: config.trimPathSuffix) {
+            currentText = cleanedPath
+            wasTransformed = true
+        }
+
         if let quotedPath = self.quotePathWithSpaces(currentText) {
             currentText = quotedPath
             wasTransformed = true
         }
 
+        // Format heredoc blocks (must come before flatten to preserve structure)
+        if config.formatHeredoc, let heredocFormatted = self.formatHeredoc(currentText) {
+            currentText = heredocFormatted
+            wasTransformed = true
+            // Return early - don't flatten heredoc
+            return TrimResult(original: text, trimmed: currentText, wasTransformed: wasTransformed)
+        }
         if let commandTransformed = self.transformIfCommand(
             currentText,
             config: config,
@@ -401,8 +444,17 @@ public struct TextCleaner: Sendable {
 
     // MARK: - Box drawing cleanup (shared)
 
-    public static func stripBoxDrawingCharacters(in text: String) -> String? {
-        let boxRegex = try? NSRegularExpression(pattern: self.boxDrawingCharacterClass, options: [])
+    public static func stripBoxDrawingCharacters(
+        in text: String,
+        chars: String = TrimConfig.defaultBoxDrawingChars) -> String?
+    {
+        guard !chars.isEmpty else { return nil }
+
+        // Build character class from the configurable chars string
+        let escapedChars = NSRegularExpression.escapedPattern(for: chars)
+        let charClass = "[\(escapedChars)]"
+
+        let boxRegex = try? NSRegularExpression(pattern: charClass, options: [])
         if boxRegex?.firstMatch(in: text, options: [], range: NSRange(location: 0, length: text.utf16.count)) == nil {
             return nil
         }
@@ -415,10 +467,8 @@ public struct TextCleaner: Sendable {
         let lines = result.split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
         let nonEmptyLines = lines.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
         if !nonEmptyLines.isEmpty {
-            let leadingPattern =
-                #"^\s*\#(boxDrawingCharacterClass)+ ?"#
-            let trailingPattern =
-                #" ?\#(boxDrawingCharacterClass)+\s*$"#
+            let leadingPattern = "^\\s*\(charClass)+ ?"
+            let trailingPattern = " ?\(charClass)+\\s*$"
             let majorityThreshold = nonEmptyLines.count / 2 + 1
 
             let leadingMatches = nonEmptyLines.count(where: {
@@ -456,26 +506,26 @@ public struct TextCleaner: Sendable {
             }
         }
 
-        let boxAfterPipePattern = #"\|\s*\#(boxDrawingCharacterClass)+\s*"#
+        let boxAfterPipePattern = "\\|\\s*\(charClass)+\\s*"
         result = result.replacingOccurrences(
             of: boxAfterPipePattern,
             with: "| ",
             options: .regularExpression)
 
-        let boxPathJoinPattern = #"([:/])\s*\#(boxDrawingCharacterClass)+\s*([A-Za-z0-9])"#
+        let boxPathJoinPattern = "([:/])\\s*\(charClass)+\\s*([A-Za-z0-9])"
         result = result.replacingOccurrences(
             of: boxPathJoinPattern,
             with: "$1$2",
             options: .regularExpression)
 
-        let boxMidTokenPattern = #"(\S)\s*\#(boxDrawingCharacterClass)+\s*(\S)"#
+        let boxMidTokenPattern = "(\\S)\\s*\(charClass)+\\s*(\\S)"
         result = result.replacingOccurrences(
             of: boxMidTokenPattern,
             with: "$1 $2",
             options: .regularExpression)
 
         result = result.replacingOccurrences(
-            of: #"\s*\#(self.boxDrawingCharacterClass)+\s*"#,
+            of: "\\s*\(charClass)+\\s*",
             with: " ",
             options: .regularExpression)
 
@@ -485,6 +535,86 @@ public struct TextCleaner: Sendable {
             options: .regularExpression)
         let trimmed = collapsed.trimmingCharacters(in: .whitespacesAndNewlines)
         return trimmed == text ? nil : trimmed
+    }
+
+    // MARK: - Heredoc formatting
+
+    /// Formats heredoc blocks by removing common indentation and fixing the delimiter line.
+    /// Returns nil if text doesn't contain a heredoc pattern.
+    public func formatHeredoc(_ text: String) -> String? {
+        // Pattern: << or <<- followed by optional quotes and a word
+        let pattern = #"<<-?\s*['"]?([A-Za-z_][A-Za-z0-9_]*)['"]?"#
+        guard text.range(of: pattern, options: .regularExpression) != nil else {
+            return nil
+        }
+
+        // Extract the delimiter word (e.g., EOF)
+        let nsText = text as NSString
+        guard let regex = try? NSRegularExpression(pattern: pattern),
+              let nsMatch = regex.firstMatch(in: text, range: NSRange(location: 0, length: nsText.length)),
+              nsMatch.numberOfRanges >= 2
+        else {
+            return nil
+        }
+        let delimiterRange = nsMatch.range(at: 1)
+        let delimiter = nsText.substring(with: delimiterRange)
+
+        // Split into lines
+        let lines = text.components(separatedBy: "\n")
+        guard lines.count >= 2 else { return nil }
+
+        // Find the delimiter line (end marker)
+        guard let endIndex = lines.lastIndex(where: {
+            $0.trimmingCharacters(in: .whitespaces) == delimiter
+        }), endIndex > 0 else {
+            return nil
+        }
+
+        // Find the start line (contains << DELIMITER)
+        guard let startIndex = lines.firstIndex(where: {
+            $0.range(of: pattern, options: .regularExpression) != nil
+        }), startIndex < endIndex else {
+            return nil
+        }
+
+        // Content lines are between start and end
+        let contentRange = (startIndex + 1)..<endIndex
+
+        // Calculate minimum common indentation for content lines
+        var minIndent = Int.max
+        for i in contentRange {
+            let line = lines[i]
+            if line.trimmingCharacters(in: .whitespaces).isEmpty { continue }
+            let leadingSpaces = line.prefix(while: { $0 == " " || $0 == "\t" }).count
+            minIndent = min(minIndent, leadingSpaces)
+        }
+        if minIndent == Int.max { minIndent = 0 }
+
+        // Also check start line for indentation
+        let startLineIndent = lines[startIndex].prefix(while: { $0 == " " || $0 == "\t" }).count
+        minIndent = min(minIndent, startLineIndent)
+
+        // Apply formatting
+        var result = lines
+
+        // Remove common indentation from start line
+        if startLineIndent >= minIndent {
+            result[startIndex] = String(lines[startIndex].dropFirst(minIndent))
+        }
+
+        // Remove common indentation from content lines
+        for i in contentRange {
+            let line = lines[i]
+            if line.count >= minIndent {
+                result[i] = String(line.dropFirst(minIndent))
+            }
+        }
+
+        // Fix end line: remove ALL leading whitespace
+        result[endIndex] = lines[endIndex].trimmingCharacters(in: .init(charactersIn: " \t"))
+
+        let formatted = result.joined(separator: "\n")
+        return formatted == text ? nil : formatted
     }
 
     // MARK: - Prompt stripping helpers

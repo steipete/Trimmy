@@ -7,7 +7,10 @@ struct CommandDetector {
     private let cleaner = TextCleaner()
 
     func cleanBoxDrawingCharacters(_ text: String) -> String? {
-        self.cleaner.cleanBoxDrawingCharacters(text, enabled: self.settings.removeBoxDrawing)
+        self.cleaner.cleanBoxDrawingCharacters(
+            text,
+            enabled: self.settings.removeBoxDrawing,
+            chars: self.settings.boxDrawingChars)
     }
 
     func stripPromptPrefixes(_ text: String) -> String? {
@@ -20,6 +23,14 @@ struct CommandDetector {
 
     func quotePathWithSpaces(_ text: String) -> String? {
         self.cleaner.quotePathWithSpaces(text)
+    }
+
+    func formatHeredoc(_ text: String) -> String? {
+        self.cleaner.formatHeredoc(text)
+    }
+
+    func cleanPathSuffix(_ text: String) -> String? {
+        self.cleaner.cleanPathSuffix(text, enabled: self.settings.trimPathSuffix)
     }
 
     func transformIfCommand(_ text: String, aggressivenessOverride: Aggressiveness? = nil) -> String? {
@@ -52,6 +63,9 @@ struct CommandDetector {
         TrimConfig(
             aggressiveness: aggressiveness,
             preserveBlankLines: self.settings.preserveBlankLines,
-            removeBoxDrawing: self.settings.removeBoxDrawing)
+            removeBoxDrawing: self.settings.removeBoxDrawing,
+            boxDrawingChars: self.settings.boxDrawingChars,
+            trimPathSuffix: self.settings.trimPathSuffix,
+            formatHeredoc: self.settings.formatHeredoc)
     }
 }

@@ -467,11 +467,25 @@ extension ClipboardMonitor {
             wasTransformed = true
         }
 
+        if let cleanedPath = self.detector.cleanPathSuffix(currentText) {
+            currentText = cleanedPath
+            wasTransformed = true
+        }
+
         if let quotedPath = self.detector.quotePathWithSpaces(currentText) {
             currentText = quotedPath
             wasTransformed = true
         }
 
+        // Format heredoc blocks - must return early to preserve multi-line structure
+        if self.settings.formatHeredoc, let heredocFormatted = self.detector.formatHeredoc(currentText) {
+            currentText = heredocFormatted
+            wasTransformed = true
+            return ClipboardVariants(
+                original: text,
+                trimmed: currentText,
+                wasTransformed: wasTransformed)
+        }
         let isTerminal = sourceContext?.isTerminal == true
         let useTerminalAggressiveness = isTerminal && self.settings.contextAwareTrimmingEnabled
         let baseAggressiveness = useTerminalAggressiveness

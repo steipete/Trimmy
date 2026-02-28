@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import TrimmyCore
 
 @MainActor
 struct GeneralSettingsPane: View {
@@ -28,9 +29,35 @@ struct GeneralSettingsPane: View {
                 binding: self.$settings.preserveBlankLines)
 
             PreferenceToggleRow(
-                title: "Remove box drawing chars (│┃)",
+                title: "Remove box drawing chars",
                 subtitle: "Strip prompt-style box gutters (any count, leading/trailing) before trimming.",
                 binding: self.$settings.removeBoxDrawing)
+
+            if self.settings.removeBoxDrawing {
+                HStack(alignment: .top, spacing: 8) {
+                    Text("Chars:")
+                        .foregroundStyle(.secondary)
+                        .frame(width: 50, alignment: .trailing)
+                    TextField("Box chars", text: self.$settings.boxDrawingChars)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(maxWidth: 200)
+                    Button("Reset") {
+                        self.settings.boxDrawingChars = TrimConfig.defaultBoxDrawingChars
+                    }
+                    .buttonStyle(.borderless)
+                }
+                .padding(.leading, 28)
+            }
+
+            PreferenceToggleRow(
+                title: "Clean path suffix",
+                subtitle: "Remove trailing colon and line numbers from paths (e.g., /path/file.swift:42: → /path/file.swift).",
+                binding: self.$settings.trimPathSuffix)
+
+            PreferenceToggleRow(
+                title: "Format heredoc blocks",
+                subtitle: "Fix indentation and ensure EOF delimiter is at line start for shell heredoc syntax.",
+                binding: self.$settings.formatHeredoc)
 
             PreferenceToggleRow(
                 title: "Show Markdown reformat option",

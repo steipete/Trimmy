@@ -788,4 +788,138 @@ struct TrimmyTests {
         let url = "https://example.com/path with spaces"
         #expect(detector.quotePathWithSpaces(url) == nil)
     }
+
+    // MARK: - Heredoc formatting tests
+
+    @Test
+    func formatsHeredocRemovesCommonIndent() {
+        let settings = AppSettings()
+        let detector = CommandDetector(settings: settings)
+        let input = "  cat > file.txt << 'EOF'\n  line 1\n  line 2\n  EOF"
+        let expected = "cat > file.txt << 'EOF'\nline 1\nline 2\nEOF"
+        #expect(detector.formatHeredoc(input) == expected)
+    }
+
+    @Test
+    func formatsHeredocFixesEndMarker() {
+        let settings = AppSettings()
+        let detector = CommandDetector(settings: settings)
+        let input = "cat << EOF\ncontent\n  EOF"
+        let expected = "cat << EOF\ncontent\nEOF"
+        #expect(detector.formatHeredoc(input) == expected)
+    }
+
+    @Test
+    func formatsHeredocPreservesRelativeIndent() {
+        let settings = AppSettings()
+        let detector = CommandDetector(settings: settings)
+        let input = "  cat << EOF\n    outer\n      inner\n  EOF"
+        let expected = "cat << EOF\n  outer\n    inner\nEOF"
+        #expect(detector.formatHeredoc(input) == expected)
+    }
+
+    @Test
+    func formatsHeredocWithDoubleQuotes() {
+        let settings = AppSettings()
+        let detector = CommandDetector(settings: settings)
+        let input = "  cat << \"END\"\n  some content\n  END"
+        let expected = "cat << \"END\"\nsome content\nEND"
+        #expect(detector.formatHeredoc(input) == expected)
+    }
+
+    @Test
+    func formatsHeredocWithDash() {
+        let settings = AppSettings()
+        let detector = CommandDetector(settings: settings)
+        let input = "  cat <<- EOF\n  \tindented\n  EOF"
+        let expected = "cat <<- EOF\n\tindented\nEOF"
+        #expect(detector.formatHeredoc(input) == expected)
+    }
+
+    @Test
+    func heredocReturnsNilWhenNoHeredocPresent() {
+        let settings = AppSettings()
+        let detector = CommandDetector(settings: settings)
+        let input = "echo hello\nworld"
+        #expect(detector.formatHeredoc(input) == nil)
+    }
+
+    @Test
+    func heredocReturnsNilWhenAlreadyFormatted() {
+        let settings = AppSettings()
+        let detector = CommandDetector(settings: settings)
+        let input = "cat << EOF\ncontent\nEOF"
+        #expect(detector.formatHeredoc(input) == nil)
+    }
+
+    @Test
+    func heredocNotFlattenedAfterFormat() {
+        let settings = AppSettings()
+        settings.generalAggressiveness = .high
+        let cleaner = TextCleaner()
+        let config = TrimConfig(aggressiveness: .high, preserveBlankLines: false, removeBoxDrawing: false)
+        let input = "  cat > test.txt << 'EOF'\n  hello\n  world\n  EOF"
+        let result = cleaner.transform(input, config: config)
+        #expect(result.trimmed.contains("\n"))
+        #expect(result.trimmed.hasSuffix("EOF"))
+        #expect(result.wasTransformed == true)
+    }
+
+    // MARK: - Path suffix cleanup tests
+
+    @Test
+    func cleansPathWithTrailingColon() {
+        let settings = AppSettings()
+        settings.trimPathSuffix = true
+        let detector = CommandDetector(settings: settings)
+        #expect(detector.cleanPathSuffix("/Applications/Trimmy.app:") == "/Applications/Trimmy.app")
+    }
+
+    @Test
+    func cleansPathWithLineNumber() {
+        let settings = AppSettings()
+        settings.trimPathSuffix = true
+        let detector = CommandDetector(settings: settings)
+        #expect(detector.cleanPathSuffix("/path/to/file.swift:42:") == "/path/to/file.swift")
+    }
+
+    @Test
+    func cleansPathWithLineAndColumn() {
+        let settings = AppSettings()
+        settings.trimPathSuffix = true
+        let detector = CommandDetector(settings: settings)
+        #expect(detector.cleanPathSuffix("/path/to/file.swift:42:10:") == "/path/to/file.swift")
+    }
+
+    @Test
+    func cleansHomePath() {
+        let settings = AppSettings()
+        settings.trimPathSuffix = true
+        let detector = CommandDetector(settings: settings)
+        #expect(detector.cleanPathSuffix("~/Documents/file.txt:") == "~/Documents/file.txt")
+    }
+
+    @Test
+    func pathCleanupReturnsNilWhenDisabled() {
+        let settings = AppSettings()
+        settings.trimPathSuffix = false
+        let detector = CommandDetector(settings: settings)
+        #expect(detector.cleanPathSuffix("/path/to/file:") == nil)
+    }
+
+    @Test
+    func pathCleanupReturnsNilForNonPath() {
+        let settings = AppSettings()
+        settings.trimPathSuffix = true
+        let detector = CommandDetector(settings: settings)
+        #expect(detector.cleanPathSuffix("not a path:") == nil)
+    }
+
+    @Test
+    func pathCleanupReturnsNilWhenNoTrailingColon() {
+        let settings = AppSettings()
+        settings.trimPathSuffix = true
+        let detector = CommandDetector(settings: settings)
+        #expect(detector.cleanPathSuffix("/path/to/file") == nil)
+    }
 }
