@@ -14,17 +14,17 @@ public enum Aggressiveness: String, CaseIterable, Identifiable, Codable, Sendabl
 
     public var title: String {
         switch self {
-        case .low: "Low (safer)"
+        case .low: "Niedrig (sicherer)"
         case .normal: "Normal"
-        case .high: "High (more eager)"
+        case .high: "Hoch (aggressiver)"
         }
     }
 
     public var titleShort: String {
         switch self {
-        case .low: "Low"
+        case .low: "Niedrig"
         case .normal: "Normal"
-        case .high: "High"
+        case .high: "Hoch"
         }
     }
 
@@ -32,11 +32,11 @@ public enum Aggressiveness: String, CaseIterable, Identifiable, Codable, Sendabl
     public var blurb: String {
         switch self {
         case .low:
-            "Keeps light multi-line snippets intact unless they clearly look like shell commands."
+            "Lässt mehrzeilige Snippets intakt, außer sie sehen eindeutig wie Shell-Befehle aus."
         case .normal:
-            "Good default: flattens typical blog/README commands with pipes or continuations."
+            "Guter Standard: Faltet typische Blog-/README-Befehle mit Pipes oder Fortsetzungen zusammen."
         case .high:
-            "Most eager: will flatten almost any short multi-line text that resembles a command."
+            "Am aggressivsten: Faltet fast jeden kurzen mehrzeiligen Text zusammen, der wie ein Befehl aussieht."
         }
     }
 }

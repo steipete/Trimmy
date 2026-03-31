@@ -40,15 +40,15 @@ struct MenuContentView: View {
                 Text("Auto-Trim")
             }
             .toggleStyle(.checkbox)
-            Button("Settings…") {
+            Button("Einstellungen …") {
                 self.open(tab: .general)
             }
             .keyboardShortcut(",", modifiers: [.command])
-            Button("About Trimmy") {
+            Button("Über Trimmy") {
                 self.open(tab: .about)
             }
             if self.updater.isAvailable, self.updateStatus.isUpdateReady {
-                Button("Update ready, restart now?") { self.updater.checkForUpdates(nil) }
+                Button("Update bereit, jetzt neu starten?") { self.updater.checkForUpdates(nil) }
             }
         }
         .padding(.vertical, 6)
@@ -139,7 +139,7 @@ struct MenuContentView: View {
 extension MenuContentView {
     private var pasteButtons: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Button("Paste Trimmed to \(self.targetAppLabel)\(self.trimmedStatsSuffix)") {
+            Button("Getrimmt einfügen in \(self.targetAppLabel)\(self.trimmedStatsSuffix)") {
                 self.handlePasteTrimmed()
             }
             .applyKeyboardShortcut(self.pasteTrimmedKeyboardShortcut)
@@ -155,7 +155,7 @@ extension MenuContentView {
                let markdownPreviewSource = self.markdownPreviewSource
             {
                 let markdownStatsSuffix = self.statsSuffix(for: markdownPreviewSource, showTruncations: true)
-                Button("Paste Reformatted Markdown to \(self.targetAppLabel)\(markdownStatsSuffix)") {
+                Button("Markdown neu formatiert einfügen in \(self.targetAppLabel)\(markdownStatsSuffix)") {
                     self.handlePasteReformattedMarkdown()
                 }
                 Text(self.markdownPreviewLine(for: markdownPreviewSource))
@@ -167,7 +167,7 @@ extension MenuContentView {
                     .frame(maxWidth: 260, alignment: .leading)
             }
 
-            Button("Paste Original to \(self.targetAppLabel)\(self.originalStatsSuffix)") {
+            Button("Original einfügen in \(self.targetAppLabel)\(self.originalStatsSuffix)") {
                 self.handlePasteOriginal()
             }
             .applyKeyboardShortcut(self.pasteOriginalKeyboardShortcut)
@@ -207,7 +207,7 @@ extension MenuContentView {
            original.count > trimmed.count
         {
             let removed = original.count - trimmed.count
-            return "\(base) · \(removed) trimmed"
+            return "\(base) · \(removed) getrimmt"
         }
         return base
     }

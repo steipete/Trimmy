@@ -9,16 +9,16 @@ struct AdvancedSettingsPane: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             PreferenceToggleRow(
-                title: "Use extra clipboard fallbacks",
-                subtitle: "Try RTF and public text types when plain text is missing.",
+                title: "Zusätzliche Zwischenablage-Fallbacks",
+                subtitle: "RTF und öffentliche Texttypen versuchen, wenn Klartext fehlt.",
                 binding: self.$settings.usePasteboardFallbacks)
 
             self.cliInstallerSection
 
             #if DEBUG
             PreferenceToggleRow(
-                title: "Enable debug tools",
-                subtitle: "Show the Debug tab for sample previews and dev-only controls.",
+                title: "Debug-Werkzeuge aktivieren",
+                subtitle: "Debug-Tab für Vorschau und Entwickler-Optionen anzeigen.",
                 binding: self.$settings.debugPaneEnabled)
             #endif
         }
@@ -35,7 +35,7 @@ struct AdvancedSettingsPane: View {
                     if self.isInstallingCLI {
                         ProgressView().controlSize(.small)
                     } else {
-                        Text("Install CLI")
+                        Text("CLI installieren")
                     }
                 }
                 .disabled(self.isInstallingCLI)
@@ -48,7 +48,7 @@ struct AdvancedSettingsPane: View {
                 }
             }
 
-            Text("Install `trimmy` into /usr/local/bin and /opt/homebrew/bin.")
+            Text("`trimmy` nach /usr/local/bin und /opt/homebrew/bin installieren.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .lineLimit(2)
@@ -69,7 +69,7 @@ struct AdvancedSettingsPane: View {
             .appendingPathComponent("TrimmyCLI")
 
         guard FileManager.default.isExecutableFile(atPath: helperURL.path) else {
-            await MainActor.run { self.cliStatus = "Helper missing; reinstall Trimmy." }
+            await MainActor.run { self.cliStatus = "Helper fehlt; Trimmy neu installieren." }
             return
         }
 
@@ -106,15 +106,15 @@ struct AdvancedSettingsPane: View {
             process.waitUntilExit()
             let status: String
             if process.terminationStatus == 0 {
-                status = "Installed. Try: trimmy --help"
+                status = "Installiert. Teste: trimmy --help"
             } else {
                 let data = stderrPipe.fileHandleForReading.readDataToEndOfFile()
                 let msg = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
-                status = "Failed: \(msg ?? "error")"
+                status = "Fehlgeschlagen: \(msg ?? "Fehler")"
             }
             await MainActor.run { self.cliStatus = status }
         } catch {
-            await MainActor.run { self.cliStatus = "Failed: \(error.localizedDescription)" }
+            await MainActor.run { self.cliStatus = "Fehlgeschlagen: \(error.localizedDescription)" }
         }
     }
 }

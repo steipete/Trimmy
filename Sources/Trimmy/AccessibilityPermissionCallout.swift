@@ -10,11 +10,11 @@ struct AccessibilityPermissionCallout: View {
         VStack(alignment: .leading, spacing: 8) {
             Label {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Accessibility needed to paste")
+                    Text("Bedienungshilfen für Einfügen benötigt")
                         .font(.callout.weight(.semibold))
                     Text(
-                        "Enable Trimmy in System Settings → Privacy & Security → Accessibility "
-                            + "so ⌘V can be sent to the front app.")
+                        "Trimmy in Systemeinstellungen → Datenschutz & Sicherheit → Bedienungshilfen "
+                            + "aktivieren, damit ⌘V an die aktive App gesendet werden kann.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -25,13 +25,13 @@ struct AccessibilityPermissionCallout: View {
             }
 
             HStack(spacing: 10) {
-                Button("Grant Accessibility") {
+                Button("Bedienungshilfen erlauben") {
                     self.permissions.requestPermissionPrompt()
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(self.compactButtons ? .small : .regular)
 
-                Button("Open Settings") {
+                Button("Einstellungen öffnen") {
                     self.permissions.openSystemSettings()
                 }
                 .buttonStyle(.bordered)

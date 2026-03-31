@@ -12,19 +12,19 @@ struct SettingsView: View {
     var body: some View {
         TabView(selection: self.$selectedTab) {
             GeneralSettingsPane(settings: self.settings, permissions: self.permissions)
-                .tabItem { Label("General", systemImage: "gearshape") }
+                .tabItem { Label("Allgemein", systemImage: "gearshape") }
                 .tag(SettingsTab.general)
 
             AdvancedSettingsPane(settings: self.settings)
-                .tabItem { Label("Advanced", systemImage: "gearshape.2") }
+                .tabItem { Label("Erweitert", systemImage: "gearshape.2") }
                 .tag(SettingsTab.advanced)
 
             AggressivenessSettingsPane(settings: self.settings)
-                .tabItem { Label("Aggressiveness", systemImage: "speedometer") }
+                .tabItem { Label("Aggressivität", systemImage: "speedometer") }
                 .tag(SettingsTab.aggressiveness)
 
             HotkeySettingsPane(settings: self.settings, hotkeyManager: self.hotkeyManager)
-                .tabItem { Label("Shortcuts", systemImage: "command") }
+                .tabItem { Label("Kurzbefehle", systemImage: "command") }
                 .tag(SettingsTab.shortcuts)
 
             #if DEBUG
@@ -36,7 +36,7 @@ struct SettingsView: View {
             #endif
 
             AboutPane(updater: self.updater)
-                .tabItem { Label("About", systemImage: "info.circle") }
+                .tabItem { Label("Über", systemImage: "info.circle") }
                 .tag(SettingsTab.about)
         }
         .padding(12)

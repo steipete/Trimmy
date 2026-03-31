@@ -9,7 +9,7 @@ struct AggressivenessSettingsPane: View {
         VStack(alignment: .leading, spacing: 14) {
             Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 10) {
                 GridRow {
-                    Text("General apps")
+                    Text("Allgemeine Apps")
                         .frame(minWidth: 110, alignment: .leading)
                     Picker("", selection: self.$settings.generalAggressiveness) {
                         ForEach(GeneralAggressiveness.allCases) { level in
@@ -36,14 +36,14 @@ struct AggressivenessSettingsPane: View {
             }
 
             Text(
-                """
-                Automatic trimming uses separate aggressiveness levels for regular apps and terminals. \
-                The terminal setting only applies when Context-aware trimming is enabled. “None” disables \
-                command flattening for regular apps, but manual “Paste Trimmed” always runs at High. \
-                Low/Normal skip code-like snippets (braces + language keywords) unless there are strong \
-                command cues. Leading shell prompts (#/$) are stripped when they look like commands, but \
-                Markdown-style headings stay.
-                """)
+                “””
+                Automatisches Trimmen verwendet separate Aggressivitätsstufen für normale Apps und Terminals. \
+                Die Terminal-Einstellung gilt nur bei aktiviertem kontextabhängigem Trimmen. „Keine” deaktiviert \
+                das Befehlsflattening für normale Apps, aber manuelles „Getrimmt einfügen” nutzt immer Hoch. \
+                Niedrig/Normal überspringen code-ähnliche Snippets (Klammern + Schlüsselwörter), außer bei \
+                starken Befehlshinweisen. Führende Shell-Prompts (#/$) werden entfernt, wenn sie wie Befehle \
+                aussehen, aber Markdown-Überschriften bleiben erhalten.
+                “””)
                 .font(.footnote)
                 .foregroundStyle(.tertiary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -80,9 +80,9 @@ struct AggressivenessPreview: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             VStack(alignment: .leading, spacing: 8) {
-                PreviewCard(title: "Before", text: self.example.sample)
+                PreviewCard(title: "Vorher", text: self.example.sample)
                 PreviewCard(
-                    title: "After",
+                    title: "Nachher",
                     text: AggressivenessPreviewEngine.previewAfter(
                         for: self.example.sample,
                         level: self.level.coreAggressiveness,
@@ -165,13 +165,13 @@ struct AggressivenessExample {
         switch level {
         case .none:
             AggressivenessExample(
-                title: "None keeps regular app copies intact",
-                caption: "Auto-trim stays off for non-terminal apps.",
-                sample: """
+                title: “Keine: Kopien aus normalen Apps bleiben unverändert”,
+                caption: “Auto-Trim bleibt für Nicht-Terminal-Apps deaktiviert.”,
+                sample: “””
                 brew update \\
                   && brew upgrade
-                """,
-                note: "Manual “Paste Trimmed” still uses High, and terminals use their own level.")
+                “””,
+                note: “Manuelles „Getrimmt einfügen” nutzt weiterhin Hoch, und Terminals verwenden ihre eigene Stufe.”)
         case .low:
             self.example(for: Aggressiveness.low)
         case .normal:
@@ -185,33 +185,33 @@ struct AggressivenessExample {
         switch level {
         case .low:
             AggressivenessExample(
-                title: "Low only flattens obvious shell commands",
-                caption: "Continuations plus pipes are obvious enough to collapse.",
+                title: "Niedrig: Nur offensichtliche Shell-Befehle zusammenfalten",
+                caption: "Fortsetzungen und Pipes sind offensichtlich genug zum Zusammenfalten.",
                 sample: """
                 ls -la \\
                   | grep '^d' \\
                   > dirs.txt
                 """,
-                note: "Because of the continuation, pipe, and redirect, even Low collapses this into one line.")
+                note: "Wegen Fortsetzung, Pipe und Redirect faltet selbst Niedrig dies in eine Zeile zusammen.")
         case .normal:
             AggressivenessExample(
-                title: "Normal flattens typical blog commands",
-                caption: "Perfect for README snippets with pipes or continuations.",
+                title: "Normal: Typische Blog-Befehle zusammenfalten",
+                caption: "Perfekt für README-Snippets mit Pipes oder Fortsetzungen.",
                 sample: """
                 kubectl get pods \\
                   -n kube-system \\
                   | jq '.items[].metadata.name'
                 """,
-                note: "Normal trims this to a single runnable line.")
+                note: "Normal trimmt dies zu einer einzigen ausführbaren Zeile.")
         case .high:
             AggressivenessExample(
-                title: "High collapses almost anything command-shaped",
-                caption: "Use when you want Trimmy to be bold. Even short two-liners get flattened.",
+                title: "Hoch: Fast alles Befehlsähnliche zusammenfalten",
+                caption: "Wenn Trimmy mutig sein soll. Selbst kurze Zweizeiler werden zusammengefaltet.",
                 sample: """
                 echo "hello"
                 print status
                 """,
-                note: "High trims this even though it barely looks like a command.")
+                note: "Hoch trimmt dies, obwohl es kaum wie ein Befehl aussieht.")
         }
     }
 }

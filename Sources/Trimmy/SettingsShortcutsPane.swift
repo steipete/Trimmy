@@ -9,33 +9,33 @@ struct HotkeySettingsPane: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             PreferenceToggleRow(
-                title: "Enable global “Paste Trimmed” hotkey",
-                subtitle: "Trim on-the-fly and paste without permanently changing the clipboard.",
+                title: “Globalen „Getrimmt einfügen”-Hotkey aktivieren”,
+                subtitle: “Spontan trimmen und einfügen, ohne die Zwischenablage dauerhaft zu ändern.”,
                 binding: self.$settings.pasteTrimmedHotkeyEnabled)
 
             VStack(alignment: .leading, spacing: 6) {
-                KeyboardShortcuts.Recorder("", name: .pasteTrimmed)
+                KeyboardShortcuts.Recorder(“”, name: .pasteTrimmed)
                     .labelsHidden()
                     .opacity(self.settings.pasteTrimmedHotkeyEnabled ? 1.0 : 0.4)
                     .disabled(!self.settings.pasteTrimmedHotkeyEnabled)
-                Text("Paste Trimmed always uses High aggressiveness and then restores your clipboard.")
+                Text(“Getrimmt einfügen nutzt immer Aggressivität Hoch und stellt danach die Zwischenablage wieder her.”)
                     .font(.footnote)
                     .foregroundStyle(.tertiary)
             }
 
             PreferenceToggleRow(
-                title: "Enable global “Paste Original” hotkey",
-                subtitle: "Paste the unedited copy even if Trimmy already auto-trimmed it.",
+                title: “Globalen „Original einfügen”-Hotkey aktivieren”,
+                subtitle: “Die unveränderte Kopie einfügen, auch wenn Trimmy bereits getrimmt hat.”,
                 binding: self.$settings.pasteOriginalHotkeyEnabled)
 
-            KeyboardShortcuts.Recorder("", name: .pasteOriginal)
+            KeyboardShortcuts.Recorder(“”, name: .pasteOriginal)
                 .labelsHidden()
                 .opacity(self.settings.pasteOriginalHotkeyEnabled ? 1.0 : 0.4)
                 .disabled(!self.settings.pasteOriginalHotkeyEnabled)
 
             PreferenceToggleRow(
-                title: "Enable global Auto-Trim toggle hotkey",
-                subtitle: "Quickly turn Auto-Trim on or off without opening the menu.",
+                title: “Globalen Auto-Trim-Umschalt-Hotkey aktivieren”,
+                subtitle: “Auto-Trim schnell ein- oder ausschalten, ohne das Menü zu öffnen.”,
                 binding: self.$settings.autoTrimHotkeyEnabled)
 
             KeyboardShortcuts.Recorder("", name: .toggleAutoTrim)

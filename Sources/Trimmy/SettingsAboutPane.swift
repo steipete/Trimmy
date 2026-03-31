@@ -59,11 +59,11 @@ struct AboutPane: View {
                 if let buildTimestamp {
                     let git = Bundle.main.object(forInfoDictionaryKey: "TrimmyGitCommit") as? String
                     let suffix = Self.buildSuffix(for: git)
-                    Text("Built \(buildTimestamp)\(suffix)")
+                    Text("Erstellt \(buildTimestamp)\(suffix)")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
-                Text("Paste-once, run-once clipboard cleaner for terminal snippets.")
+                Text("Einmal einfügen, einmal ausführen — Zwischenablage-Bereiniger für Terminal-Snippets.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
@@ -86,14 +86,14 @@ struct AboutPane: View {
                     .padding(.vertical, 8)
                 if updater.isAvailable {
                     VStack(spacing: 10) {
-                        Toggle("Check for updates automatically", isOn: self.$autoCheckEnabled)
+                        Toggle("Automatisch nach Updates suchen", isOn: self.$autoCheckEnabled)
                             .toggleStyle(.checkbox)
                             .frame(maxWidth: .infinity, alignment: .center)
 
-                        Button("Check for Updates…") { updater.checkForUpdates(nil) }
+                        Button("Nach Updates suchen …") { updater.checkForUpdates(nil) }
                     }
                 } else {
-                    Text(updater.unavailableReason ?? "Updates unavailable in this build.")
+                    Text(updater.unavailableReason ?? "Updates in diesem Build nicht verfügbar.")
                         .foregroundStyle(.secondary)
                         .padding(.top, 4)
                 }

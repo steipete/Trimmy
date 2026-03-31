@@ -12,42 +12,42 @@ struct GeneralSettingsPane: View {
                 AccessibilityPermissionCallout(permissions: self.permissions)
             }
             PreferenceToggleRow(
-                title: "Auto-trim enabled",
-                subtitle: "Automatically trim clipboard content when it looks like a command.",
+                title: "Auto-Trim aktiviert",
+                subtitle: "Zwischenablage automatisch kürzen, wenn der Inhalt wie ein Befehl aussieht.",
                 binding: self.$settings.autoTrimEnabled)
 
             PreferenceToggleRow(
-                title: "Context-aware trimming",
-                subtitle: "Use the terminal-specific aggressiveness when a terminal is detected "
-                    + "(Cmd-C + app snapshot).",
+                title: "Kontextabhängiges Trimmen",
+                subtitle: "Terminal-spezifische Aggressivität verwenden, wenn ein Terminal erkannt wird "
+                    + "(Cmd-C + App-Snapshot).",
                 binding: self.$settings.contextAwareTrimmingEnabled)
 
             PreferenceToggleRow(
-                title: "Keep blank lines",
-                subtitle: "Preserve intentional blank lines instead of collapsing them.",
+                title: "Leerzeilen beibehalten",
+                subtitle: "Beabsichtigte Leerzeilen beibehalten statt sie zusammenzufassen.",
                 binding: self.$settings.preserveBlankLines)
 
             PreferenceToggleRow(
-                title: "Remove box drawing chars (│┃)",
-                subtitle: "Strip prompt-style box gutters (any count, leading/trailing) before trimming.",
+                title: "Box-Drawing-Zeichen entfernen (│┃)",
+                subtitle: "Prompt-Box-Rahmen (beliebige Anzahl, führend/nachfolgend) vor dem Trimmen entfernen.",
                 binding: self.$settings.removeBoxDrawing)
 
             PreferenceToggleRow(
-                title: "Show Markdown reformat option",
-                subtitle: "Expose a menu-only paste action that reflows markdown bullets and headings.",
+                title: "Markdown-Neuformatierung anzeigen",
+                subtitle: "Einfüge-Aktion im Menü, die Markdown-Aufzählungen und Überschriften neu formatiert.",
                 binding: self.$settings.showMarkdownReformatOption)
 
             Divider()
                 .padding(.vertical, 4)
 
             PreferenceToggleRow(
-                title: "Start at Login",
-                subtitle: "Automatically opens the app when you start your Mac.",
+                title: "Bei Anmeldung starten",
+                subtitle: "Öffnet die App automatisch beim Mac-Start.",
                 binding: self.$settings.launchAtLogin)
 
             HStack {
                 Spacer()
-                Button("Quit Trimmy") {
+                Button("Trimmy beenden") {
                     NSApp.terminate(nil)
                 }
                 .buttonStyle(.borderedProminent)

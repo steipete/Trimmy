@@ -12,7 +12,7 @@ public enum GeneralAggressiveness: String, CaseIterable, Identifiable, Codable, 
     public var title: String {
         switch self {
         case .none:
-            "None (no auto-trim)"
+            "Keine (kein Auto-Trim)"
         case .low:
             Aggressiveness.low.title
         case .normal:
@@ -24,7 +24,7 @@ public enum GeneralAggressiveness: String, CaseIterable, Identifiable, Codable, 
 
     public var titleShort: String {
         switch self {
-        case .none: "None"
+        case .none: "Keine"
         case .low: Aggressiveness.low.titleShort
         case .normal: Aggressiveness.normal.titleShort
         case .high: Aggressiveness.high.titleShort
@@ -34,7 +34,7 @@ public enum GeneralAggressiveness: String, CaseIterable, Identifiable, Codable, 
     public var blurb: String {
         switch self {
         case .none:
-            "Skip auto-flattening for non-terminal apps. Manual “Paste Trimmed” still uses High."
+            "Auto-Flattening für Nicht-Terminal-Apps überspringen. Manuelles “Getrimmt einfügen” nutzt weiterhin Hoch.”
         case .low:
             Aggressiveness.low.blurb
         case .normal:
