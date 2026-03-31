@@ -453,6 +453,28 @@ public struct TextCleaner: Sendable {
                 }
 
                 result = rebuilt.joined(separator: "\n")
+
+                // Dedent common leading whitespace left by box-char removal
+                if stripLeading {
+                    let dedentLines = result.split(
+                        omittingEmptySubsequences: false, whereSeparator: \.isNewline)
+                    let nonEmptyDedentLines = dedentLines.filter {
+                        !$0.trimmingCharacters(in: .whitespaces).isEmpty
+                    }
+                    if !nonEmptyDedentLines.isEmpty {
+                        let minIndent = nonEmptyDedentLines.reduce(Int.max) { current, line in
+                            min(current, line.prefix(while: { $0 == " " }).count)
+                        }
+                        if minIndent > 0 {
+                            result = dedentLines.map { line in
+                                guard !line.trimmingCharacters(in: .whitespaces).isEmpty else {
+                                    return ""
+                                }
+                                return String(line.dropFirst(minIndent))
+                            }.joined(separator: "\n")
+                        }
+                    }
+                }
             }
         }
 
