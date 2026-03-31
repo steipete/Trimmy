@@ -1,0 +1,69 @@
+/* SettingsGeneralPane */
+"Auto-trim enabled" = "Auto-Trim aktiviert";
+"Automatically trim clipboard content when it looks like a command." = "Zwischenablage automatisch kürzen, wenn der Inhalt wie ein Befehl aussieht.";
+"Context-aware trimming" = "Kontextabhängiges Trimmen";
+"Use the terminal-specific aggressiveness when a terminal is detected (Cmd-C + app snapshot)." = "Terminal-spezifische Aggressivität verwenden, wenn ein Terminal erkannt wird (Cmd-C + App-Snapshot).";
+"Keep blank lines" = "Leerzeilen beibehalten";
+"Preserve intentional blank lines instead of collapsing them." = "Beabsichtigte Leerzeilen beibehalten statt sie zusammenzufassen.";
+"Remove box drawing chars (│┃)" = "Box-Drawing-Zeichen entfernen (│┃)";
+"Strip prompt-style box gutters (any count, leading/trailing) before trimming." = "Prompt-Box-Rahmen (beliebige Anzahl, führend/nachfolgend) vor dem Trimmen entfernen.";
+"Show Markdown reformat option" = "Markdown-Neuformatierung anzeigen";
+"Expose a menu-only paste action that reflows markdown bullets and headings." = "Einfüge-Aktion im Menü, die Markdown-Aufzählungen und Überschriften neu formatiert.";
+"Start at Login" = "Bei Anmeldung starten";
+"Automatically opens the app when you start your Mac." = "Öffnet die App automatisch beim Mac-Start.";
+"Quit Trimmy" = "Trimmy beenden";
+
+/* SettingsAdvancedPane */
+"Use extra clipboard fallbacks" = "Zusätzliche Zwischenablage-Fallbacks";
+"Try RTF and public text types when plain text is missing." = "RTF und öffentliche Texttypen versuchen, wenn Klartext fehlt.";
+"Enable debug tools" = "Debug-Werkzeuge aktivieren";
+"Show the Debug tab for sample previews and dev-only controls." = "Debug-Tab für Vorschau und Entwickler-Optionen anzeigen.";
+"Install CLI" = "CLI installieren";
+"Install `trimmy` into /usr/local/bin and /opt/homebrew/bin." = "`trimmy` nach /usr/local/bin und /opt/homebrew/bin installieren.";
+"Installed. Try: trimmy --help" = "Installiert. Teste: trimmy --help";
+"Helper missing; reinstall Trimmy." = "Helper fehlt; Trimmy neu installieren.";
+
+/* SettingsView tabs */
+"General" = "Allgemein";
+"Advanced" = "Erweitert";
+"Aggressiveness" = "Aggressivität";
+"Shortcuts" = "Kurzbefehle";
+"About" = "Über";
+
+/* SettingsAggressivenessPane */
+"General apps" = "Allgemeine Apps";
+"Terminals" = "Terminals";
+"Before" = "Vorher";
+"After" = "Nachher";
+
+/* SettingsShortcutsPane */
+"Enable global \U201CPaste Trimmed\U201D hotkey" = "Globalen \U201EGetrimmt einfügen\U201C-Hotkey aktivieren";
+"Trim on-the-fly and paste without permanently changing the clipboard." = "Spontan trimmen und einfügen, ohne die Zwischenablage dauerhaft zu ändern.";
+"Paste Trimmed always uses High aggressiveness and then restores your clipboard." = "Getrimmt einfügen nutzt immer Aggressivität Hoch und stellt danach die Zwischenablage wieder her.";
+"Enable global \U201CPaste Original\U201D hotkey" = "Globalen \U201EOriginal einfügen\U201C-Hotkey aktivieren";
+"Paste the unedited copy even if Trimmy already auto-trimmed it." = "Die unveränderte Kopie einfügen, auch wenn Trimmy bereits getrimmt hat.";
+"Enable global Auto-Trim toggle hotkey" = "Globalen Auto-Trim-Umschalt-Hotkey aktivieren";
+"Quickly turn Auto-Trim on or off without opening the menu." = "Auto-Trim schnell ein- oder ausschalten, ohne das Menü zu öffnen.";
+
+/* SettingsAboutPane */
+"Paste-once, run-once clipboard cleaner for terminal snippets." = "Einmal einfügen, einmal ausführen — Zwischenablage-Bereiniger für Terminal-Snippets.";
+"Check for updates automatically" = "Automatisch nach Updates suchen";
+"Check for Updates…" = "Nach Updates suchen …";
+"Updates unavailable in this build." = "Updates in diesem Build nicht verfügbar.";
+
+/* MenuContentView */
+"Auto-Trim" = "Auto-Trim";
+"Settings…" = "Einstellungen …";
+"About Trimmy" = "Über Trimmy";
+"Update ready, restart now?" = "Update bereit, jetzt neu starten?";
+
+/* AccessibilityPermissionCallout */
+"Accessibility needed to paste" = "Bedienungshilfen für Einfügen benötigt";
+"Enable Trimmy in System Settings → Privacy & Security → Accessibility so ⌘V can be sent to the front app." = "Trimmy in Systemeinstellungen → Datenschutz & Sicherheit → Bedienungshilfen aktivieren, damit ⌘V an die aktive App gesendet werden kann.";
+"Grant Accessibility" = "Bedienungshilfen erlauben";
+"Open Settings" = "Einstellungen öffnen";
+
+/* GeneralAggressiveness (Trimmy target) */
+"None (no auto-trim)" = "Keine (kein Auto-Trim)";
+"None" = "Keine";
+"Skip auto-flattening for non-terminal apps. Manual Paste Trimmed still uses High." = "Auto-Flattening für Nicht-Terminal-Apps überspringen. Manuelles \U201EGetrimmt einfügen\U201C nutzt weiterhin Hoch.";

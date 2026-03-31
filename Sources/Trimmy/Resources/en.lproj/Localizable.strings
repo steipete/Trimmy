@@ -1,0 +1,69 @@
+/* SettingsGeneralPane */
+"Auto-trim enabled" = "Auto-trim enabled";
+"Automatically trim clipboard content when it looks like a command." = "Automatically trim clipboard content when it looks like a command.";
+"Context-aware trimming" = "Context-aware trimming";
+"Use the terminal-specific aggressiveness when a terminal is detected (Cmd-C + app snapshot)." = "Use the terminal-specific aggressiveness when a terminal is detected (Cmd-C + app snapshot).";
+"Keep blank lines" = "Keep blank lines";
+"Preserve intentional blank lines instead of collapsing them." = "Preserve intentional blank lines instead of collapsing them.";
+"Remove box drawing chars (│┃)" = "Remove box drawing chars (│┃)";
+"Strip prompt-style box gutters (any count, leading/trailing) before trimming." = "Strip prompt-style box gutters (any count, leading/trailing) before trimming.";
+"Show Markdown reformat option" = "Show Markdown reformat option";
+"Expose a menu-only paste action that reflows markdown bullets and headings." = "Expose a menu-only paste action that reflows markdown bullets and headings.";
+"Start at Login" = "Start at Login";
+"Automatically opens the app when you start your Mac." = "Automatically opens the app when you start your Mac.";
+"Quit Trimmy" = "Quit Trimmy";
+
+/* SettingsAdvancedPane */
+"Use extra clipboard fallbacks" = "Use extra clipboard fallbacks";
+"Try RTF and public text types when plain text is missing." = "Try RTF and public text types when plain text is missing.";
+"Enable debug tools" = "Enable debug tools";
+"Show the Debug tab for sample previews and dev-only controls." = "Show the Debug tab for sample previews and dev-only controls.";
+"Install CLI" = "Install CLI";
+"Install `trimmy` into /usr/local/bin and /opt/homebrew/bin." = "Install `trimmy` into /usr/local/bin and /opt/homebrew/bin.";
+"Installed. Try: trimmy --help" = "Installed. Try: trimmy --help";
+"Helper missing; reinstall Trimmy." = "Helper missing; reinstall Trimmy.";
+
+/* SettingsView tabs */
+"General" = "General";
+"Advanced" = "Advanced";
+"Aggressiveness" = "Aggressiveness";
+"Shortcuts" = "Shortcuts";
+"About" = "About";
+
+/* SettingsAggressivenessPane */
+"General apps" = "General apps";
+"Terminals" = "Terminals";
+"Before" = "Before";
+"After" = "After";
+
+/* SettingsShortcutsPane */
+"Enable global \U201CPaste Trimmed\U201D hotkey" = "Enable global \U201CPaste Trimmed\U201D hotkey";
+"Trim on-the-fly and paste without permanently changing the clipboard." = "Trim on-the-fly and paste without permanently changing the clipboard.";
+"Paste Trimmed always uses High aggressiveness and then restores your clipboard." = "Paste Trimmed always uses High aggressiveness and then restores your clipboard.";
+"Enable global \U201CPaste Original\U201D hotkey" = "Enable global \U201CPaste Original\U201D hotkey";
+"Paste the unedited copy even if Trimmy already auto-trimmed it." = "Paste the unedited copy even if Trimmy already auto-trimmed it.";
+"Enable global Auto-Trim toggle hotkey" = "Enable global Auto-Trim toggle hotkey";
+"Quickly turn Auto-Trim on or off without opening the menu." = "Quickly turn Auto-Trim on or off without opening the menu.";
+
+/* SettingsAboutPane */
+"Paste-once, run-once clipboard cleaner for terminal snippets." = "Paste-once, run-once clipboard cleaner for terminal snippets.";
+"Check for updates automatically" = "Check for updates automatically";
+"Check for Updates…" = "Check for Updates…";
+"Updates unavailable in this build." = "Updates unavailable in this build.";
+
+/* MenuContentView */
+"Auto-Trim" = "Auto-Trim";
+"Settings…" = "Settings…";
+"About Trimmy" = "About Trimmy";
+"Update ready, restart now?" = "Update ready, restart now?";
+
+/* AccessibilityPermissionCallout */
+"Accessibility needed to paste" = "Accessibility needed to paste";
+"Enable Trimmy in System Settings → Privacy & Security → Accessibility so ⌘V can be sent to the front app." = "Enable Trimmy in System Settings → Privacy & Security → Accessibility so ⌘V can be sent to the front app.";
+"Grant Accessibility" = "Grant Accessibility";
+"Open Settings" = "Open Settings";
+
+/* GeneralAggressiveness (Trimmy target) */
+"None (no auto-trim)" = "None (no auto-trim)";
+"None" = "None";
+"Skip auto-flattening for non-terminal apps. Manual Paste Trimmed still uses High." = "Skip auto-flattening for non-terminal apps. Manual \U201CPaste Trimmed\U201D still uses High.";

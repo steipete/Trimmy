@@ -1,0 +1,17 @@
+/* Aggressiveness titles */
+"Low (safer)" = "Low (safer)";
+"Normal" = "Normal";
+"High (more eager)" = "High (more eager)";
+
+/* Aggressiveness short titles */
+"Low" = "Low";
+"High" = "High";
+
+/* Aggressiveness blurbs */
+"Keeps light multi-line snippets intact unless they clearly look like shell commands." = "Keeps light multi-line snippets intact unless they clearly look like shell commands.";
+"Good default: flattens typical blog/README commands with pipes or continuations." = "Good default: flattens typical blog/README commands with pipes or continuations.";
+"Most eager: will flatten almost any short multi-line text that resembles a command." = "Most eager: will flatten almost any short multi-line text that resembles a command.";
+
+/* GeneralAggressiveness */
+"None (no auto-trim)" = "None (no auto-trim)";
+"None" = "None";

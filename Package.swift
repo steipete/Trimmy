@@ -5,6 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "Trimmy",
+    defaultLocalization: "en",
     platforms: [
         .macOS(.v15),
     ],
@@ -16,6 +17,9 @@ let package = Package(
     targets: [
         .target(
             name: "TrimmyCore",
+            resources: [
+                .process("Resources"),
+            ],
             swiftSettings: [
                 .enableUpcomingFeature("StrictConcurrency"),
             ]),
@@ -26,6 +30,9 @@ let package = Package(
                 .product(name: "Sparkle", package: "Sparkle"),
                 .product(name: "KeyboardShortcuts", package: "KeyboardShortcuts"),
                 .product(name: "MenuBarExtraAccess", package: "MenuBarExtraAccess"),
+            ],
+            resources: [
+                .process("Resources"),
             ],
             swiftSettings: [
                 .enableUpcomingFeature("StrictConcurrency"),

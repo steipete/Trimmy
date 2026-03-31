@@ -1,0 +1,17 @@
+/* Aggressiveness titles */
+"Low (safer)" = "Niedrig (sicherer)";
+"Normal" = "Normal";
+"High (more eager)" = "Hoch (aggressiver)";
+
+/* Aggressiveness short titles */
+"Low" = "Niedrig";
+"High" = "Hoch";
+
+/* Aggressiveness blurbs */
+"Keeps light multi-line snippets intact unless they clearly look like shell commands." = "Lässt mehrzeilige Snippets intakt, außer sie sehen eindeutig wie Shell-Befehle aus.";
+"Good default: flattens typical blog/README commands with pipes or continuations." = "Guter Standard: Faltet typische Blog-/README-Befehle mit Pipes oder Fortsetzungen zusammen.";
+"Most eager: will flatten almost any short multi-line text that resembles a command." = "Am aggressivsten: Faltet fast jeden kurzen mehrzeiligen Text zusammen, der wie ein Befehl aussieht.";
+
+/* GeneralAggressiveness */
+"None (no auto-trim)" = "Keine (kein Auto-Trim)";
+"None" = "Keine";

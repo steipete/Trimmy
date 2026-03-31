@@ -12,7 +12,7 @@ public enum GeneralAggressiveness: String, CaseIterable, Identifiable, Codable, 
     public var title: String {
         switch self {
         case .none:
-            "None (no auto-trim)"
+            NSLocalizedString("None (no auto-trim)", comment: "GeneralAggressiveness level")
         case .low:
             Aggressiveness.low.title
         case .normal:
@@ -24,7 +24,7 @@ public enum GeneralAggressiveness: String, CaseIterable, Identifiable, Codable, 
 
     public var titleShort: String {
         switch self {
-        case .none: "None"
+        case .none: NSLocalizedString("None", comment: "GeneralAggressiveness short")
         case .low: Aggressiveness.low.titleShort
         case .normal: Aggressiveness.normal.titleShort
         case .high: Aggressiveness.high.titleShort
@@ -34,7 +34,7 @@ public enum GeneralAggressiveness: String, CaseIterable, Identifiable, Codable, 
     public var blurb: String {
         switch self {
         case .none:
-            "Skip auto-flattening for non-terminal apps. Manual “Paste Trimmed” still uses High."
+            NSLocalizedString("Skip auto-flattening for non-terminal apps. Manual Paste Trimmed still uses High.", comment: "")
         case .low:
             Aggressiveness.low.blurb
         case .normal:

@@ -9,13 +9,13 @@ struct PreferenceToggleRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Toggle(isOn: self.$binding) {
-                Text(self.title)
+                Text(LocalizedStringKey(self.title))
                     .font(.body)
             }
             .toggleStyle(.checkbox)
 
             if let subtitle, !subtitle.isEmpty {
-                Text(subtitle)
+                Text(LocalizedStringKey(subtitle))
                     .font(.footnote)
                     .foregroundStyle(.tertiary)
                     .fixedSize(horizontal: false, vertical: true)
