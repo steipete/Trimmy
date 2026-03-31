@@ -59,6 +59,15 @@ struct BoxDrawingCleanupTests {
     }
 
     @Test
+    func dedentOnlyAffectsLinesWithBoxChars() {
+        // Mixed content: majority has box chars, one plain line with intentional indent
+        let input = "│  line one\n│  line two\n│  line three\n plain line"
+        let cleaned = CommandDetector.stripBoxDrawingCharacters(in: input)
+        // Box-char lines get dedented; the plain line keeps its original indent
+        #expect(cleaned?.contains(" plain line") == true, "Plain line indent must be preserved")
+    }
+
+    @Test
     func preservesIndentationWhenNoBoxDrawing() {
         let input = """
         {

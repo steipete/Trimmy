@@ -434,10 +434,15 @@ public struct TextCleaner: Sendable {
             if stripLeading || stripTrailing {
                 var rebuilt: [String] = []
                 rebuilt.reserveCapacity(lines.count)
+                var hadLeadingBox: [Bool] = []
+                hadLeadingBox.reserveCapacity(lines.count)
 
                 for line in lines {
                     var lineStr = String(line)
-                    if stripLeading {
+                    let matchedLeading = stripLeading
+                        && lineStr.range(of: leadingPattern, options: .regularExpression) != nil
+                    hadLeadingBox.append(matchedLeading)
+                    if matchedLeading {
                         lineStr = lineStr.replacingOccurrences(
                             of: leadingPattern,
                             with: "",
@@ -454,19 +459,23 @@ public struct TextCleaner: Sendable {
 
                 result = rebuilt.joined(separator: "\n")
 
-                // Dedent common leading whitespace left by box-char removal
+                // Dedent common leading whitespace left by box-char removal,
+                // only considering lines that actually had box chars stripped.
                 if stripLeading {
-                    let dedentLines = result.split(
-                        omittingEmptySubsequences: false, whereSeparator: \.isNewline)
-                    let nonEmptyDedentLines = dedentLines.filter {
-                        !$0.trimmingCharacters(in: .whitespaces).isEmpty
+                    let strippedNonEmpty = rebuilt.enumerated().compactMap {
+                        idx, line -> String? in
+                        guard hadLeadingBox[idx],
+                              !line.trimmingCharacters(in: .whitespaces).isEmpty
+                        else { return nil }
+                        return line
                     }
-                    if !nonEmptyDedentLines.isEmpty {
-                        let minIndent = nonEmptyDedentLines.reduce(Int.max) { current, line in
+                    if !strippedNonEmpty.isEmpty {
+                        let minIndent = strippedNonEmpty.reduce(Int.max) { current, line in
                             min(current, line.prefix(while: { $0 == " " }).count)
                         }
                         if minIndent > 0 {
-                            result = dedentLines.map { line in
+                            result = rebuilt.enumerated().map { idx, line in
+                                guard hadLeadingBox[idx] else { return line }
                                 guard !line.trimmingCharacters(in: .whitespaces).isEmpty else {
                                     return ""
                                 }
