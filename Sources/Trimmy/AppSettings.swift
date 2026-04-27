@@ -10,6 +10,7 @@ public final class AppSettings: ObservableObject {
     @AppStorage("autoTrimEnabled") public var autoTrimEnabled: Bool = true
     @AppStorage("contextAwareTrimmingEnabled") public var contextAwareTrimmingEnabled: Bool = true
     @AppStorage("removeBoxDrawing") public var removeBoxDrawing: Bool = true
+    @AppStorage("hideMenuBarIcon") var hideMenuBarIcon: Bool = false
     @AppStorage("usePasteboardFallbacks") var usePasteboardFallbacks: Bool = false
     @AppStorage("showMarkdownReformatOption") var showMarkdownReformatOption: Bool = true
     @AppStorage("launchAtLogin") var launchAtLogin: Bool = false {

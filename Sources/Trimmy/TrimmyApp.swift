@@ -41,6 +41,7 @@ struct TrimmyApp: App {
             Button("Quit") { NSApplication.shared.terminate(nil) }
         } label: {
             ScissorStatusLabel(monitor: self.monitor, isEnabled: self.settings.autoTrimEnabled)
+                .background(SettingsOpener())
         }
         Settings {
             SettingsView(
@@ -61,6 +62,9 @@ struct TrimmyApp: App {
         .onChange(of: self.settings.autoTrimEnabled) { _, _ in
             self.applyStatusItemAppearance()
         }
+        .onChange(of: self.settings.hideMenuBarIcon) { _, _ in
+            self.applyStatusItemAppearance()
+        }
         .onChange(of: self.monitor.trimPulseID) { _, _ in
             self.pulseStatusItem()
         }
@@ -72,6 +76,7 @@ struct TrimmyApp: App {
 
 extension TrimmyApp {
     private func applyStatusItemAppearance() {
+        self.statusItem?.isVisible = !self.settings.hideMenuBarIcon
         self.statusItem?.button?.appearsDisabled = !self.settings.autoTrimEnabled
     }
 
@@ -121,12 +126,46 @@ private struct ScissorStatusLabel: View {
     }
 }
 
+private struct SettingsOpener: View {
+    @Environment(\.openSettings) private var openSettings
+    @State private var openedHiddenSettings = false
+
+    var body: some View {
+        EmptyView()
+            .onAppear {
+                guard !self.openedHiddenSettings,
+                      UserDefaults.standard.bool(forKey: "hideMenuBarIcon")
+                else { return }
+                self.openedHiddenSettings = true
+                Task { @MainActor in
+                    try? await Task.sleep(for: .milliseconds(150))
+                    self.open(.general)
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .trimmyOpenSettings)) { notification in
+                self.open((notification.object as? SettingsTab) ?? .general)
+            }
+    }
+
+    private func open(_ tab: SettingsTab) {
+        SettingsTabRouter.request(tab)
+        NSApp.activate(ignoringOtherApps: true)
+        self.openSettings()
+        NotificationCenter.default.post(name: .trimmySelectSettingsTab, object: tab)
+    }
+}
+
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let updaterController: UpdaterProviding = makeUpdaterController()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
+    }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        NotificationCenter.default.post(name: .trimmyOpenSettings, object: SettingsTab.general)
+        return false
     }
 }
 

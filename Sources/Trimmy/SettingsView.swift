@@ -75,6 +75,7 @@ enum SettingsTab: String, Hashable, CaseIterable, Codable {
 
 extension Notification.Name {
     static let trimmySelectSettingsTab = Notification.Name("trimmySelectSettingsTab")
+    static let trimmyOpenSettings = Notification.Name("trimmyOpenSettings")
 }
 
 @MainActor

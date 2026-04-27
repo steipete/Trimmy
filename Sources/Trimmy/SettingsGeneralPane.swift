@@ -37,6 +37,11 @@ struct GeneralSettingsPane: View {
                 subtitle: "Expose a menu-only paste action that reflows markdown bullets and headings.",
                 binding: self.$settings.showMarkdownReformatOption)
 
+            PreferenceToggleRow(
+                title: "Hide menu bar icon",
+                subtitle: "Keep Trimmy running without showing its scissors icon in the menu bar.",
+                binding: self.$settings.hideMenuBarIcon)
+
             Divider()
                 .padding(.vertical, 4)
 
