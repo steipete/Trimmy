@@ -128,20 +128,9 @@ private struct ScissorStatusLabel: View {
 
 private struct SettingsOpener: View {
     @Environment(\.openSettings) private var openSettings
-    @State private var openedHiddenSettings = false
 
     var body: some View {
         EmptyView()
-            .onAppear {
-                guard !self.openedHiddenSettings,
-                      UserDefaults.standard.bool(forKey: "hideMenuBarIcon")
-                else { return }
-                self.openedHiddenSettings = true
-                Task { @MainActor in
-                    try? await Task.sleep(for: .milliseconds(150))
-                    self.open(.general)
-                }
-            }
             .onReceive(NotificationCenter.default.publisher(for: .trimmyOpenSettings)) { notification in
                 self.open((notification.object as? SettingsTab) ?? .general)
             }

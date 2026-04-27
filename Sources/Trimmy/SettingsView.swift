@@ -70,7 +70,7 @@ enum SettingsTab: String, Hashable, CaseIterable, Codable {
     #endif
 
     static let windowWidth: CGFloat = 430
-    static let windowHeight: CGFloat = 470
+    static let windowHeight: CGFloat = 520
 }
 
 extension Notification.Name {
