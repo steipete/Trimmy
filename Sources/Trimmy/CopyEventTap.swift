@@ -6,7 +6,7 @@ import Foundation
 ///
 /// Requires Accessibility / Input Monitoring permission depending on macOS settings.
 final class CopyEventTap {
-    struct CopyKeypressContext: Sendable {
+    struct CopyKeypressContext {
         let timestamp: Date
         let pasteboardChangeCount: Int
         let bundleIdentifier: String?
@@ -28,7 +28,9 @@ final class CopyEventTap {
         self.onCopy = onCopy
     }
 
-    var isRunning: Bool { self.tap != nil }
+    var isRunning: Bool {
+        self.tap != nil
+    }
 
     @MainActor
     func start() -> Bool {

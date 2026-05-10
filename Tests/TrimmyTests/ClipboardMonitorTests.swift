@@ -9,11 +9,13 @@ struct ClipboardMonitorTests {
     @MainActor
     private final class StubAccessibilityPermission: AccessibilityPermissionChecking {
         var isTrusted: Bool
-        init(isTrusted: Bool = true) { self.isTrusted = isTrusted }
+        init(isTrusted: Bool = true) {
+            self.isTrusted = isTrusted
+        }
     }
 
     @Test
-    func clipboardTextIgnoresMarker() {
+    func `clipboard text ignores marker`() {
         let settings = AppSettings()
         let pasteboard = makeTestPasteboard()
         settings.autoTrimEnabled = true
@@ -27,7 +29,7 @@ struct ClipboardMonitorTests {
     }
 
     @Test
-    func manualTrimReadsOwnMarker() {
+    func `manual trim reads own marker`() {
         let settings = AppSettings()
         settings.autoTrimEnabled = false
         let pasteboard = makeTestPasteboard()
@@ -43,7 +45,7 @@ struct ClipboardMonitorTests {
     }
 
     @Test
-    func forceTrimReturnsRawWhenNotTransformed() {
+    func `force trim returns raw when not transformed`() {
         let settings = AppSettings()
         settings.autoTrimEnabled = false
         let pasteboard = makeTestPasteboard()
@@ -56,7 +58,7 @@ struct ClipboardMonitorTests {
     }
 
     @Test
-    func autoTrimDisabledDoesNotTrimDuringPolling() {
+    func `auto trim disabled does not trim during polling`() {
         let settings = AppSettings()
         settings.autoTrimEnabled = false
         let pasteboard = makeTestPasteboard()
@@ -79,7 +81,7 @@ struct ClipboardMonitorTests {
     }
 
     @Test
-    func disablingAutoTrimStopsFurtherAutomaticTrims() {
+    func `disabling auto trim stops further automatic trims`() {
         let settings = AppSettings()
         settings.autoTrimEnabled = true
         let pasteboard = makeTestPasteboard()
@@ -112,7 +114,7 @@ struct ClipboardMonitorTests {
     }
 
     @Test
-    func repairsWrappedURLEvenWhenAggressivenessIsLow() {
+    func `repairs wrapped URL even when aggressiveness is low`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .low
         settings.autoTrimEnabled = true
@@ -139,7 +141,7 @@ struct ClipboardMonitorTests {
     }
 
     @Test
-    func leavesMultipleSeparateUrlsUntouched() {
+    func `leaves multiple separate urls untouched`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .low
         settings.autoTrimEnabled = true
@@ -161,7 +163,7 @@ struct ClipboardMonitorTests {
     }
 
     @Test
-    func pasteTrimmedKeepsOriginalForLater() {
+    func `paste trimmed keeps original for later`() {
         let settings = AppSettings()
         settings.autoTrimEnabled = false
         var pasteTriggered = false
@@ -192,7 +194,7 @@ struct ClipboardMonitorTests {
     }
 
     @Test
-    func pasteFailsGracefullyWhenAccessibilityMissing() {
+    func `paste fails gracefully when accessibility missing`() {
         let settings = AppSettings()
         let pasteboard = makeTestPasteboard()
         let monitor = ClipboardMonitor(
@@ -209,7 +211,7 @@ struct ClipboardMonitorTests {
     }
 
     @Test
-    func pasteOriginalUsesCachedPreTrimCopy() {
+    func `paste original uses cached pre trim copy`() {
         let settings = AppSettings()
         settings.autoTrimEnabled = true
         let pasteboard = makeTestPasteboard()
@@ -233,7 +235,7 @@ struct ClipboardMonitorTests {
     }
 
     @Test
-    func struckMarksRemovedDecorativePipe() {
+    func `struck marks removed decorative pipe`() {
         let original = "foo │ bar | baz"
         let trimmed = "foo bar | baz"
 
@@ -248,7 +250,7 @@ struct ClipboardMonitorTests {
     }
 
     @Test
-    func struckDoesNotStrikeSurvivingPipe() {
+    func `struck does not strike surviving pipe`() {
         let original = "foo │ bar | baz"
         let trimmed = "foo bar | baz"
 
@@ -263,7 +265,7 @@ struct ClipboardMonitorTests {
     }
 
     @Test
-    func struckShowsWhitespaceRemoval() {
+    func `struck shows whitespace removal`() {
         let original = "foo  bar"
         let trimmed = "foo bar"
 
@@ -284,7 +286,7 @@ struct ClipboardMonitorTests {
     }
 
     @Test
-    func struckHandlesTabsAndNewlines() {
+    func `struck handles tabs and newlines`() {
         let original = "foo\tbar\nbaz"
         let trimmed = "foobar baz"
 

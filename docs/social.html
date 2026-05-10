@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Trimmy — social card</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..900,0..100,0..1;1,9..144,300..900,0..100,0..1&family=JetBrains+Mono:ital,wght@0,400;0,500;0,700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --paper: #efe7d6;
+        --paper-shade: #e6dbc4;
+        --ink: #14110d;
+        --ink-soft: #2c2620;
+        --pencil: #8a7d65;
+        --rule: rgba(20, 17, 13, 0.22);
+        --cut: #c4391f;
+        --term-bg: #18140e;
+        --term-amber: #e6b840;
+        --term-paper: #f0e7d4;
+        --term-mute: #7a7263;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html { background: #efe7d6; }
+      body {
+        width: 1200px;
+        height: 630px;
+        font-family: "Fraunces", serif;
+        color: var(--ink);
+        background:
+          radial-gradient(800px 500px at 12% 8%, rgba(196, 57, 31, 0.06), transparent 55%),
+          radial-gradient(700px 500px at 92% 98%, rgba(20, 17, 13, 0.06), transparent 55%),
+          var(--paper);
+        position: relative;
+        overflow: hidden;
+        -webkit-font-smoothing: antialiased;
+      }
+      .grain {
+        position: absolute; inset: 0;
+        pointer-events: none;
+        opacity: 0.6;
+        mix-blend-mode: multiply;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.07 0 0 0 0 0.05 0 0 0 0 0.04 0 0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+      }
+      .crop { position: absolute; width: 26px; height: 26px; opacity: 0.55; }
+      .crop::before, .crop::after { content: ""; position: absolute; background: var(--ink); }
+      .crop::before { width: 100%; height: 1px; top: 50%; }
+      .crop::after { width: 1px; height: 100%; left: 50%; }
+      .crop.tl { top: 22px; left: 22px; }
+      .crop.tr { top: 22px; right: 22px; }
+      .crop.bl { bottom: 22px; left: 22px; }
+      .crop.br { bottom: 22px; right: 22px; }
+
+      .frame {
+        position: absolute;
+        top: 56px; right: 64px; bottom: 56px; left: 64px;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+      }
+
+      .mast {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 24px;
+      }
+      .mast-left { display: flex; align-items: center; gap: 14px; }
+      .mast-icon {
+        width: 38px; height: 38px;
+        border-radius: 9px;
+        filter: drop-shadow(0 6px 12px rgba(20, 17, 13, 0.18));
+      }
+      .mast-name {
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 700;
+        font-size: 15px;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+      }
+      .mast-meta {
+        font-style: italic;
+        color: var(--ink-soft);
+        font-size: 18px;
+        font-variation-settings: "opsz" 14, "SOFT" 100, "WONK" 1;
+      }
+      .mast-issue {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        letter-spacing: 0.18em;
+        color: var(--pencil);
+        text-transform: uppercase;
+      }
+      .mast-issue em { font-style: normal; color: var(--cut); font-weight: 700; }
+
+      .rule {
+        height: 1px;
+        background: var(--rule);
+        margin: 22px 0 0;
+      }
+
+      .headline-cell {
+        display: flex;
+        align-items: center;
+      }
+      .headline {
+        font-size: 140px;
+        line-height: 0.9;
+        letter-spacing: -0.04em;
+        font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1;
+        font-weight: 400;
+        margin: 0;
+      }
+      .headline .line { display: block; white-space: nowrap; }
+      .headline em {
+        font-style: italic;
+        color: var(--cut);
+        font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1;
+      }
+      .headline .comma { color: var(--cut); }
+
+      .foot {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 24px;
+        padding-top: 18px;
+        border-top: 1px solid var(--rule);
+      }
+      .foot .url {
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 700;
+        font-size: 24px;
+        letter-spacing: 0.04em;
+        color: var(--ink);
+      }
+      .foot .url .dot { color: var(--cut); }
+      .foot .tags {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--pencil);
+      }
+      .foot .tags em { font-style: normal; color: var(--cut); }
+
+      .scissor-row {
+        position: absolute;
+        right: 64px;
+        top: 152px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 13px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--cut);
+      }
+      .scissor-row svg { display: block; }
+    </style>
+  </head>
+  <body>
+    <div class="grain"></div>
+    <span class="crop tl"></span><span class="crop tr"></span>
+    <span class="crop bl"></span><span class="crop br"></span>
+
+    <div class="frame">
+      <div class="mast-block">
+        <div class="mast">
+          <div class="mast-left">
+            <img class="mast-icon" src="./icon.png" alt="" />
+            <span class="mast-name">Trimmy</span>
+            <span class="mast-meta">a menu-bar paste hygienist · macOS 15&thinsp;+</span>
+          </div>
+          <div class="mast-issue">No.&nbsp;<em>0.8.0</em>&nbsp;·&nbsp;MMXXVI</div>
+        </div>
+        <div class="rule"></div>
+      </div>
+
+      <div class="scissor-row">
+        <svg width="200" height="14" viewBox="0 0 200 14">
+          <line x1="0" y1="7" x2="186" y2="7" stroke="#c4391f" stroke-width="2" stroke-dasharray="9 7" stroke-linecap="round"/>
+        </svg>
+        <span style="font-size: 22px; line-height: 1; transform: rotate(-12deg); display: inline-block;">✂</span>
+      </div>
+
+      <div class="headline-cell">
+        <h1 class="headline">
+          <span class="line">Paste<span class="comma">,</span> <em>once.</em></span>
+          <span class="line">Run<span class="comma">,</span> <em>once.</em></span>
+        </h1>
+      </div>
+
+      <div class="foot">
+        <span class="url">trimmy<span class="dot">.</span>app</span>
+        <span class="tags">Free <em>·</em> Open source <em>·</em> MIT <em>·</em> Built in Vienna</span>
+      </div>
+    </div>
+  </body>
+</html>

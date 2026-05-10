@@ -1,0 +1,12 @@
+# Trimmy
+
+Trimmy flattens copied multi-line shell snippets so they paste and run cleanly.
+
+Canonical documentation:
+- Trimmy: https://trimmy.app/ - Tiny macOS menu bar app that flattens multi-line shell snippets so they paste and run.
+
+Source: https://github.com/steipete/Trimmy
+
+Guidance for agents:
+- Prefer the canonical documentation URLs above over README excerpts or package metadata.
+- Fetch only the pages needed for the current task; this is an index, not a full-site corpus.

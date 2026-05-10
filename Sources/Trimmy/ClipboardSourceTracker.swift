@@ -1,9 +1,9 @@
 import AppKit
 import Foundation
 
-enum ClipboardSourceCapture: String, Sendable { case eventTap, snapshot }
+enum ClipboardSourceCapture: String { case eventTap, snapshot }
 
-struct ClipboardSourceContext: Sendable {
+struct ClipboardSourceContext {
     let timestamp: Date
     let capture: ClipboardSourceCapture
     let bundleIdentifier: String?

@@ -3,96 +3,266 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Trimmy</title>
+    <title>Trimmy — Paste once, run once.</title>
     <meta
       name="description"
       content="Tiny macOS menu bar app that flattens multi-line shell snippets so they paste and run."
     />
-    <meta name="theme-color" content="#0b0908" />
+    <meta name="theme-color" content="#efe7d6" />
     <link rel="canonical" href="https://trimmy.app/" />
 
-    <meta property="og:title" content="Trimmy" />
+    <meta property="og:title" content="Trimmy — Paste once, run once." />
     <meta
       property="og:description"
-      content="Paste once, run once. Trimmy flattens multi-line shell snippets so they paste and run."
+      content="A tiny macOS menu-bar app that flattens multi-line shell snippets so they paste and run."
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://trimmy.app/" />
-    <meta property="og:image" content="https://trimmy.app/trimmy.png" />
+    <meta property="og:image" content="https://trimmy.app/og-card.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:image" content="https://trimmy.app/og-card.png" />
     <meta name="twitter:card" content="summary_large_image" />
 
     <link rel="icon" href="./icon.png" type="image/png" />
     <link rel="apple-touch-icon" href="./icon.png" />
-    <link rel="stylesheet" href="./site.css?v=20251217b" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..900,0..100,0..1;1,9..144,300..900,0..100,0..1&family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./site.css?v=20260510a" />
   </head>
   <body>
-    <main class="wrap">
-      <header class="top" data-animate="1">
-        <a class="brand" href="https://github.com/steipete/Trimmy" aria-label="Trimmy on GitHub">
-          <img class="mark" src="./icon.png" alt="" aria-hidden="true" width="44" height="44" />
-          <span class="name">
-            <h1 class="title">Trimmy</h1>
-            <p class="tagline">Paste once, run once.</p>
-          </span>
-        </a>
-        <nav class="links" aria-label="Links">
-          <a class="btn primary" href="https://github.com/steipete/Trimmy/releases/latest">Download</a>
-          <a class="btn ghost" href="https://github.com/steipete/Trimmy">Source</a>
-        </nav>
-      </header>
+    <div class="grain" aria-hidden="true"></div>
+    <div class="crops" aria-hidden="true">
+      <span class="crop tl"></span><span class="crop tr"></span>
+      <span class="crop bl"></span><span class="crop br"></span>
+    </div>
 
+    <header class="masthead">
+      <div class="mast-row">
+        <div class="mast-left">
+          <a class="mast-brand" href="https://github.com/steipete/Trimmy" aria-label="Trimmy on GitHub">
+            <img class="mast-icon" src="./icon.png" alt="" aria-hidden="true" width="28" height="28" />
+            <span class="mast-name">Trimmy</span>
+          </a>
+          <span class="mast-meta">a menu-bar paste hygienist · for macOS 15&thinsp;+</span>
+        </div>
+        <div class="mast-right">
+          <span class="mast-issue">No.&nbsp;<em>0.8.0</em>&nbsp;·&nbsp;MMXXVI</span>
+        </div>
+      </div>
+      <hr class="rule double" />
+    </header>
+
+    <main class="paper">
       <section class="hero" aria-label="Overview">
-        <div class="copy" data-animate="2">
-          <div class="badges" aria-label="Highlights">
-            <span class="badge">macOS 15+</span>
-            <span class="badge">Free &amp; open source</span>
-            <span class="badge">Menu bar • no Dock icon</span>
+        <h1 class="headline">
+          <span class="line">Paste<span class="comma">,</span> <em>once.</em></span>
+          <span class="line">Run<span class="comma">,</span> <em>once.</em></span>
+        </h1>
+
+        <div class="hero-foot">
+          <div class="hero-cta">
+            <a class="btn ink" href="https://github.com/steipete/Trimmy/releases/latest">
+              <span aria-hidden="true">↓</span>&nbsp;Download Trimmy <span class="dim">·&nbsp;0.8.0</span>
+            </a>
+            <a class="btn paper-btn" href="https://github.com/steipete/Trimmy">View source on GitHub</a>
+            <span class="brew">or <code>brew install --cask steipete/tap/trimmy</code></span>
           </div>
-          <h2>Trim multi-line commands automatically.</h2>
-          <p>
-            Trimmy watches your clipboard and turns wrapped shell snippets into a single clean line, so they paste and
-            run exactly once.
-          </p>
-          <div class="cta">
-            <a class="btn primary" href="https://github.com/steipete/Trimmy/releases/latest">Download latest</a>
-            <a class="btn" href="https://github.com/steipete/Trimmy#readme">Read the docs</a>
-          </div>
-          <ul class="bullets" aria-label="What it does">
-            <li>Auto-trim when it looks like a command (respects <code>\</code> continuations).</li>
-            <li>One-click “Paste Trimmed” + “Paste Original” with global hotkeys.</li>
-            <li>Preview shows what will paste, and what gets removed.</li>
-          </ul>
+
+          <aside class="hero-note">
+            <span class="lineno">§&nbsp;Editor's note</span>
+            <p>
+              Trimmy watches your clipboard. When something looks like a shell command —
+              pipes, redirects, line continuations — it folds the whole snippet into a
+              single line you can actually paste and run.
+            </p>
+            <p class="muted">No dock icon. No network. No daemon outside macOS itself.</p>
+          </aside>
         </div>
-        <figure class="shot" data-animate="3">
-          <img src="./trimmy.png" alt="Trimmy menu showing Paste Trimmed and Paste Original." />
+      </section>
+
+      <hr class="rule" />
+
+      <section class="demo" aria-label="The cut, demonstrated">
+        <header class="sec-head">
+          <span class="lineno">§&nbsp;1</span>
+          <div>
+            <h2>The cut, demonstrated.</h2>
+            <p class="sec-sub">
+              A four-line <code>kubectl</code>&nbsp;|&nbsp;<code>jq</code> snippet on the
+              clipboard. Trimmy strikes the backslash continuations, drops the newlines,
+              and rewrites the clipboard in place.
+            </p>
+          </div>
+        </header>
+
+        <div class="terminal before">
+          <header class="term-bar">
+            <span class="dots"><i class="dot r"></i><i class="dot y"></i><i class="dot g"></i></span>
+            <span class="term-title">~ &mdash; zsh &mdash; clipboard</span>
+            <span class="term-tag">copied</span>
+          </header>
+          <pre><code><span class="prompt">$</span> kubectl get pods<span class="strike"> \</span>
+    -n kube-system<span class="strike"> \</span>
+    --selector='app=ingress'<span class="strike"> \</span>
+    -o json | jq '.items[].metadata.name'</code></pre>
+        </div>
+
+        <div class="cutline" aria-hidden="true">
+          <svg viewBox="0 0 1000 24" preserveAspectRatio="none">
+            <line class="cut-stroke" x1="44" y1="12" x2="970" y2="12" />
+          </svg>
+          <span class="scissor">✂</span>
+          <span class="cut-label">trimmy@auto · 4&nbsp;lines&nbsp;→&nbsp;1</span>
+        </div>
+
+        <div class="terminal after">
+          <header class="term-bar">
+            <span class="dots"><i class="dot r"></i><i class="dot y"></i><i class="dot g"></i></span>
+            <span class="term-title">~ &mdash; zsh &mdash; clipboard</span>
+            <span class="term-tag good">paste-ready</span>
+          </header>
+          <pre><code><span class="prompt">$</span> kubectl get pods -n kube-system --selector='app=ingress' -o json | jq '.items[].metadata.name'<span class="cursor">▍</span></code></pre>
+        </div>
+      </section>
+
+      <hr class="rule" />
+
+      <section class="features" aria-label="What it does">
+        <header class="sec-head">
+          <span class="lineno">§&nbsp;2</span>
+          <div>
+            <h2>What it does, exactly.</h2>
+            <p class="sec-sub">
+              Six small ideas, executed carefully. Settable per-context, so the
+              eagerness inside Ghostty or iTerm doesn't follow you into Notes.
+            </p>
+          </div>
+        </header>
+
+        <ol class="feat-list">
+          <li>
+            <span class="num">i.</span>
+            <h3>Watches the clipboard, quietly.</h3>
+            <p>
+              A 150&nbsp;ms timer with an 80&nbsp;ms grace window so promised
+              pasteboard data lands before Trimmy decides what to do.
+            </p>
+          </li>
+          <li>
+            <span class="num">ii.</span>
+            <h3>Knows when it's a command.</h3>
+            <p>
+              Pipes, redirects, backslash continuations, <code>$</code> /
+              <code>#</code> prompt gutters &mdash; all read as command cues.
+              Markdown headings stay intact.
+            </p>
+          </li>
+          <li>
+            <span class="num">iii.</span>
+            <h3>Four levels of aggression.</h3>
+            <p>
+              <em>None</em>, <em>Low</em>, <em>Normal</em>, <em>High</em>. Set
+              per-context: gentler for general apps, eager inside Terminal, iTerm,
+              Ghostty, Warp, kitty, WezTerm.
+            </p>
+          </li>
+          <li>
+            <span class="num">iv.</span>
+            <h3>Paste Trimmed &amp; Paste Original.</h3>
+            <p>
+              Two global hotkeys. The trimmed paste shows the target app and
+              strikes through removed characters in the preview before you commit.
+            </p>
+          </li>
+          <li>
+            <span class="num">v.</span>
+            <h3>Reflows wrapped Markdown.</h3>
+            <p>
+              An optional menu action collapses hard-wrapped paragraphs while
+              preserving fenced code blocks, headings, and intentional blank lines.
+            </p>
+          </li>
+          <li>
+            <span class="num">vi.</span>
+            <h3>Stays on your Mac.</h3>
+            <p>
+              No telemetry, no auth, no network requests except Sparkle's update
+              check. MIT licensed; readable Swift on GitHub.
+            </p>
+          </li>
+        </ol>
+      </section>
+
+      <hr class="rule" />
+
+      <section class="specimen" aria-label="The menu, in situ">
+        <header class="sec-head">
+          <span class="lineno">§&nbsp;3</span>
+          <div>
+            <h2>The menu, in situ.</h2>
+            <p class="sec-sub">
+              Trimmy lives left of the system clock. Two clicks, two hotkeys, one
+              toggle. The preview shows the target app and strikes out what
+              you'll lose.
+            </p>
+          </div>
+        </header>
+        <figure class="specimen-card">
+          <span class="tape" aria-hidden="true"></span>
+          <img src="./trimmy.png" alt="The Trimmy menu showing Paste Trimmed and Paste Original to Ghostty." />
+          <figcaption>fig.&nbsp;1 &mdash; Paste Trimmed → Ghostty · 96&nbsp;chars · 5&nbsp;trimmed.</figcaption>
         </figure>
       </section>
 
-      <section class="details" aria-label="Details" data-animate="4">
-        <div class="card">
-          <h3>Smart cleanup</h3>
-          <p>Strips prompt gutters, optional box-drawing chars, and keeps blank lines when you want them.</p>
-        </div>
-        <div class="card">
-          <h3>On-device</h3>
-          <p>No network calls. Everything happens locally on your Mac.</p>
-        </div>
-        <div class="card">
-          <h3>CLI</h3>
-          <p>Includes a headless trimmer for scripts: <code>swift run TrimmyCLI</code>.</p>
+      <hr class="rule" />
+
+      <section class="manpage" aria-label="Headless CLI">
+        <header class="sec-head">
+          <span class="lineno">§&nbsp;4</span>
+          <div>
+            <h2>Headless, for scripts.</h2>
+            <p class="sec-sub">
+              There's a CLI in the bundle if you'd rather pipe than click.
+              Same trimmer, no UI.
+            </p>
+          </div>
+        </header>
+
+        <div class="man">
+          <pre><code><span class="man-h">NAME</span>
+       <strong>trimmy</strong> &mdash; flatten multi-line shell snippets
+
+<span class="man-h">SYNOPSIS</span>
+       trimmy --trim &lt;path | -&gt; [--aggressiveness low|normal|high]
+                                 [--preserve-blank-lines] [--remove-box-drawing]
+                                 [--force] [--json]
+
+<span class="man-h">EXAMPLES</span>
+       <span class="prompt">$</span> pbpaste | swift run TrimmyCLI --trim - --force
+       <span class="prompt">$</span> swift run TrimmyCLI --trim ~/snippet.sh --json
+
+<span class="man-h">EXIT</span>     0 success      1 no input / error      2 no transformation      3 json error</code></pre>
         </div>
       </section>
 
-      <section class="wide" aria-label="Terminal example" data-animate="5">
-        <figure class="shot wide-shot">
-          <img src="./term-example.png" alt="Terminal example showing a wrapped command flattened into one line." />
-        </figure>
-      </section>
+      <hr class="rule double" />
 
-      <footer class="foot" data-animate="6">
-        <p>
-          Built by <a href="https://github.com/steipete">Peter Steinberger</a> •
-          <a href="https://github.com/steipete/Trimmy/blob/main/CHANGELOG.md">Changelog</a> •
+      <footer class="colophon">
+        <p class="signature">
+          Built by <a href="https://github.com/steipete">Peter Steinberger</a> in Vienna,
+          with help from a small pair of scissors.
+        </p>
+        <p class="set">
+          Set in <span class="serif">Fraunces</span> &amp; <span class="mono">JetBrains&nbsp;Mono</span>
+          &nbsp;·&nbsp;
+          <a href="https://github.com/steipete/Trimmy/blob/main/CHANGELOG.md">Changelog</a>
+          &nbsp;·&nbsp;
           <a href="https://github.com/steipete/Trimmy/blob/main/LICENSE">MIT</a>
         </p>
       </footer>

@@ -393,7 +393,7 @@ public struct TextCleaner: Sendable {
             with: "-$1",
             options: .regularExpression)
         result = result.replacingOccurrences(
-            of: #"(?<!\n)([A-Z0-9_.-])\s*\n\s*([A-Z0-9_.-])(?!\n)"#,
+            of: #"(?<!\n)([A-Z0-9_.-])\s*\n\s*(?!-)([A-Z0-9_.-])(?!\n)"#,
             with: "$1$2",
             options: .regularExpression)
         result = result.replacingOccurrences(

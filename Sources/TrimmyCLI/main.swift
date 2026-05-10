@@ -113,7 +113,9 @@ struct TrimmyCLI {
         self.readInput(path: path, stdinData: stdinData, isTTY: isTTY)
     }
 
-    static var _testVersion: String { self.bundledVersion }
+    static var _testVersion: String {
+        self.bundledVersion
+    }
     #endif
 
     static func helpText(version: String = TrimmyCLI.bundledVersion) -> String {

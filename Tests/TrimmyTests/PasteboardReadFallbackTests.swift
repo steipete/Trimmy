@@ -6,7 +6,7 @@ import Testing
 @Suite(.serialized)
 struct PasteboardReadFallbackTests {
     @Test
-    func readsStringWhenOnlyPublicTextAvailable() {
+    func `reads string when only public text available`() {
         let settings = AppSettings()
         settings.usePasteboardFallbacks = true
         let pasteboard = makeTestPasteboard()
@@ -18,7 +18,7 @@ struct PasteboardReadFallbackTests {
     }
 
     @Test
-    func defaultsLeaveFallbacksOff() {
+    func `defaults leave fallbacks off`() {
         let settings = AppSettings()
         settings.usePasteboardFallbacks = false
         #expect(settings.usePasteboardFallbacks == false)

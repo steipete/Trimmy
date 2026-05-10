@@ -6,7 +6,7 @@ import Testing
 @Suite(.serialized)
 struct ManualTrimLastSummaryTests {
     @Test
-    func manualTrimUpdatesLastEvenWhenNotCommand() {
+    func `manual trim updates last even when not command`() {
         let settings = AppSettings()
         settings.autoTrimEnabled = false
         let pasteboard = makeTestPasteboard()
