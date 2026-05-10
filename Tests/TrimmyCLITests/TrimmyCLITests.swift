@@ -5,7 +5,7 @@ import TrimmyCore
 
 struct TrimmyCLITests {
     @Test
-    func trimsMultilineCommand() {
+    func `trims multiline command`() {
         let input = """
         echo hi \\
         ls -la
@@ -19,7 +19,7 @@ struct TrimmyCLITests {
     }
 
     @Test
-    func noChangeSingleLine() {
+    func `no change single line`() {
         let input = "single line"
         let result = cliTrim(input, settings: CLISettings(), force: false)
         #expect(result.transformed == false)
@@ -27,7 +27,7 @@ struct TrimmyCLITests {
     }
 
     @Test
-    func removesBoxDrawing() {
+    func `removes box drawing`() {
         let input = "│ ls -la"
         let result = cliTrim(input, settings: CLISettings(removeBoxDrawing: true), force: false)
         #expect(result.transformed)
@@ -35,14 +35,14 @@ struct TrimmyCLITests {
     }
 
     @Test
-    func preservesBlankLinesWhenRequested() {
+    func `preserves blank lines when requested`() {
         let input = "a\n\nb"
         let result = cliTrim(input, settings: CLISettings(preserveBlankLines: true), force: false)
         #expect(result.trimmed.contains("\n\n"))
     }
 
     @Test
-    func ignoresStructuredJson() {
+    func `ignores structured json`() {
         let input = """
         {
           "Version": "2012-10-17",
@@ -68,7 +68,7 @@ struct TrimmyCLITests {
     }
 
     @Test
-    func pyenvInitStaysMultilineWhenSafer() {
+    func `pyenv init stays multiline when safer`() {
         let input = """
         export PYENV_ROOT="$HOME/.pyenv"
         [[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
@@ -86,7 +86,7 @@ struct TrimmyCLITests {
     }
 
     @Test
-    func readInputDoesNotBlockWhenTty() {
+    func `read input does not block when tty`() {
         let input = TrimmyCLI._testReadInput(path: nil, stdinData: nil, isTTY: true)
         #expect(input == nil)
 
@@ -96,12 +96,12 @@ struct TrimmyCLITests {
     }
 
     @Test
-    func versionStringAvailable() {
+    func `version string available`() {
         #expect(!TrimmyCLI._testVersion.isEmpty)
     }
 
     @Test
-    func helpIncludesVersionAndSynopsis() {
+    func `help includes version and synopsis`() {
         let help = TrimmyCLI.helpText(version: "0.6.0-test")
         #expect(help.contains("Version: 0.6.0-test"))
         #expect(help.contains("trimmy --trim"))

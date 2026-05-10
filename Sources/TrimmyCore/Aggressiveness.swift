@@ -2,7 +2,9 @@ import Foundation
 
 public enum Aggressiveness: String, CaseIterable, Identifiable, Codable, Sendable {
     case low, normal, high
-    public var id: String { self.rawValue }
+    public var id: String {
+        self.rawValue
+    }
 
     public var scoreThreshold: Int {
         switch self {

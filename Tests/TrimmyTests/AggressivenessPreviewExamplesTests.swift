@@ -3,10 +3,9 @@ import TrimmyCore
 @testable import Trimmy
 
 @MainActor
-@Suite
 struct AggressivenessPreviewExamplesTests {
     @Test
-    func lowExampleFlattensToSingleLine() {
+    func `low example flattens to single line`() {
         let sample = AggressivenessExample.example(for: Aggressiveness.low).sample
         let flattened = AggressivenessPreviewEngine.previewAfter(
             for: sample,
@@ -17,7 +16,7 @@ struct AggressivenessPreviewExamplesTests {
     }
 
     @Test
-    func normalExampleMatchesExpectation() {
+    func `normal example matches expectation`() {
         let sample = AggressivenessExample.example(for: Aggressiveness.normal).sample
         let flattened = AggressivenessPreviewEngine.previewAfter(
             for: sample,
@@ -28,7 +27,7 @@ struct AggressivenessPreviewExamplesTests {
     }
 
     @Test
-    func highExampleCollapsesLooseCommands() {
+    func `high example collapses loose commands`() {
         let sample = AggressivenessExample.example(for: Aggressiveness.high).sample
         let flattened = AggressivenessPreviewEngine.previewAfter(
             for: sample,
@@ -39,7 +38,7 @@ struct AggressivenessPreviewExamplesTests {
     }
 
     @Test
-    func previewCollapsesPathLineBreaks() {
+    func `preview collapses path line breaks`() {
         let sample = """
         ssh steipete@192.168.64.2 'chmod 600 ~/.ssh/github_rsa && chmod 644 ~/.ssh/
         github_rsa.pub'

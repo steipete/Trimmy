@@ -7,7 +7,9 @@ public enum GeneralAggressiveness: String, CaseIterable, Identifiable, Codable, 
     case normal
     case high
 
-    public var id: String { self.rawValue }
+    public var id: String {
+        self.rawValue
+    }
 
     public var title: String {
         switch self {

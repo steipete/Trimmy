@@ -10,6 +10,10 @@ struct CommandDetector {
         self.cleaner.cleanBoxDrawingCharacters(text, enabled: self.settings.removeBoxDrawing)
     }
 
+    func stripClaudeCodeDecoration(_ text: String) -> String? {
+        self.cleaner.stripClaudeCodeDecoration(text, enabled: self.settings.flattenClaudeCodePrompts)
+    }
+
     func stripPromptPrefixes(_ text: String) -> String? {
         self.cleaner.stripPromptPrefixes(text)
     }
@@ -52,6 +56,7 @@ struct CommandDetector {
         TrimConfig(
             aggressiveness: aggressiveness,
             preserveBlankLines: self.settings.preserveBlankLines,
-            removeBoxDrawing: self.settings.removeBoxDrawing)
+            removeBoxDrawing: self.settings.removeBoxDrawing,
+            flattenClaudeCodePrompts: self.settings.flattenClaudeCodePrompts)
     }
 }

@@ -81,9 +81,14 @@ public struct TextCleaner: Sendable {
         // Must contain at least one space that would cause shell issues
         guard trimmed.contains(" ") else { return nil }
 
+        // Skip slash commands (e.g., "/skill:cmd args")
+        if trimmed.range(of: #"^/[A-Za-z0-9_-]+(:[A-Za-z0-9_-]+)?\s"#, options: .regularExpression) != nil {
+            return nil
+        }
+
         // Skip if it looks like a command (has flags or multiple path-like segments separated by spaces)
         // e.g., "ls -la /some/path" should not be quoted as a single path
-        if trimmed.range(of: #"\s-[A-Za-z]"#, options: .regularExpression) != nil {
+        if trimmed.range(of: #"\s--?[A-Za-z]"#, options: .regularExpression) != nil {
             return nil
         }
 
@@ -103,6 +108,11 @@ public struct TextCleaner: Sendable {
         var wasTransformed = false
 
         if let cleaned = self.cleanBoxDrawingCharacters(currentText, enabled: config.removeBoxDrawing) {
+            currentText = cleaned
+            wasTransformed = true
+        }
+
+        if let cleaned = self.stripClaudeCodeDecoration(currentText, enabled: config.flattenClaudeCodePrompts) {
             currentText = cleaned
             wasTransformed = true
         }
@@ -383,7 +393,7 @@ public struct TextCleaner: Sendable {
             with: "-$1",
             options: .regularExpression)
         result = result.replacingOccurrences(
-            of: #"(?<!\n)([A-Z0-9_.-])\s*\n\s*([A-Z0-9_.-])(?!\n)"#,
+            of: #"(?<!\n)([A-Z0-9_.-])\s*\n\s*(?!-)([A-Z0-9_.-])(?!\n)"#,
             with: "$1$2",
             options: .regularExpression)
         result = result.replacingOccurrences(
@@ -485,6 +495,76 @@ public struct TextCleaner: Sendable {
             options: .regularExpression)
         let trimmed = collapsed.trimmingCharacters(in: .whitespacesAndNewlines)
         return trimmed == text ? nil : trimmed
+    }
+
+    // MARK: - Claude Code prompt stripping
+
+    public func stripClaudeCodeDecoration(_ text: String, enabled: Bool) -> String? {
+        guard enabled else { return nil }
+
+        let lines = text.split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
+        let nonEmptyLines = lines.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+        guard !nonEmptyLines.isEmpty else { return nil }
+
+        let firstNonEmpty = nonEmptyLines[0].trimmingCharacters(in: .whitespaces)
+
+        // A. Full decoration: first line starts with ❯, a horizontal rule line follows
+        if firstNonEmpty.hasPrefix("\u{276F}") {
+            let ruleIndex = lines.firstIndex { line in
+                let trimmed = line.trimmingCharacters(in: .whitespaces)
+                let dashes = trimmed.filter { $0 == "\u{2500}" || $0 == "\u{2501}" }
+                return dashes.count >= 10
+            }
+            if let ruleIndex {
+                // Take content after the rule, flatten
+                let contentLines = lines[(ruleIndex + 1)...]
+                let content = contentLines.map { String($0) }
+                let nonEmptyContent = content.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+                guard !nonEmptyContent.isEmpty else { return nil }
+                let result = self.flattenWrappedLines(nonEmptyContent)
+                return result == text ? nil : result
+            }
+            // B. ❯ prefix only: first line starts with ❯, no rule
+            let stripped = firstNonEmpty.drop { $0 == "\u{276F}" || $0.isWhitespace }
+            if nonEmptyLines.count == 1 {
+                let result = String(stripped)
+                return result == text ? nil : result
+            }
+            // Multi-line with ❯ prefix, no rule → strip ❯ from first line, flatten all
+            var allLines = nonEmptyLines.map { String($0) }
+            allLines[0] = String(stripped)
+            let result = self.flattenWrappedLines(allLines)
+            return result == text ? nil : result
+        }
+
+        // C. Slash command: first line matches /command or /skill:command pattern, multi-line
+        if firstNonEmpty.range(
+            of: #"^/[A-Za-z0-9_-]+(:[A-Za-z0-9_-]+)?($|[\s"])"#,
+            options: .regularExpression) != nil,
+            nonEmptyLines.count >= 2
+        {
+            let result = self.flattenWrappedLines(nonEmptyLines.map { String($0) })
+            return result == text ? nil : result
+        }
+
+        // E. Outer-quoted slash command: terminal wraps the command in quotes and escapes inner quotes
+        //    e.g. "/ralph-loop:ralph-loop \"args here\"" → /ralph-loop:ralph-loop "args here"
+        let trimmedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmedText.hasPrefix("\"/"), trimmedText.hasSuffix("\""), trimmedText.contains("\\\"") {
+            let unquoted = String(trimmedText.dropFirst().dropLast())
+            let unescaped = unquoted.replacingOccurrences(of: "\\\"", with: "\"")
+            return unescaped == text ? nil : unescaped
+        }
+
+        return nil
+    }
+
+    private func flattenWrappedLines(_ lines: [String]) -> String {
+        lines
+            .map { $0.trimmingCharacters(in: .whitespaces) }
+            .joined(separator: " ")
+            .replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     // MARK: - Prompt stripping helpers

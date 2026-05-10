@@ -1,10 +1,9 @@
 import Testing
 @testable import Trimmy
 
-@Suite
 struct MarkdownReformatterTests {
     @Test
-    func reflowsWrappedBulletsAndKeepsBlankLines() {
+    func `reflows wrapped bullets and keeps blank lines`() {
         let input = """
         - OpenAI Responses 400: "Item 'rs_...' of type 'reasoning' was provided
           without its required following item."
@@ -44,7 +43,7 @@ struct MarkdownReformatterTests {
     }
 
     @Test
-    func keepsFencedCodeBlocks() {
+    func `keeps fenced code blocks`() {
         let input = """
         - First item with code:
         ```
@@ -68,7 +67,7 @@ struct MarkdownReformatterTests {
     }
 
     @Test
-    func reflowsParagraphsAndBulletGlyphLists() {
+    func `reflows paragraphs and bullet glyph lists`() {
         let input = """
         The test process is still running, so I'll keep polling for updates
           until completion and then respond with the final status.
@@ -93,7 +92,7 @@ struct MarkdownReformatterTests {
     }
 
     @Test
-    func detectsMarkdownByHeadingsAndLists() {
+    func `detects markdown by headings and lists`() {
         let input = """
         ## Title
         - One
@@ -104,7 +103,7 @@ struct MarkdownReformatterTests {
     }
 
     @Test
-    func ignoresPlainWrappedText() {
+    func `ignores plain wrapped text`() {
         let input = """
         This is a wrapped paragraph
         with no markdown markers.

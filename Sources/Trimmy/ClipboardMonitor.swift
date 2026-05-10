@@ -12,7 +12,10 @@ final class ClipboardMonitor: ObservableObject {
     private let sourceTracker: ClipboardSourceTracker
     private var timer: DispatchSourceTimer?
     private var lastSeenChangeCount: Int
-    private var detector: CommandDetector { CommandDetector(settings: self.settings) }
+    private var detector: CommandDetector {
+        CommandDetector(settings: self.settings)
+    }
+
     private let pollInterval: DispatchTimeInterval = .milliseconds(150)
     private let pollLeeway: DispatchTimeInterval = .milliseconds(50)
     private let graceDelay: DispatchTimeInterval = .milliseconds(80)
@@ -453,6 +456,11 @@ extension ClipboardMonitor {
         }
 
         if let cleaned = self.detector.cleanBoxDrawingCharacters(currentText) {
+            currentText = cleaned
+            wasTransformed = true
+        }
+
+        if let cleaned = self.detector.stripClaudeCodeDecoration(currentText) {
             currentText = cleaned
             wasTransformed = true
         }

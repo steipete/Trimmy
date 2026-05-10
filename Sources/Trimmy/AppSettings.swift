@@ -11,6 +11,7 @@ public final class AppSettings: ObservableObject {
     @AppStorage("contextAwareTrimmingEnabled") public var contextAwareTrimmingEnabled: Bool = true
     @AppStorage("removeBoxDrawing") public var removeBoxDrawing: Bool = true
     @AppStorage("hideMenuBarIcon") var hideMenuBarIcon: Bool = false
+    @AppStorage("flattenClaudeCodePrompts") public var flattenClaudeCodePrompts: Bool = true
     @AppStorage("usePasteboardFallbacks") var usePasteboardFallbacks: Bool = false
     @AppStorage("showMarkdownReformatOption") var showMarkdownReformatOption: Bool = true
     @AppStorage("launchAtLogin") var launchAtLogin: Bool = false {

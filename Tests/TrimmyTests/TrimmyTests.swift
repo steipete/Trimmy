@@ -4,10 +4,9 @@ import TrimmyCore
 @testable import Trimmy
 
 @MainActor
-@Suite
 struct TrimmyTests {
     @Test
-    func detectsMultiLineCommand() {
+    func `detects multi line command`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .normal
         settings.preserveBlankLines = false
@@ -17,7 +16,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func skipsSingleLine() {
+    func `skips single line`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .normal
         let detector = CommandDetector(settings: settings)
@@ -25,7 +24,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func skipsLongCopies() {
+    func `skips long copies`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .normal
         let detector = CommandDetector(settings: settings)
@@ -34,7 +33,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func leavesStructuredJsonAlone() {
+    func `leaves structured json alone`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .normal
         let detector = CommandDetector(settings: settings)
@@ -61,7 +60,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func preservesBlankLinesWhenEnabled() {
+    func `preserves blank lines when enabled`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .normal
         settings.preserveBlankLines = true
@@ -71,7 +70,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func flattensBackslashContinuations() {
+    func `flattens backslash continuations`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .normal
         let detector = CommandDetector(settings: settings)
@@ -84,7 +83,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func flattensIndentedContinuationArguments() {
+    func `flattens indented continuation arguments`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .normal
         let detector = CommandDetector(settings: settings)
@@ -96,7 +95,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func repairsAllCapsTokenBreaks() {
+    func `repairs all caps token breaks`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .normal
         let detector = CommandDetector(settings: settings)
@@ -105,7 +104,25 @@ struct TrimmyTests {
     }
 
     @Test
-    func joinsHyphenWrappedSegments() {
+    func `preserves space before flags after line wrap`() {
+        let settings = AppSettings()
+        settings.generalAggressiveness = .normal
+        let detector = CommandDetector(settings: settings)
+        let text = """
+        go run ./cmd/metcli instagram feed sportg33k --inline --grid-cols 4 --thumb-cols 12
+        --page-grid-size 40
+        """
+        let expected = [
+            "go run ./cmd/metcli instagram feed sportg33k",
+            "--inline --grid-cols 4 --thumb-cols 12 --page-grid-size 40",
+        ].joined(separator: " ")
+        #expect(
+            detector.transformIfCommand(text)
+                == expected)
+    }
+
+    @Test
+    func `joins hyphen wrapped segments`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .normal
         let detector = CommandDetector(settings: settings)
@@ -118,7 +135,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func doesNotMergeListBullets() {
+    func `does not merge list bullets`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .high
         let detector = CommandDetector(settings: settings)
@@ -130,7 +147,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func repairWrappedURLStripsInternalWhitespace() {
+    func `repair wrapped URL strips internal whitespace`() {
         let settings = AppSettings()
         let detector = CommandDetector(settings: settings)
         let url = "https://example.com/some-\n path?foo=1&bar= two"
@@ -138,7 +155,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func repairWrappedURLNoopWhenAlreadyTight() {
+    func `repair wrapped URL noop when already tight`() {
         let settings = AppSettings()
         let detector = CommandDetector(settings: settings)
         let url = "https://example.com/already-clean?x=1"
@@ -146,7 +163,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func repairWrappedURLRejectsMultipleSchemes() {
+    func `repair wrapped URL rejects multiple schemes`() {
         let settings = AppSettings()
         let detector = CommandDetector(settings: settings)
         let text = "https://one.com http://two.com"
@@ -154,7 +171,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func repairWrappedURLRejectsWhenNoScheme() {
+    func `repair wrapped URL rejects when no scheme`() {
         let settings = AppSettings()
         let detector = CommandDetector(settings: settings)
         let text = "example.com/foo bar"
@@ -162,7 +179,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func collapsesBlankLinesWhenNotPreserved() {
+    func `collapses blank lines when not preserved`() {
         let settings = AppSettings()
         settings.preserveBlankLines = false
         settings.generalAggressiveness = .high // allow flattening with minimal cues
@@ -172,7 +189,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func ignoresHarmlessMultilineText() {
+    func `ignores harmless multiline text`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .low // stricter threshold to avoid flattening prose
         let detector = CommandDetector(settings: settings)
@@ -181,7 +198,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func pyenvInitStaysMultilineAtNormal() {
+    func `pyenv init stays multiline at normal`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .normal
         let detector = CommandDetector(settings: settings)
@@ -197,7 +214,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func lowAggressivenessNeedsClearSignals() {
+    func `low aggressiveness needs clear signals`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .low
         let detector = CommandDetector(settings: settings)
@@ -209,7 +226,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func highAggressivenessFlattensLooseCommands() {
+    func `high aggressiveness flattens loose commands`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .high
         let detector = CommandDetector(settings: settings)
@@ -221,7 +238,7 @@ struct TrimmyTests {
     }
 
     @Test(arguments: Aggressiveness.allCases)
-    func aggressivenessThresholds(_ level: Aggressiveness) {
+    func `aggressiveness thresholds`(_ level: Aggressiveness) {
         let settings = AppSettings()
         settings.generalAggressiveness = GeneralAggressiveness(rawValue: level.rawValue) ?? .normal
         let detector = CommandDetector(settings: settings)
@@ -234,7 +251,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func normalAggressivenessKeepsNonCommands() {
+    func `normal aggressiveness keeps non commands`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .normal
         let detector = CommandDetector(settings: settings)
@@ -247,7 +264,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func normalSkipsPlainIdLists() {
+    func `normal skips plain id lists`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .normal
         let detector = CommandDetector(settings: settings)
@@ -262,7 +279,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func skipsLongerMultilineSnippetsInNormalMode() {
+    func `skips longer multiline snippets in normal mode`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .normal
         let detector = CommandDetector(settings: settings)
@@ -279,7 +296,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func normalDoesNotFlattenSwiftSnippet() {
+    func `normal does not flatten swift snippet`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .normal
         let detector = CommandDetector(settings: settings)
@@ -303,7 +320,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func lowSkipsCodeButHighOverrideAllowsIt() {
+    func `low skips code but high override allows it`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .low
         let detector = CommandDetector(settings: settings)
@@ -321,7 +338,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func normalSkipsStructDefinition() {
+    func `normal skips struct definition`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .normal
         let detector = CommandDetector(settings: settings)
@@ -335,7 +352,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func highOverrideFlattensStructDefinition() {
+    func `high override flattens struct definition`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .low
         let detector = CommandDetector(settings: settings)
@@ -351,7 +368,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func preserveBlankLinesRoundTrip() {
+    func `preserve blank lines round trip`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .high
         settings.preserveBlankLines = true
@@ -366,7 +383,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func backslashWithoutCommandShouldFlattenOnlyWhenHigh() {
+    func `backslash without command should flatten only when high`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .low
         let detectorLow = CommandDetector(settings: settings)
@@ -383,7 +400,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func removesBoxDrawingCharacters() {
+    func `removes box drawing characters`() {
         let settings = AppSettings()
         settings.removeBoxDrawing = true
         let detector = CommandDetector(settings: settings)
@@ -392,7 +409,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func returnsNilWhenNoBoxDrawingCharacters() {
+    func `returns nil when no box drawing characters`() {
         let settings = AppSettings()
         let detector = CommandDetector(settings: settings)
         let text = "hello world test"
@@ -400,7 +417,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func respectsRemoveBoxDrawingSetting() {
+    func `respects remove box drawing setting`() {
         let settings = AppSettings()
         settings.removeBoxDrawing = false
         let detector = CommandDetector(settings: settings)
@@ -409,7 +426,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func collapsesExtraSpacesAfterStrippingBoxDrawing() {
+    func `collapses extra spaces after stripping box drawing`() {
         let settings = AppSettings()
         settings.removeBoxDrawing = true
         let detector = CommandDetector(settings: settings)
@@ -418,7 +435,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func boxDrawingRemovalIsNoOpWhenDisabled() {
+    func `box drawing removal is no op when disabled`() {
         let settings = AppSettings()
         settings.removeBoxDrawing = false
         let detector = CommandDetector(settings: settings)
@@ -427,7 +444,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func boxDrawingRemovalStillAllowsCommandFlattening() {
+    func `box drawing removal still allows command flattening`() {
         let settings = AppSettings()
         settings.removeBoxDrawing = true
         settings.generalAggressiveness = .high
@@ -444,7 +461,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func stripsLeadingBoxRunsAcrossLines() {
+    func `strips leading box runs across lines`() {
         let settings = AppSettings()
         settings.removeBoxDrawing = true
         settings.generalAggressiveness = .high
@@ -459,7 +476,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func stripsTrailingBoxRunsAcrossLines() {
+    func `strips trailing box runs across lines`() {
         let settings = AppSettings()
         settings.removeBoxDrawing = true
         settings.generalAggressiveness = .high
@@ -474,7 +491,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func stripsLeadingWhenMostLinesShareGutter() {
+    func `strips leading when most lines share gutter`() {
         let settings = AppSettings()
         settings.removeBoxDrawing = true
         let detector = CommandDetector(settings: settings)
@@ -488,7 +505,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func stripsTrailingWhenMostLinesShareGutter() {
+    func `strips trailing when most lines share gutter`() {
         let settings = AppSettings()
         settings.removeBoxDrawing = true
         let detector = CommandDetector(settings: settings)
@@ -502,7 +519,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func doesNotStripWhenGutterBelowMajority() {
+    func `does not strip when gutter below majority`() {
         let settings = AppSettings()
         settings.removeBoxDrawing = true
         let detector = CommandDetector(settings: settings)
@@ -515,7 +532,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func stripsSingleLineWithLeadingGutter() {
+    func `strips single line with leading gutter`() {
         let settings = AppSettings()
         settings.removeBoxDrawing = true
         let detector = CommandDetector(settings: settings)
@@ -524,7 +541,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func stripsBothSidesWhenMostLinesDo() {
+    func `strips both sides when most lines do`() {
         let settings = AppSettings()
         settings.removeBoxDrawing = true
         settings.generalAggressiveness = .high
@@ -540,7 +557,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func ignoresGutterDetectionOnEmptyLines() {
+    func `ignores gutter detection on empty lines`() {
         let settings = AppSettings()
         settings.removeBoxDrawing = true
         let detector = CommandDetector(settings: settings)
@@ -556,7 +573,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func stripsLeadingAndTrailingBoxRunsWithMixedCounts() {
+    func `strips leading and trailing box runs with mixed counts`() {
         let settings = AppSettings()
         settings.removeBoxDrawing = true
         settings.generalAggressiveness = .high
@@ -571,7 +588,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func doesNotStripMidLineBoxGlyphsWithoutSharedGutter() {
+    func `does not strip mid line box glyphs without shared gutter`() {
         let settings = AppSettings()
         settings.removeBoxDrawing = true
         let detector = CommandDetector(settings: settings)
@@ -580,7 +597,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func boxDrawingRemovalDoesNotStripLegitPipes() {
+    func `box drawing removal does not strip legit pipes`() {
         let settings = AppSettings()
         settings.removeBoxDrawing = true
         let detector = CommandDetector(settings: settings)
@@ -592,7 +609,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func summaryEllipsizesLongPreview() {
+    func `summary ellipsizes long preview`() {
         let long = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         // limit 20 -> head 9, tail 10, plus ellipsis
         let truncated = ClipboardMonitor.ellipsize(long, limit: 20)
@@ -601,13 +618,13 @@ struct TrimmyTests {
     }
 
     @Test
-    func summaryDoesNotEllipsizeShortPreview() {
+    func `summary does not ellipsize short preview`() {
         let text = "short preview"
         #expect(ClipboardMonitor.ellipsize(text, limit: 90) == text)
     }
 
     @Test
-    func stripsPromptFromSingleLineCommand() {
+    func `strips prompt from single line command`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .normal
         let detector = CommandDetector(settings: settings)
@@ -616,7 +633,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func doesNotStripMarkdownHeading() {
+    func `does not strip markdown heading`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .normal
         let detector = CommandDetector(settings: settings)
@@ -624,7 +641,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func stripsPromptAcrossMajorityOfLines() {
+    func `strips prompt across majority of lines`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .normal
         let detector = CommandDetector(settings: settings)
@@ -639,7 +656,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func doesNotStripPromptWhenOnlyOneLineLooksLikeHeading() {
+    func `does not strip prompt when only one line looks like heading`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .normal
         let detector = CommandDetector(settings: settings)
@@ -653,7 +670,7 @@ struct TrimmyTests {
     // MARK: - Path Quoting Tests
 
     @Test
-    func quotesAbsolutePathWithSpaces() {
+    func `quotes absolute path with spaces`() {
         let settings = AppSettings()
         let detector = CommandDetector(settings: settings)
         let path = "/Users/anton/My Documents/project"
@@ -661,7 +678,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func quotesHomeRelativePathWithSpaces() {
+    func `quotes home relative path with spaces`() {
         let settings = AppSettings()
         let detector = CommandDetector(settings: settings)
         let path = "~/Library/Application Support/SomeApp"
@@ -669,7 +686,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func quotesCurrentDirRelativePathWithSpaces() {
+    func `quotes current dir relative path with spaces`() {
         let settings = AppSettings()
         let detector = CommandDetector(settings: settings)
         let path = "./My Project/src"
@@ -677,7 +694,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func quotesParentDirRelativePathWithSpaces() {
+    func `quotes parent dir relative path with spaces`() {
         let settings = AppSettings()
         let detector = CommandDetector(settings: settings)
         let path = "../Other Project/lib"
@@ -685,7 +702,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func doesNotQuotePathWithoutSpaces() {
+    func `does not quote path without spaces`() {
         let settings = AppSettings()
         let detector = CommandDetector(settings: settings)
         let path = "/Users/anton/Documents/project"
@@ -693,7 +710,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func doesNotQuoteAlreadyQuotedPath() {
+    func `does not quote already quoted path`() {
         let settings = AppSettings()
         let detector = CommandDetector(settings: settings)
         let path = "\"/Users/anton/My Documents/project\""
@@ -701,7 +718,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func doesNotQuoteAlreadySingleQuotedPath() {
+    func `does not quote already single quoted path`() {
         let settings = AppSettings()
         let detector = CommandDetector(settings: settings)
         let path = "'/Users/anton/My Documents/project'"
@@ -709,7 +726,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func doesNotQuoteMultiLinePaths() {
+    func `does not quote multi line paths`() {
         let settings = AppSettings()
         let detector = CommandDetector(settings: settings)
         let path = "/Users/anton/My Documents\n/another/path"
@@ -717,7 +734,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func doesNotQuoteCommandWithFlags() {
+    func `does not quote command with flags`() {
         let settings = AppSettings()
         let detector = CommandDetector(settings: settings)
         // This looks like a command, not a path
@@ -726,7 +743,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func doesNotQuoteCommandWithPathArgument() {
+    func `does not quote command with path argument`() {
         let settings = AppSettings()
         let detector = CommandDetector(settings: settings)
         let text = "cd /Users/anton/My Documents"
@@ -734,7 +751,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func doesNotQuoteCommandWithPathArgumentWithoutFlags() {
+    func `does not quote command with path argument without flags`() {
         let settings = AppSettings()
         let detector = CommandDetector(settings: settings)
         let text = "open /Users/anton/My Documents"
@@ -742,7 +759,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func doesNotQuoteSentenceContainingPath() {
+    func `does not quote sentence containing path`() {
         let settings = AppSettings()
         let detector = CommandDetector(settings: settings)
         let text = "See /Users/anton/My Documents for details"
@@ -750,7 +767,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func doesNotQuoteNonPathText() {
+    func `does not quote non path text`() {
         let settings = AppSettings()
         let detector = CommandDetector(settings: settings)
         let text = "just some text with spaces"
@@ -758,7 +775,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func escapesExistingDoubleQuotesInPath() {
+    func `escapes existing double quotes in path`() {
         let settings = AppSettings()
         let detector = CommandDetector(settings: settings)
         let path = "/Users/anton/My \"Special\" Folder"
@@ -766,7 +783,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func trimsWhitespaceBeforeQuoting() {
+    func `trims whitespace before quoting`() {
         let settings = AppSettings()
         let detector = CommandDetector(settings: settings)
         let path = "  /Users/anton/My Documents/project  \n"
@@ -774,7 +791,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func quotesRelativePathWithSpaces() {
+    func `quotes relative path with spaces`() {
         let settings = AppSettings()
         let detector = CommandDetector(settings: settings)
         let path = "designcode.io/SwiftUI for iOS 17/Xcode Final/iOS17"
@@ -782,7 +799,7 @@ struct TrimmyTests {
     }
 
     @Test
-    func doesNotQuoteURLs() {
+    func `does not quote UR ls`() {
         let settings = AppSettings()
         let detector = CommandDetector(settings: settings)
         let url = "https://example.com/path with spaces"

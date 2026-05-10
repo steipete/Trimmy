@@ -33,6 +33,11 @@ struct GeneralSettingsPane: View {
                 binding: self.$settings.removeBoxDrawing)
 
             PreferenceToggleRow(
+                title: "Flatten Claude Code prompts",
+                subtitle: "Strip terminal decoration (❯, ───) and flatten wrapped prompts from Claude Code.",
+                binding: self.$settings.flattenClaudeCodePrompts)
+
+            PreferenceToggleRow(
                 title: "Show Markdown reformat option",
                 subtitle: "Expose a menu-only paste action that reflows markdown bullets and headings.",
                 binding: self.$settings.showMarkdownReformatOption)
