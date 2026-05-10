@@ -539,7 +539,7 @@ public struct TextCleaner: Sendable {
 
         // C. Slash command: first line matches /command or /skill:command pattern, multi-line
         if firstNonEmpty.range(
-            of: #"^/[A-Za-z0-9_-]+(:[A-Za-z0-9_-]+)?[\s"]"#,
+            of: #"^/[A-Za-z0-9_-]+(:[A-Za-z0-9_-]+)?($|[\s"])"#,
             options: .regularExpression) != nil,
             nonEmptyLines.count >= 2
         {
@@ -550,32 +550,13 @@ public struct TextCleaner: Sendable {
         // E. Outer-quoted slash command: terminal wraps the command in quotes and escapes inner quotes
         //    e.g. "/ralph-loop:ralph-loop \"args here\"" → /ralph-loop:ralph-loop "args here"
         let trimmedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        if trimmedText.hasPrefix("\"/") && trimmedText.hasSuffix("\"") && trimmedText.contains("\\\"") {
+        if trimmedText.hasPrefix("\"/"), trimmedText.hasSuffix("\""), trimmedText.contains("\\\"") {
             let unquoted = String(trimmedText.dropFirst().dropLast())
             let unescaped = unquoted.replacingOccurrences(of: "\\\"", with: "\"")
             return unescaped == text ? nil : unescaped
         }
 
-        // D. Terminal-wrapped text: multi-line, all continuation lines start with whitespace,
-        //    no blank lines (single paragraph), not code, not a list
-        guard nonEmptyLines.count >= 2 else { return nil }
-        // Must be a single paragraph (no interior blank lines)
-        let interiorLines = lines.dropFirst().dropLast()
-        let hasInteriorBlankLines = interiorLines.contains { line in
-            line.trimmingCharacters(in: .whitespaces).isEmpty
-        }
-        if hasInteriorBlankLines { return nil }
-
-        // All continuation lines must start with whitespace
-        let continuations = nonEmptyLines.dropFirst()
-        guard continuations.allSatisfy({ $0.first?.isWhitespace == true }) else { return nil }
-        // Not code
-        if self.isLikelySourceCode(text) { return nil }
-        // Not a list
-        if self.isLikelyList(lines) { return nil }
-
-        let result = self.flattenWrappedLines(nonEmptyLines.map { String($0) })
-        return result == text ? nil : result
+        return nil
     }
 
     private func flattenWrappedLines(_ lines: [String]) -> String {

@@ -4,26 +4,25 @@ import TrimmyCore
 @testable import Trimmy
 
 @MainActor
-@Suite
 struct ClaudeCodePromptTests {
     private let cleaner = TextCleaner()
 
     // MARK: - Scenario A: Full decoration (❯ + rule + duplicate content)
 
     @Test
-    func stripsFullDecoration() {
+    func `strips full decoration`() {
         let text = """
         ❯ /skill:cmd "some args"
         ──────────────────────
         /skill:cmd "some args"
           --flag value
         """
-        let result = cleaner.stripClaudeCodeDecoration(text, enabled: true)
+        let result = self.cleaner.stripClaudeCodeDecoration(text, enabled: true)
         #expect(result == "/skill:cmd \"some args\" --flag value")
     }
 
     @Test
-    func flattensFullDecorationWithWrappedArgs() {
+    func `flattens full decoration with wrapped args`() {
         let text = """
         ❯ /my-skill:run-task "Analyze the dataset
           for patterns and report
@@ -33,7 +32,7 @@ struct ClaudeCodePromptTests {
           for patterns and report
           findings" --max-iterations 10
         """
-        let result = cleaner.stripClaudeCodeDecoration(text, enabled: true)
+        let result = self.cleaner.stripClaudeCodeDecoration(text, enabled: true)
         #expect(result ==
             "/my-skill:run-task \"Analyze the dataset for patterns and report findings\" --max-iterations 10")
     }
@@ -41,95 +40,105 @@ struct ClaudeCodePromptTests {
     // MARK: - Scenario B: Raw slash command (multi-line, no decoration)
 
     @Test
-    func flattensRawSlashCommand() {
+    func `flattens raw slash command`() {
         let text = """
         /skill:cmd "args
           wrapped" --flag
         """
-        let result = cleaner.stripClaudeCodeDecoration(text, enabled: true)
+        let result = self.cleaner.stripClaudeCodeDecoration(text, enabled: true)
         #expect(result == "/skill:cmd \"args wrapped\" --flag")
+    }
+
+    @Test
+    func `flattens raw slash command with arguments on continuation line`() {
+        let text = """
+        /commit
+          --amend --no-edit
+        """
+        let result = self.cleaner.stripClaudeCodeDecoration(text, enabled: true)
+        #expect(result == "/commit --amend --no-edit")
     }
 
     // MARK: - Scenario A/C hybrid: short prompt with decoration
 
     @Test
-    func stripsShortPromptWithDecoration() {
+    func `strips short prompt with decoration`() {
         let text = """
         ❯ /commit
         ──────────
         /commit
         """
-        let result = cleaner.stripClaudeCodeDecoration(text, enabled: true)
+        let result = self.cleaner.stripClaudeCodeDecoration(text, enabled: true)
         #expect(result == "/commit")
     }
 
     // MARK: - Scenario C: ❯ prefix only (single line)
 
     @Test
-    func stripsPartialPromptPrefix() {
+    func `strips partial prompt prefix`() {
         let text = "❯ /commit"
-        let result = cleaner.stripClaudeCodeDecoration(text, enabled: true)
+        let result = self.cleaner.stripClaudeCodeDecoration(text, enabled: true)
         #expect(result == "/commit")
     }
 
     // MARK: - Scenario E: Outer-quoted slash command
 
     @Test
-    func stripsOuterQuotesAndUnescapes() {
+    func `strips outer quotes and unescapes`() {
         let text = #""/my-skill:run-task \"Analyze the data for anomalies\" --max-iterations=50""#
-        let result = cleaner.stripClaudeCodeDecoration(text, enabled: true)
+        let result = self.cleaner.stripClaudeCodeDecoration(text, enabled: true)
         #expect(result == #"/my-skill:run-task "Analyze the data for anomalies" --max-iterations=50"#)
     }
 
     @Test
-    func stripsOuterQuotesLongPrompt() {
-        let text = #""/my-skill:run-task \"Run a full analysis on the dataset. Check for patterns and outliers. Verify all results against baseline. Continue iterating until confidence is high enough to report.\" --max-iterations=100""#
-        let result = cleaner.stripClaudeCodeDecoration(text, enabled: true)
+    func `strips outer quotes long prompt`() {
+        let text = #""/my-skill:run-task \"Run a full analysis on the dataset. Check for patterns and outliers. "# +
+            #"Verify all results against baseline. Continue iterating until confidence is high enough to report.\" "# +
+            #"--max-iterations=100""#
+        let result = self.cleaner.stripClaudeCodeDecoration(text, enabled: true)
         #expect(result != nil)
         #expect(result?.hasPrefix("/my-skill:run-task \"Run a full") == true)
         #expect(result?.hasSuffix("--max-iterations=100") == true)
         #expect(result?.contains("\\\"") == false)
     }
 
-    // MARK: - Scenario D: Terminal-wrapped text
-
-    @Test
-    func flattensTerminalWrappedText() {
-        let text = """
-        This is a long prompt that got
-          wrapped by the terminal to the
-          next line automatically
-        """
-        let result = cleaner.stripClaudeCodeDecoration(text, enabled: true)
-        #expect(result == "This is a long prompt that got wrapped by the terminal to the next line automatically")
-    }
-
     // MARK: - Negative cases
 
     @Test
-    func doesNotFlattenCode() {
+    func `does not flatten plain terminal wrapped text`() {
+        let text = """
+        This is a long paragraph that got
+          wrapped by the terminal to the
+          next line automatically
+        """
+        let result = self.cleaner.stripClaudeCodeDecoration(text, enabled: true)
+        #expect(result == nil)
+    }
+
+    @Test
+    func `does not flatten code`() {
         let text = """
         func hello() {
             print("world")
         }
         """
-        let result = cleaner.stripClaudeCodeDecoration(text, enabled: true)
+        let result = self.cleaner.stripClaudeCodeDecoration(text, enabled: true)
         #expect(result == nil)
     }
 
     @Test
-    func doesNotFlattenLists() {
+    func `does not flatten lists`() {
         let text = """
         - item one
         - item two
         - item three
         """
-        let result = cleaner.stripClaudeCodeDecoration(text, enabled: true)
+        let result = self.cleaner.stripClaudeCodeDecoration(text, enabled: true)
         #expect(result == nil)
     }
 
     @Test
-    func doesNotFlattenMultiParagraph() {
+    func `does not flatten multi paragraph`() {
         let text = """
         First paragraph that is
           long enough.
@@ -137,34 +146,34 @@ struct ClaudeCodePromptTests {
         Second paragraph here
           also wrapped.
         """
-        let result = cleaner.stripClaudeCodeDecoration(text, enabled: true)
+        let result = self.cleaner.stripClaudeCodeDecoration(text, enabled: true)
         #expect(result == nil)
     }
 
     @Test
-    func doesNotStripPlainSingleLine() {
+    func `does not strip plain single line`() {
         let text = "just a single line of text"
-        let result = cleaner.stripClaudeCodeDecoration(text, enabled: true)
+        let result = self.cleaner.stripClaudeCodeDecoration(text, enabled: true)
         #expect(result == nil)
     }
 
     // MARK: - Setting respect
 
     @Test
-    func respectsDisabledSetting() {
+    func `respects disabled setting`() {
         let text = """
         ❯ /commit
         ──────────
         /commit
         """
-        let result = cleaner.stripClaudeCodeDecoration(text, enabled: false)
+        let result = self.cleaner.stripClaudeCodeDecoration(text, enabled: false)
         #expect(result == nil)
     }
 
     // MARK: - Full pipeline integration
 
     @Test
-    func fullPipelineIntegration() {
+    func `full pipeline integration`() {
         let text = """
         ❯ /commit
         ──────────
@@ -175,13 +184,13 @@ struct ClaudeCodePromptTests {
             preserveBlankLines: false,
             removeBoxDrawing: true,
             flattenClaudeCodePrompts: true)
-        let result = cleaner.transform(text, config: config)
+        let result = self.cleaner.transform(text, config: config)
         #expect(result.wasTransformed)
         #expect(result.trimmed == "/commit")
     }
 
     @Test
-    func pipelineDisabledSetting() {
+    func `pipeline disabled setting`() {
         let text = """
         ❯ /commit
         ──────────
@@ -192,9 +201,7 @@ struct ClaudeCodePromptTests {
             preserveBlankLines: false,
             removeBoxDrawing: true,
             flattenClaudeCodePrompts: false)
-        let result = cleaner.transform(text, config: config)
-        // The ❯ and ─── won't be handled by Claude Code stripping,
-        // but other pipeline steps may still transform it
-        #expect(result.trimmed != "/commit" || !result.wasTransformed)
+        let result = self.cleaner.transform(text, config: config)
+        #expect(result.trimmed == "❯ /commit\n──────────\n/commit")
     }
 }
