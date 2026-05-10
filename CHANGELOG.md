@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- Claude Code: add optional prompt-decoration flattening for copied slash commands while preserving ordinary wrapped prose (#19, thanks @evoleinik).
+
 ## 0.8.0 — 2026-01-19
 - Added a menu-only “Paste Reformatted Markdown” action to join wrapped markdown paragraphs and bullet lists while preserving blank lines and fenced code blocks.
 - Path quoting now only wraps standalone paths (not commands or sentences) when they contain spaces (#17, thanks @n0an).
