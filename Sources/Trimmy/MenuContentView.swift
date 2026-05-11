@@ -158,7 +158,7 @@ extension MenuContentView {
             if self.settings.showMarkdownReformatOption,
                let markdownPreviewSource = self.markdownPreviewSource
             {
-                let markdownStatsSuffix = self.statsSuffix(for: markdownPreviewSource, showTruncations: true)
+                let markdownStatsSuffix = self.statsSuffix(for: markdownPreviewSource)
                 Button("Paste Reformatted Markdown to \(self.targetAppLabel)\(markdownStatsSuffix)") {
                     self.handlePasteReformattedMarkdown()
                 }
@@ -174,7 +174,7 @@ extension MenuContentView {
             if self.settings.showURLQueryParamStripOption,
                let strippedURLPreviewSource = self.strippedURLPreviewSource
             {
-                let strippedStatsSuffix = self.statsSuffix(for: strippedURLPreviewSource, showTruncations: false)
+                let strippedStatsSuffix = self.statsSuffix(for: strippedURLPreviewSource)
                 Button("Paste without Query Params to \(self.targetAppLabel)\(strippedStatsSuffix)") {
                     self.handlePasteStrippingURLQueryParams()
                 }
@@ -217,31 +217,16 @@ extension MenuContentView {
     }
 
     private var trimmedStatsSuffix: String {
-        guard let trimmed = self.monitor.trimmedPreviewSource() else { return "" }
-        let base = PreviewMetrics.prettyBadge(
-            count: trimmed.count,
-            limit: MenuPreview.limit,
-            showTruncations: true)
-        if let original = self.monitor.originalPreviewSource(),
-           original.count > trimmed.count
-        {
-            let removed = original.count - trimmed.count
-            return "\(base) · \(removed) trimmed"
-        }
-        return base
+        self.statsSuffix(for: self.monitor.trimmedPreviewSource())
     }
 
     private var originalStatsSuffix: String {
-        // Show length for the original, but don’t report “trimmed” counts since it is the unmodified text.
-        self.statsSuffix(for: self.monitor.originalPreviewSource(), showTruncations: false)
+        self.statsSuffix(for: self.monitor.originalPreviewSource())
     }
 
-    private func statsSuffix(for text: String?, showTruncations: Bool) -> String {
+    private func statsSuffix(for text: String?) -> String {
         guard let text else { return "" }
-        return PreviewMetrics.prettyBadge(
-            count: text.count,
-            limit: MenuPreview.limit,
-            showTruncations: showTruncations)
+        return PreviewMetrics.prettyBadge(count: text.count)
     }
 
     private var markdownPreviewSource: String? {
