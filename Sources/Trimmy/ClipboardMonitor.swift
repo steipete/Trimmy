@@ -506,6 +506,11 @@ extension ClipboardMonitor {
             wasTransformed = true
         }
 
+        if let dedentedParagraph = self.detector.dedentParagraphIndent(currentText) {
+            currentText = dedentedParagraph
+            wasTransformed = true
+        }
+
         return ClipboardVariants(
             original: text,
             trimmed: currentText,

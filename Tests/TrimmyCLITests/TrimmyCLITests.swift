@@ -42,6 +42,24 @@ struct TrimmyCLITests {
     }
 
     @Test
+    func `dedents prose copied with shared indentation`() {
+        let input = """
+        Hello,
+         This paragraph line has accidental indentation.
+         This one does too.
+        """
+        let expected = """
+        Hello,
+        This paragraph line has accidental indentation.
+        This one does too.
+        """
+
+        let result = cliTrim(input, settings: CLISettings(), force: false)
+        #expect(result.transformed)
+        #expect(result.trimmed == expected)
+    }
+
+    @Test
     func `ignores structured json`() {
         let input = """
         {

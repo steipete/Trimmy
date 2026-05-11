@@ -26,6 +26,10 @@ struct CommandDetector {
         self.cleaner.quotePathWithSpaces(text)
     }
 
+    func dedentParagraphIndent(_ text: String) -> String? {
+        self.cleaner.dedentParagraphIndent(text)
+    }
+
     func transformIfCommand(_ text: String, aggressivenessOverride: Aggressiveness? = nil) -> String? {
         let baseAggressiveness = self.settings.generalAggressiveness.coreAggressiveness
         guard let aggressiveness = aggressivenessOverride ?? baseAggressiveness else { return nil }

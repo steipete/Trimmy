@@ -3,6 +3,7 @@
 ## Unreleased
 - Claude Code: add optional prompt-decoration flattening for copied slash commands while preserving ordinary wrapped prose (#19, thanks @evoleinik).
 - Settings: add an option to hide the menu bar icon while keeping Trimmy running (#24, thanks @qazi0).
+- Text cleanup: dedent copied prose where most paragraph lines share the same leading whitespace (#10, thanks @arunsathiya).
 
 ## 0.8.0 — 2026-01-19
 - Added a menu-only “Paste Reformatted Markdown” action to join wrapped markdown paragraphs and bullet lists while preserving blank lines and fenced code blocks.

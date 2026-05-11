@@ -97,6 +97,51 @@ public struct TextCleaner: Sendable {
         return "\"\(escaped)\""
     }
 
+    /// Removes shared leading indentation from prose paragraphs while avoiding code, lists, and commands.
+    public func dedentParagraphIndent(_ text: String) -> String? {
+        guard text.contains(where: \.isNewline) else { return nil }
+
+        let lines = text.split(omittingEmptySubsequences: false, whereSeparator: \.isNewline).map(String.init)
+        let nonEmptyIndices = lines.indices.filter {
+            !lines[$0].trimmingCharacters(in: .whitespaces).isEmpty
+        }
+        guard nonEmptyIndices.count >= 2 else { return nil }
+
+        let nonEmptyLines = nonEmptyIndices.map { lines[$0][...] }
+        guard !self.isLikelyList(nonEmptyLines),
+              !self.isLikelySourceCode(text),
+              !self.isLikelyStructuredData(nonEmptyLines),
+              !self.hasCommandPunctuation(text)
+        else {
+            return nil
+        }
+
+        let indentedProseLines = nonEmptyIndices.compactMap { index -> Int? in
+            let line = lines[index]
+            let indent = line.prefix(while: \.isWhitespace).count
+            guard indent > 0 else { return nil }
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            guard self.isLikelyProseLine(trimmed) else { return nil }
+            return indent
+        }
+
+        let requiredIndentedLines = max(2, nonEmptyIndices.count / 2 + 1)
+        guard indentedProseLines.count >= requiredIndentedLines,
+              let commonIndent = indentedProseLines.min(),
+              commonIndent > 0
+        else {
+            return nil
+        }
+
+        let dedented = lines.map { line -> String in
+            let indent = line.prefix(while: \.isWhitespace).count
+            guard indent >= commonIndent else { return line }
+            return String(line.dropFirst(commonIndent))
+        }.joined(separator: "\n")
+
+        return dedented == text ? nil : dedented
+    }
+
     // MARK: - Public pipeline
 
     public func transform(
@@ -138,6 +183,11 @@ public struct TextCleaner: Sendable {
             aggressivenessOverride: aggressivenessOverride)
         {
             currentText = commandTransformed
+            wasTransformed = true
+        }
+
+        if let dedentedParagraph = self.dedentParagraphIndent(currentText) {
+            currentText = dedentedParagraph
             wasTransformed = true
         }
 
@@ -351,6 +401,31 @@ public struct TextCleaner: Sendable {
         if text.contains("<") || text.contains(">") { return true }
 
         return false
+    }
+
+    private func isLikelyProseLine(_ line: String) -> Bool {
+        guard let first = line.first, first.isLetter || "\"'(".contains(first) else { return false }
+        if line.range(of: #"^[-*•]|^[0-9]+[.)]\s|^(?:\$|#|>|[|&;{}])"#, options: .regularExpression) != nil {
+            return false
+        }
+        if line.range(of: #"^["'][^"']+["']\s*:"#, options: .regularExpression) != nil {
+            return false
+        }
+        if line.range(
+            of: #"^(?:sudo|git|npm|pnpm|yarn|swift|xcodebuild|docker|kubectl|cd|ls|cat|echo|make)\b"#,
+            options: [.regularExpression, .caseInsensitive]) != nil
+        {
+            return false
+        }
+        return line.contains(where: \.isWhitespace) || line.range(of: #"[,.!?;:]"#, options: .regularExpression) != nil
+    }
+
+    private func isLikelyStructuredData(_ lines: [Substring]) -> Bool {
+        lines.contains { line in
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if ["{", "}", "[", "]"].contains(trimmed) { return true }
+            return trimmed.range(of: #"^["'][^"']+["']\s*:"#, options: .regularExpression) != nil
+        }
     }
 
     private func isLikelyList(_ lines: [Substring]) -> Bool {
