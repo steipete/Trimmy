@@ -12,6 +12,14 @@ public final class AppSettings: ObservableObject {
     @AppStorage("removeBoxDrawing") public var removeBoxDrawing: Bool = true
     @AppStorage("hideMenuBarIcon") var hideMenuBarIcon: Bool = false
     @AppStorage("flattenClaudeCodePrompts") public var flattenClaudeCodePrompts: Bool = true
+    @AppStorage("showURLQueryParamStripOption") public var showURLQueryParamStripOption: Bool = true
+    @AppStorage("urlQueryParamCustomRules") public var urlQueryParamCustomRules: String = URLQueryParamRules.defaultRulesText {
+        didSet { self.refreshParsedURLQueryParamRules() }
+    }
+
+    // Cached parse of urlQueryParamCustomRules. Recomputed only when the raw string changes, so the
+    // menu's per-render rule lookup doesn't re-split/-trim/-lowercase the text on every body re-render.
+    @Published public private(set) var parsedURLQueryParamRules: [URLQueryParamRule] = []
     @AppStorage("usePasteboardFallbacks") var usePasteboardFallbacks: Bool = false
     @AppStorage("showMarkdownReformatOption") var showMarkdownReformatOption: Bool = true
     @AppStorage("launchAtLogin") var launchAtLogin: Bool = false {
@@ -41,6 +49,11 @@ public final class AppSettings: ObservableObject {
     public init() {
         Self.migrateAggressivenessDefaults()
         LaunchAtLoginManager.setEnabled(self.launchAtLogin)
+        self.refreshParsedURLQueryParamRules()
+    }
+
+    private func refreshParsedURLQueryParamRules() {
+        self.parsedURLQueryParamRules = URLQueryParamRules.parseCustomRules(self.urlQueryParamCustomRules)
     }
 }
 

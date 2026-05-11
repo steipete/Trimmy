@@ -18,6 +18,13 @@ struct CommandDetector {
         self.cleaner.stripPromptPrefixes(text)
     }
 
+    func stripURLQueryParams(_ text: String) -> String? {
+        let rules = self.settings.parsedURLQueryParamRules
+        return self.cleaner.stripURLQueryParams(text) { host in
+            URLQueryParamRules.keepParams(for: host, customRules: rules)
+        }
+    }
+
     func repairWrappedURL(_ text: String) -> String? {
         self.cleaner.repairWrappedURL(text)
     }

@@ -22,6 +22,38 @@ public struct TextCleaner: Sendable {
         return Self.stripBoxDrawingCharacters(in: text)
     }
 
+    /// Strips query parameters from a clipboard URL, preserving any param names in `keeping`.
+    /// Returns nil if the text is not a single bare URL, has no query string, or nothing was removed.
+    /// Uses percentEncodedQueryItems to preserve the original percent-encoding in values (e.g. %3A).
+    public func stripURLQueryParams(_ text: String, keeping: Set<String> = []) -> String? {
+        self.stripURLQueryParams(text) { _ in keeping }
+    }
+
+    /// Host-aware variant: parses the URL once and asks the caller which params to keep for the
+    /// resolved host. Used by production code so rule lookup doesn't require a second URLComponents parse.
+    public func stripURLQueryParams(
+        _ text: String,
+        resolveKeeping: (_ host: String) -> Set<String>) -> String?
+    {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.contains("\n") else { return nil }
+        let lowered = trimmed.lowercased()
+        guard lowered.hasPrefix("http://") || lowered.hasPrefix("https://") else { return nil }
+        guard var components = URLComponents(string: trimmed) else { return nil }
+        let original = components.percentEncodedQueryItems ?? []
+        guard !original.isEmpty else { return nil }
+        let keeping = resolveKeeping(components.host ?? "")
+        if keeping.isEmpty {
+            components.percentEncodedQueryItems = nil
+        } else {
+            let filtered = original.filter { keeping.contains($0.name) }
+            guard filtered.count < original.count else { return nil }
+            components.percentEncodedQueryItems = filtered.isEmpty ? nil : filtered
+        }
+        guard let stripped = components.url?.absoluteString else { return nil }
+        return stripped == trimmed ? nil : stripped
+    }
+
     public func repairWrappedURL(_ text: String) -> String? {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         let lowercased = trimmed.lowercased()

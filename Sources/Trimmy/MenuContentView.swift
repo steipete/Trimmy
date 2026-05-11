@@ -67,6 +67,10 @@ struct MenuContentView: View {
         _ = self.monitor.pasteReformattedMarkdown()
     }
 
+    private func handlePasteStrippingURLQueryParams() {
+        _ = self.monitor.pasteStrippingURLQueryParams()
+    }
+
     private var targetAppLabel: String {
         ClipboardMonitor.ellipsize(self.monitor.frontmostAppName, limit: 30)
     }
@@ -158,11 +162,26 @@ extension MenuContentView {
                 Button("Paste Reformatted Markdown to \(self.targetAppLabel)\(markdownStatsSuffix)") {
                     self.handlePasteReformattedMarkdown()
                 }
-                Text(self.markdownPreviewLine(for: markdownPreviewSource))
+                Text(self.previewLine(for: markdownPreviewSource))
                     .font(.caption2).monospaced()
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
+                    .truncationMode(.middle)
+                    .frame(maxWidth: 260, alignment: .leading)
+            }
+
+            if self.settings.showURLQueryParamStripOption,
+               let strippedURLPreviewSource = self.strippedURLPreviewSource
+            {
+                let strippedStatsSuffix = self.statsSuffix(for: strippedURLPreviewSource, showTruncations: false)
+                Button("Paste without Query Params to \(self.targetAppLabel)\(strippedStatsSuffix)") {
+                    self.handlePasteStrippingURLQueryParams()
+                }
+                Text(self.previewLine(for: strippedURLPreviewSource))
+                    .font(.caption2).monospaced()
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
                     .truncationMode(.middle)
                     .frame(maxWidth: 260, alignment: .leading)
             }
@@ -229,7 +248,11 @@ extension MenuContentView {
         self.monitor.markdownReformatPreviewSource()
     }
 
-    private func markdownPreviewLine(for text: String) -> String {
+    private var strippedURLPreviewSource: String? {
+        self.monitor.urlQueryParamStripPreviewSource()
+    }
+
+    private func previewLine(for text: String) -> String {
         ClipboardMonitor.ellipsize(PreviewMetrics.displayString(text), limit: MenuPreview.limit)
     }
 }

@@ -11,9 +11,11 @@ struct SettingsView: View {
 
     var body: some View {
         TabView(selection: self.$selectedTab) {
-            GeneralSettingsPane(settings: self.settings, permissions: self.permissions)
-                .tabItem { Label("General", systemImage: "gearshape") }
-                .tag(SettingsTab.general)
+            ScrollView {
+                GeneralSettingsPane(settings: self.settings, permissions: self.permissions)
+            }
+            .tabItem { Label("General", systemImage: "gearshape") }
+            .tag(SettingsTab.general)
 
             AdvancedSettingsPane(settings: self.settings)
                 .tabItem { Label("Advanced", systemImage: "gearshape.2") }
@@ -70,7 +72,7 @@ enum SettingsTab: String, Hashable, CaseIterable, Codable {
     #endif
 
     static let windowWidth: CGFloat = 430
-    static let windowHeight: CGFloat = 520
+    static let windowHeight: CGFloat = 700
 }
 
 extension Notification.Name {

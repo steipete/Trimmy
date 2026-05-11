@@ -363,6 +363,31 @@ extension ClipboardMonitor {
         return true
     }
 
+    @discardableResult
+    func pasteStrippingURLQueryParams() -> Bool {
+        guard self.settings.showURLQueryParamStripOption else {
+            self.lastSummary = "URL strip option disabled."
+            return false
+        }
+        guard self.accessibilityPermission.isTrusted else {
+            self.lastSummary = Self.accessibilityPermissionMessage
+            return false
+        }
+        guard let stripped = self.currentURLQueryParamStrip() else {
+            self.lastSummary = "No query params to strip."
+            return false
+        }
+        self.lastOriginalText = stripped.original
+        self.lastTrimmedText = nil
+        self.updateSummary(with: stripped.stripped)
+        self.performPaste(with: stripped.stripped)
+        return true
+    }
+
+    func urlQueryParamStripPreviewSource() -> String? {
+        self.currentURLQueryParamStrip()?.stripped
+    }
+
     func struckOriginalPreview(limit _: Int? = nil) -> AttributedString {
         guard let original = self.lastOriginalText else {
             return AttributedString(self.lastSummary.isEmpty ? "No actions yet" : self.lastSummary)
@@ -397,6 +422,11 @@ extension ClipboardMonitor {
 // MARK: - Helpers
 
 extension ClipboardMonitor {
+    fileprivate struct URLQueryParamStrip {
+        let original: String
+        let stripped: String
+    }
+
     fileprivate struct ClipboardVariants {
         let original: String
         let trimmed: String
@@ -515,6 +545,12 @@ extension ClipboardMonitor {
             original: text,
             trimmed: currentText,
             wasTransformed: wasTransformed)
+    }
+
+    private func currentURLQueryParamStrip() -> URLQueryParamStrip? {
+        guard let text = self.clipboardText() ?? self.lastOriginalText else { return nil }
+        guard let stripped = self.detector.stripURLQueryParams(text) else { return nil }
+        return URLQueryParamStrip(original: text, stripped: stripped)
     }
 
     private func currentMarkdownReformat() -> MarkdownReformat? {

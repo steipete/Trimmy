@@ -1,10 +1,30 @@
 import AppKit
 import SwiftUI
+import TrimmyCore
 
 @MainActor
 struct GeneralSettingsPane: View {
     @ObservedObject var settings: AppSettings
     @ObservedObject var permissions: AccessibilityPermissionManager
+
+    @ViewBuilder
+    private var urlQueryParamRulesSection: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Preserve content identity params")
+                .font(.body)
+            Text("One rule per line: domain.com: param1, param2")
+                .font(.footnote)
+                .foregroundStyle(.tertiary)
+            TextEditor(text: self.$settings.urlQueryParamCustomRules)
+            .font(.caption.monospaced())
+            .frame(height: 70)
+            .overlay(
+                RoundedRectangle(cornerRadius: 4)
+                    .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+            )
+        }
+        .padding(.leading, 20)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
@@ -41,6 +61,15 @@ struct GeneralSettingsPane: View {
                 title: "Show Markdown reformat option",
                 subtitle: "Expose a menu-only paste action that reflows markdown bullets and headings.",
                 binding: self.$settings.showMarkdownReformatOption)
+
+            PreferenceToggleRow(
+                title: "Show 'Paste without Query Params' option",
+                subtitle: "Show a menu option to paste a copied link with query parameters removed.",
+                binding: self.$settings.showURLQueryParamStripOption)
+
+            if self.settings.showURLQueryParamStripOption {
+                self.urlQueryParamRulesSection
+            }
 
             PreferenceToggleRow(
                 title: "Hide menu bar icon",
