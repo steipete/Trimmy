@@ -46,6 +46,7 @@ You paste once, the shell runs once. No more `dquote>` prompts, no half-pasted c
 - **Per-context aggressiveness.** Set the eagerness separately for general apps and terminals (Terminal, iTerm, Ghostty, Warp, kitty, WezTerm, Hyper, Alacritty).
 - **Two hotkeys.** Global *Paste Trimmed* and *Paste Original* — with a preview that shows the target app and strikes through what was removed.
 - **Reflows wrapped Markdown** as a separate menu action. Preserves fenced code, headings, and intentional blank lines.
+- **Strips URL query params** as a separate menu action. Keeps per-domain content identity (YouTube `v`/`list`/`t`, GitHub `tab`, Figma `node-id`, etc.); the keeplist is editable in Settings.
 - **Strips box-drawing gutters** (`│`, `┃`) so you can paste right out of fancy CLI tools.
 - **Stays on your Mac.** No telemetry, no auth, no network calls except Sparkle's update check. MIT licensed.
 
