@@ -2,11 +2,11 @@ import Foundation
 
 enum PreviewMetrics {
     static func charCountSuffix(count: Int) -> String {
-        " (\(formattedChars(count)))"
+        " (\(self.formattedChars(count)))"
     }
 
     static func prettyBadge(count: Int) -> String {
-        " · \(formattedChars(count))"
+        " · \(self.formattedChars(count))"
     }
 
     static func displayString(_ text: String) -> String {
@@ -42,7 +42,7 @@ enum PreviewMetrics {
     }
 
     private static func formattedChars(_ count: Int) -> String {
-        count >= 1000 ? "\(kString(count)) chars" : "\(count) chars"
+        count >= 1000 ? "\(self.kString(count)) chars" : "\(count) chars"
     }
 
     private static func kString(_ count: Int) -> String {

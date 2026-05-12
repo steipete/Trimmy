@@ -807,19 +807,23 @@ struct TrimmyTests {
     }
 
     // MARK: - URL Query Parameter Stripping Tests
+
     // Basic stripping logic tested via TextCleaner directly to avoid UserDefaults/AppStorage
     // contamination across tests. CommandDetector is only used where settings integration matters.
 
     @Test
     func `strips all query params from unknown domain`() {
         let cleaner = TextCleaner()
-        #expect(cleaner.stripURLQueryParams("https://example.com/article?utm_source=twitter&utm_medium=social") == "https://example.com/article")
+        #expect(cleaner
+            .stripURLQueryParams("https://example.com/article?utm_source=twitter&utm_medium=social") ==
+            "https://example.com/article")
     }
 
     @Test
     func `strips single query param`() {
         let cleaner = TextCleaner()
-        #expect(cleaner.stripURLQueryParams("https://shop.example.com/product?ref=homepage") == "https://shop.example.com/product")
+        #expect(cleaner
+            .stripURLQueryParams("https://shop.example.com/product?ref=homepage") == "https://shop.example.com/product")
     }
 
     @Test
@@ -843,7 +847,9 @@ struct TrimmyTests {
     @Test
     func `preserves URL path and fragment`() {
         let cleaner = TextCleaner()
-        #expect(cleaner.stripURLQueryParams("https://example.com/path?utm_source=email#section") == "https://example.com/path#section")
+        #expect(cleaner
+            .stripURLQueryParams("https://example.com/path?utm_source=email#section") ==
+            "https://example.com/path#section")
     }
 
     @Test
@@ -908,7 +914,8 @@ struct TrimmyTests {
         let keeping = URLQueryParamRules.keepParams(for: "www.youtube.com", customRules: Self.defaultRules)
         let cleaner = TextCleaner()
         let url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=142&utm_campaign=viral"
-        #expect(cleaner.stripURLQueryParams(url, keeping: keeping) == "https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=142")
+        #expect(cleaner
+            .stripURLQueryParams(url, keeping: keeping) == "https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=142")
     }
 
     @Test
@@ -931,7 +938,8 @@ struct TrimmyTests {
         let keeping = URLQueryParamRules.keepParams(for: "docs.google.com", customRules: Self.defaultRules)
         let cleaner = TextCleaner()
         let url = "https://docs.google.com/document/d/1ABC/edit?tab=t.0&usp=sharing"
-        #expect(cleaner.stripURLQueryParams(url, keeping: keeping) == "https://docs.google.com/document/d/1ABC/edit?tab=t.0")
+        #expect(cleaner
+            .stripURLQueryParams(url, keeping: keeping) == "https://docs.google.com/document/d/1ABC/edit?tab=t.0")
     }
 
     @Test
@@ -947,7 +955,8 @@ struct TrimmyTests {
         let keeping = URLQueryParamRules.keepParams(for: "www.figma.com", customRules: Self.defaultRules)
         let cleaner = TextCleaner()
         let url = "https://www.figma.com/file/abc123/Design?node-id=42%3A1&ref=something"
-        #expect(cleaner.stripURLQueryParams(url, keeping: keeping) == "https://www.figma.com/file/abc123/Design?node-id=42%3A1")
+        #expect(cleaner
+            .stripURLQueryParams(url, keeping: keeping) == "https://www.figma.com/file/abc123/Design?node-id=42%3A1")
     }
 
     // MARK: - Custom rules (pure function tests, no UserDefaults)

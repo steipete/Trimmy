@@ -13,7 +13,9 @@ public final class AppSettings: ObservableObject {
     @AppStorage("hideMenuBarIcon") var hideMenuBarIcon: Bool = false
     @AppStorage("flattenClaudeCodePrompts") public var flattenClaudeCodePrompts: Bool = true
     @AppStorage("showURLQueryParamStripOption") public var showURLQueryParamStripOption: Bool = true
-    @AppStorage("urlQueryParamCustomRules") public var urlQueryParamCustomRules: String = URLQueryParamRules.defaultRulesText {
+    @AppStorage("urlQueryParamCustomRules") public var urlQueryParamCustomRules: String = URLQueryParamRules
+        .defaultRulesText
+    {
         didSet { self.refreshParsedURLQueryParamRules() }
     }
 

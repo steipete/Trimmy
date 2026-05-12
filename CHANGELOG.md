@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased
+- Menu: add an optional “Paste without Query Params” action for copied URLs,
+  gated by Settings → General and preserving configured content-identity
+  parameters (#27, thanks @danfooo).
 
 ## 0.9.0 — 2026-05-11
 - Claude Code: add optional prompt-decoration flattening for copied slash commands while preserving ordinary wrapped prose (#19, thanks @evoleinik).

@@ -385,7 +385,8 @@ extension ClipboardMonitor {
     }
 
     func urlQueryParamStripPreviewSource() -> String? {
-        self.currentURLQueryParamStrip()?.stripped
+        guard self.settings.showURLQueryParamStripOption else { return nil }
+        return self.currentURLQueryParamStrip()?.stripped
     }
 
     func struckOriginalPreview(limit _: Int? = nil) -> AttributedString {

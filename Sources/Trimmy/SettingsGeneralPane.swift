@@ -7,7 +7,6 @@ struct GeneralSettingsPane: View {
     @ObservedObject var settings: AppSettings
     @ObservedObject var permissions: AccessibilityPermissionManager
 
-    @ViewBuilder
     private var urlQueryParamRulesSection: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Preserve content identity params")
@@ -16,12 +15,11 @@ struct GeneralSettingsPane: View {
                 .font(.footnote)
                 .foregroundStyle(.tertiary)
             TextEditor(text: self.$settings.urlQueryParamCustomRules)
-            .font(.caption.monospaced())
-            .frame(height: 70)
-            .overlay(
-                RoundedRectangle(cornerRadius: 4)
-                    .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
-            )
+                .font(.caption.monospaced())
+                .frame(height: 70)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 4)
+                        .stroke(Color.secondary.opacity(0.3), lineWidth: 1))
         }
         .padding(.leading, 20)
     }

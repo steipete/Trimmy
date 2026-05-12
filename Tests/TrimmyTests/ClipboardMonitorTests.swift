@@ -211,6 +211,29 @@ struct ClipboardMonitorTests {
     }
 
     @Test
+    func `URL query param strip is hidden and inert when setting is disabled`() {
+        let settings = AppSettings()
+        settings.showURLQueryParamStripOption = false
+        defer { settings.showURLQueryParamStripOption = true }
+        var pasteTriggered = false
+        let pasteboard = makeTestPasteboard()
+        let original = "https://example.com/article?utm_source=newsletter"
+        pasteboard.setString(original, forType: .string)
+        let monitor = ClipboardMonitor(
+            settings: settings,
+            pasteboard: pasteboard,
+            pasteRestoreDelay: .milliseconds(0),
+            pasteAction: { pasteTriggered = true },
+            accessibilityPermission: StubAccessibilityPermission())
+
+        #expect(monitor.urlQueryParamStripPreviewSource() == nil)
+        #expect(monitor.pasteStrippingURLQueryParams() == false)
+        #expect(pasteTriggered == false)
+        #expect(pasteboard.string(forType: .string) == original)
+        #expect(monitor.lastSummary == "URL strip option disabled.")
+    }
+
+    @Test
     func `paste original uses cached pre trim copy`() {
         let settings = AppSettings()
         settings.autoTrimEnabled = true
