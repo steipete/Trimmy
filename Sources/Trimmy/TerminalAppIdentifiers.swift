@@ -11,6 +11,7 @@ enum TerminalAppIdentifiers {
         "org.alacritty",
         "co.zeit.hyper",
         "net.kovidgoyal.kitty",
+        "com.cmuxterm.app",
     ]
 
     static let bundleIdentifierPrefixes: [String] = [
@@ -26,6 +27,7 @@ enum TerminalAppIdentifiers {
         "alacritty",
         "hyper",
         "kitty",
+        "cmux",
     ]
 
     static func isTerminal(bundleIdentifier: String?, appName: String?) -> Bool {
