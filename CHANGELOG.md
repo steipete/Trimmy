@@ -1,6 +1,7 @@
 # Changelog
 
 ## 0.10.2 — Unreleased
+- Terminal detection now recognizes cmux by bundle identifier and app name, so copies use terminal-specific trimming (thanks @gustavosmendes).
 
 ## 0.10.1 — 2026-06-11
 - Settings: reorganize controls into focused General, Trimming, Rules, Shortcuts, Advanced, and About tabs, with low-frequency cleanup options under Advanced and a compact native macOS layout.
