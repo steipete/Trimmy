@@ -325,10 +325,18 @@ extension KeyboardShortcuts.Key {
 extension EventModifiers {
     fileprivate init(_ flags: NSEvent.ModifierFlags) {
         var value: EventModifiers = []
-        if flags.contains(.command) { value.insert(.command) }
-        if flags.contains(.option) { value.insert(.option) }
-        if flags.contains(.control) { value.insert(.control) }
-        if flags.contains(.shift) { value.insert(.shift) }
+        if flags.contains(.command) {
+            value.insert(.command)
+        }
+        if flags.contains(.option) {
+            value.insert(.option)
+        }
+        if flags.contains(.control) {
+            value.insert(.control)
+        }
+        if flags.contains(.shift) {
+            value.insert(.shift)
+        }
         self = value
     }
 }
