@@ -27,9 +27,15 @@ struct MarkdownReformatter {
 
     static func isLikelyMarkdown(_ text: String) -> Bool {
         let analysis = self.analyze(text)
-        if analysis.listCount >= 2 { return true }
-        if analysis.headingCount >= 2 { return true }
-        if analysis.headingCount >= 1, analysis.listCount >= 1 { return true }
+        if analysis.listCount >= 2 {
+            return true
+        }
+        if analysis.headingCount >= 2 {
+            return true
+        }
+        if analysis.headingCount >= 1, analysis.listCount >= 1 {
+            return true
+        }
         return false
     }
 

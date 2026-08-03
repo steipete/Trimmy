@@ -213,7 +213,9 @@ final class ClipboardMonitor: ObservableObject {
 
     func trimmedClipboardText(force: Bool = false) -> String? {
         guard let variants = self.makeVariants(force: force, ignoreMarker: force) else { return nil }
-        if !force, !variants.wasTransformed { return nil }
+        if !force, !variants.wasTransformed {
+            return nil
+        }
         return variants.trimmed
     }
 

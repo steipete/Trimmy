@@ -139,14 +139,26 @@ enum AggressivenessPreviewEngine {
     static func score(for text: String) -> Int {
         guard text.contains("\n") else { return 0 }
         let lines = text.split(whereSeparator: { $0.isNewline })
-        if lines.count < 2 || lines.count > 10 { return 0 }
+        if lines.count < 2 || lines.count > 10 {
+            return 0
+        }
 
         var score = 0
-        if text.contains("\\\n") { score += 1 }
-        if text.range(of: #"[|&]{1,2}"#, options: .regularExpression) != nil { score += 1 }
-        if text.range(of: #"(^|\n)\s*\$"#, options: .regularExpression) != nil { score += 1 }
-        if text.range(of: #"(?m)^\s*(sudo\s+)?[A-Za-z0-9./~_-]+"#, options: .regularExpression) != nil { score += 1 }
-        if text.range(of: #"[-/]"#, options: .regularExpression) != nil { score += 1 }
+        if text.contains("\\\n") {
+            score += 1
+        }
+        if text.range(of: #"[|&]{1,2}"#, options: .regularExpression) != nil {
+            score += 1
+        }
+        if text.range(of: #"(^|\n)\s*\$"#, options: .regularExpression) != nil {
+            score += 1
+        }
+        if text.range(of: #"(?m)^\s*(sudo\s+)?[A-Za-z0-9./~_-]+"#, options: .regularExpression) != nil {
+            score += 1
+        }
+        if text.range(of: #"[-/]"#, options: .regularExpression) != nil {
+            score += 1
+        }
         return score
     }
 

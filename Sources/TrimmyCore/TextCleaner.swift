@@ -243,7 +243,9 @@ public struct TextCleaner: Sendable {
         if aggressivenessOverride != .high, self.isLikelyList(lines) {
             return nil
         }
-        if lines.count > 10 { return nil }
+        if lines.count > 10 {
+            return nil
+        }
 
         let nonEmptyLines = lines.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
 
@@ -291,13 +293,27 @@ public struct TextCleaner: Sendable {
         }
 
         var score = 0
-        if text.contains("\\\n") { score += 1 }
-        if text.range(of: #"[|&]{1,2}"#, options: .regularExpression) != nil { score += 1 }
-        if text.range(of: #"(^|\n)\s*\$"#, options: .regularExpression) != nil { score += 1 }
-        if self.isSingleCommandWithIndentedContinuations(nonEmptyLines) { score += 1 }
-        if lines.allSatisfy(self.isLikelyCommandLine(_:)) { score += 1 }
-        if text.range(of: #"(?m)^\s*(sudo\s+)?[A-Za-z0-9./~_-]+"#, options: .regularExpression) != nil { score += 1 }
-        if text.range(of: #"[A-Za-z0-9._~-]+/[A-Za-z0-9._~-]+"#, options: .regularExpression) != nil { score += 1 }
+        if text.contains("\\\n") {
+            score += 1
+        }
+        if text.range(of: #"[|&]{1,2}"#, options: .regularExpression) != nil {
+            score += 1
+        }
+        if text.range(of: #"(^|\n)\s*\$"#, options: .regularExpression) != nil {
+            score += 1
+        }
+        if self.isSingleCommandWithIndentedContinuations(nonEmptyLines) {
+            score += 1
+        }
+        if lines.allSatisfy(self.isLikelyCommandLine(_:)) {
+            score += 1
+        }
+        if text.range(of: #"(?m)^\s*(sudo\s+)?[A-Za-z0-9./~_-]+"#, options: .regularExpression) != nil {
+            score += 1
+        }
+        if text.range(of: #"[A-Za-z0-9._~-]+/[A-Za-z0-9._~-]+"#, options: .regularExpression) != nil {
+            score += 1
+        }
 
         guard score >= aggressiveness.scoreThreshold else { return nil }
 
@@ -308,8 +324,12 @@ public struct TextCleaner: Sendable {
     private func isLikelyCommandLine(_ lineSubstr: Substring) -> Bool {
         let line = lineSubstr.trimmingCharacters(in: .whitespaces)
         guard !line.isEmpty else { return false }
-        if line.hasPrefix("[[") { return true }
-        if line.last == "." { return false }
+        if line.hasPrefix("[[") {
+            return true
+        }
+        if line.last == "." {
+            return false
+        }
         let pattern = #"^(sudo\s+)?[A-Za-z0-9./~_-]+(?:\s+|\z)"#
         return line.range(of: pattern, options: .regularExpression) != nil
     }
@@ -329,7 +349,9 @@ public struct TextCleaner: Sendable {
     private func isLikelyPromptCommand(_ content: Substring) -> Bool {
         let trimmed = String(content.trimmingCharacters(in: .whitespaces))
         guard !trimmed.isEmpty else { return false }
-        if let last = trimmed.last, [".", "?", "!"].contains(last) { return false }
+        if let last = trimmed.last, [".", "?", "!"].contains(last) {
+            return false
+        }
 
         let hasCommandPunctuation =
             trimmed.contains(where: { "-./~$".contains($0) }) || trimmed.contains(where: \.isNumber)
@@ -393,7 +415,9 @@ public struct TextCleaner: Sendable {
     }
 
     private func hasCommandPunctuation(_ text: String) -> Bool {
-        if text.contains("@") { return true }
+        if text.contains("@") {
+            return true
+        }
 
         if text.range(
             of: #"(?m)(?:^|\s)--[A-Za-z0-9][A-Za-z0-9_-]*"#,
@@ -430,7 +454,9 @@ public struct TextCleaner: Sendable {
             return true
         }
 
-        if text.contains("<") || text.contains(">") { return true }
+        if text.contains("<") || text.contains(">") {
+            return true
+        }
 
         return false
     }
@@ -455,7 +481,9 @@ public struct TextCleaner: Sendable {
     private func isLikelyStructuredData(_ lines: [Substring]) -> Bool {
         lines.contains { line in
             let trimmed = line.trimmingCharacters(in: .whitespaces)
-            if ["{", "}", "[", "]"].contains(trimmed) { return true }
+            if ["{", "}", "[", "]"].contains(trimmed) {
+                return true
+            }
             return trimmed.range(of: #"^["'][^"']+["']\s*:"#, options: .regularExpression) != nil
         }
     }
@@ -471,8 +499,12 @@ public struct TextCleaner: Sendable {
             let numberedPattern = #"^[0-9]+[.)]\s+\S"#
             let bareTokenPattern = #"^[A-Za-z0-9]{4,}$"#
 
-            if trimmed.range(of: bulletPattern, options: .regularExpression) != nil { return true }
-            if trimmed.range(of: numberedPattern, options: .regularExpression) != nil { return true }
+            if trimmed.range(of: bulletPattern, options: .regularExpression) != nil {
+                return true
+            }
+            if trimmed.range(of: numberedPattern, options: .regularExpression) != nil {
+                return true
+            }
             if !hasSpaces,
                trimmed.range(of: bareTokenPattern, options: .regularExpression) != nil,
                trimmed.range(of: #"[./$]"#, options: .regularExpression) == nil
