@@ -1,143 +1,114 @@
-# Trimmy ✂️
+# Trimmy ✂️ — Paste once, run once.
 
-> **Paste once, run once.** A tiny macOS menu-bar app that flattens those multi-line shell snippets you copy from blogs, READMEs, and ChatGPT — so they actually paste and run.
-
+[![CI](https://img.shields.io/github/actions/workflow/status/steipete/Trimmy/ci.yml?branch=main&style=flat-square&label=ci)](https://github.com/steipete/Trimmy/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/steipete/Trimmy?style=flat-square)](https://github.com/steipete/Trimmy/releases/latest)
 [![macOS 15+](https://img.shields.io/badge/macOS-15%2B-0d0c0a?style=flat-square)](https://www.apple.com/macos/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-c4391f?style=flat-square)](LICENSE)
+[![License](https://img.shields.io/github/license/steipete/Trimmy?style=flat-square)](LICENSE)
 [![Homebrew](https://img.shields.io/badge/homebrew-steipete%2Ftap%2Ftrimmy-c4391f?style=flat-square)](https://github.com/steipete/homebrew-tap)
-[![Latest release](https://img.shields.io/github/v/release/steipete/Trimmy?style=flat-square&color=0d0c0a)](https://github.com/steipete/Trimmy/releases/latest)
+
+Trimmy is a macOS menu-bar app that turns copied multi-line shell snippets into one pasteable command. It watches the clipboard and uses command cues plus configurable sensitivity to avoid rewriting ordinary prose and code.
 
 ![Trimmy menu showing Paste Trimmed and Paste Original to Ghostty](trimmy.png)
 
+```sh
+printf '%s\n' \
+  'Trimmy' \
+  'is ready'
+# clipboard → printf '%s\n' 'Trimmy' 'is ready'
+```
+
+Trimmy rewrites the copy once; your next paste is a single command.
+
 ## Install
+
+On an Apple silicon Mac running macOS 15 or later:
 
 ```sh
 brew install --cask steipete/tap/trimmy
 ```
 
-…or grab the signed `.zip` from [Releases](https://github.com/steipete/Trimmy/releases/latest).
-Sparkle keeps it up-to-date automatically.
+You can instead download the signed app from [GitHub Releases](https://github.com/steipete/Trimmy/releases/latest). Sparkle checks for app updates after installation.
 
-## What it does
+## Quick start
 
-You copy this:
+1. Open Trimmy. The scissors icon appears in the menu bar.
+2. Copy the three-line `printf` command above.
+3. Paste into a terminal. Trimmy has changed the clipboard to one line, so the shell runs it once and prints:
 
-```sh
-kubectl get pods \
-    -n kube-system \
-    --selector='app=ingress' \
-    -o json | jq '.items[].metadata.name'
+```text
+Trimmy
+is ready
 ```
 
-Trimmy quietly rewrites your clipboard to this:
-
-```sh
-kubectl get pods -n kube-system --selector='app=ingress' -o json | jq '.items[].metadata.name'
-```
-
-You paste once, the shell runs once. No more `dquote>` prompts, no half-pasted commands, no “did you mean to run that as four separate commands?”
+The default sensitivity is Low in general apps and Normal in terminals. Use **Paste Original** from the menu whenever you need the untouched copy.
 
 ![Terminal example showing a wrapped command flattened into one line](term-example.png)
 
-## Highlights
+## Choose when Trimmy acts
 
-- **Lives in your menu bar.** No dock icon (`LSUIElement`). macOS 15 and later.
-- **Knows when it's a command.** Pipes, redirects, backslash continuations, `$` / `#` prompt gutters — all read as command cues. Markdown headings stay intact.
-- **Per-context aggressiveness.** Set the eagerness separately for general apps and terminals (Terminal, iTerm, Ghostty, Warp, kitty, WezTerm, Hyper, Alacritty).
-- **Two hotkeys.** Global *Paste Trimmed* and *Paste Original* — with a preview that shows the target app and strikes through what was removed.
-- **Reflows wrapped Markdown** as a separate menu action. Preserves fenced code, headings, and intentional blank lines.
-- **Strips URL query params** as a separate menu action. Keeps per-domain content identity (YouTube `v`/`list`/`t`, GitHub `tab`, Figma `node-id`, etc.); the keeplist is editable in Settings.
-- **Strips box-drawing gutters** (`│`, `┃`) so you can paste right out of fancy CLI tools.
-- **Stays on your Mac.** No telemetry, no auth, no network calls except Sparkle's update check. MIT licensed.
+Trimmy uses separate sensitivity settings for general apps and terminals. It recognizes Terminal, iTerm, Ghostty, Warp, kitty, WezTerm, Hyper, Alacritty, and cmux, and you can exclude specific apps or browser sites from automatic trimming.
+
+| Level | Behavior |
+| --- | --- |
+| **None** | Disables automatic trimming in general apps. |
+| **Low** | Requires strong cues such as pipes, redirects, or `\` continuations. |
+| **Normal** | Handles typical multi-line commands with flags. This is the terminal default. |
+| **High** | Flattens most command-shaped text. **Paste Trimmed** always uses this level. |
+
+Prompt gutters such as `$` and `#` are removed when they prefix a command, while Markdown headings remain intact. Automatic trimming skips large clipboard blobs as a safety valve.
+
+## Paste actions and permissions
+
+**Paste Trimmed** and **Paste Original** can be assigned global shortcuts. Their menu previews name the target app and show what trimming removed before sending a paste keystroke.
+
+These paste actions need macOS Accessibility permission. Trimmy prompts for it when necessary and links to **System Settings → Privacy & Security → Accessibility**. Automatic clipboard rewriting still works without simulated paste access.
+
+## Other cleanup actions
+
+The menu can reflow hard-wrapped Markdown while preserving headings, lists, blank lines, and fenced code. A separate action removes URL query parameters while retaining configured identity parameters such as YouTube video IDs, GitHub tabs, and Figma node IDs.
+
+Box-drawing gutters such as `│` and `┃` can also be removed from copied terminal output without stripping real shell pipes.
 
 ![Markdown reformatting example](markdown-trimmed.jpg)
 
-## Aggressiveness levels
-
-Settable per-context. **Low** is conservative; **High** flattens almost anything that looks command-shaped (and is what *Paste Trimmed* always uses). The defaults are tuned to be useful but never destructive: a 10-line safety valve skips auto-flatten on big blobs.
-
-| Level      | When it triggers                                              |
-| ---------- | ------------------------------------------------------------- |
-| **None**   | Off (general apps only).                                      |
-| **Low**    | Strong cues required: pipes, redirects, `\` continuations.    |
-| **Normal** | Typical multi-line commands with flags. Default in terminals. |
-| **High**   | Almost anything command-shaped. Used by *Paste Trimmed*.      |
-
-Prompt gutters get cleaned automatically, so `# brew install foo` becomes `brew install foo` while a Markdown heading like `# Release notes` is left alone.
-
-<details>
-<summary>Worked examples</summary>
-
-**Low** — `\` line continuations get joined:
-
-```sh
-ls -la \
-  | grep '^d' \
-  > dirs.txt
-# → ls -la | grep '^d' > dirs.txt
-```
-
-**Normal** — multi-line `kubectl` pipelines:
-
-```sh
-kubectl get pods \
-  -n kube-system \
-  | jq '.items[].metadata.name'
-# → kubectl get pods -n kube-system | jq '.items[].metadata.name'
-```
-
-**High** — even commands without explicit continuations:
-
-```sh
-echo "hello"
-print status
-# → echo "hello" print status
-```
-
-</details>
-
 ## Headless CLI
 
-There's a bundled CLI for scripts and pipelines:
+`TrimmyCLI` uses the same trimming engine without the menu-bar app. Run it from the source checkout:
 
 ```sh
-pbpaste | swift run TrimmyCLI --trim - --force
-swift run TrimmyCLI --trim ~/snippet.sh --aggressiveness high --json
+printf '%s\n' 'echo hello \' '  world' | swift run TrimmyCLI --trim --force
 ```
 
-Flags: `--aggressiveness {low|normal|high}`, `--force/-f` (forces High), `--preserve-blank-lines` / `--no-preserve-blank-lines`, `--remove-box-drawing` / `--keep-box-drawing`, `--json`.
-Exit codes: `0` ok · `1` no input/error · `2` no transformation · `3` JSON encode error.
+The result is `echo hello world`. The packaged app can install `trimmy` from **Settings → Advanced**, and Linux binaries are attached to [GitHub Releases](https://github.com/steipete/Trimmy/releases/latest).
 
-## Build from source
-
-Swift 6, macOS 15+:
-
-```sh
-swift build -c release
-./Scripts/package_app.sh release   # → Trimmy.app
-```
-
-Then run `Trimmy.app` (or add it to Login Items via the menu).
-
-```sh
-swiftformat .
-swiftlint lint --fix
-swift test
-```
+See the [CLI reference](docs/cli.md) for file input, JSON output, all options, and exit codes.
 
 ## How it works
 
-- ~150 ms polling timer with an 80 ms grace delay so promised pasteboard data lands before Trimmy decides what to do.
-- Clipboard writes carry a `com.steipete.trimmy` marker pasteboard type so Trimmy never reprocesses its own output.
-- Sparkle handles auto-updates: auto-check, auto-download, then the menu shows *“Update ready, restart now?”*
+- A roughly 150 ms timer watches for pasteboard ownership changes, followed by an 80 ms grace period for promised clipboard data.
+- Clipboard writes carry a `com.steipete.trimmy` marker so Trimmy does not process its own output.
+- Clipboard content stays local. Trimmy has no telemetry or account system; its network use is Sparkle's update check.
+
+The [technical specification](docs/spec.md) covers the detection heuristics, settings, and pasteboard behavior in more detail.
+
+## Development
+
+Trimmy requires Swift 6.2 and macOS 15 or later.
+
+```sh
+swift build
+swift test
+pnpm check
+./Scripts/package_app.sh debug
+```
 
 ## Related
 
-- ✂️ [Trimmy](https://trimmy.app) — this repo.
-- 🪶 [Alfred workflow](https://github.com/jimmystridh/alfred-trimmy) — community Alfred integration.
-- 🟦🟩 [CodexBar](https://codexbar.app) — keep Codex token windows visible in the menu bar.
-- 🧳 [MCPorter](https://mcporter.dev) — TypeScript toolkit + CLI for Model Context Protocol servers.
-- 🧿 [Oracle](https://github.com/steipete/oracle) — multi-model prompt bundler/CLI.
+- [trimmy.app](https://trimmy.app) is the project website.
+- [Alfred Trimmy](https://github.com/jimmystridh/alfred-trimmy) is a community Alfred workflow.
+- [CodexBar](https://codexbar.app) keeps Codex token windows visible in the menu bar.
+- [MCPorter](https://mcporter.dev) is a TypeScript toolkit and CLI for Model Context Protocol servers.
+- [Oracle](https://github.com/steipete/oracle) is a multi-model prompt bundler and CLI.
 
 ## License
 
