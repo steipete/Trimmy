@@ -111,4 +111,75 @@ struct MarkdownReformatterTests {
 
         #expect(!MarkdownReformatter.isLikelyMarkdown(input))
     }
+
+    @Test
+    func `detects long hard wrapped prose for reflow`() {
+        let input = """
+        The operative danger is the gradient between the source's coherence and the
+        receiver's capacity. A prepared vessel metabolizes contact as gnosis while an
+        unprepared vessel can undergo fragmentation or symbolic death.
+
+        The face is the stable interface between the inner being and the social world.
+        Divine contact transforms that interface when the inherited identity cannot
+        carry the revelation.
+        """
+
+        #expect(!MarkdownReformatter.isLikelyMarkdown(input))
+        #expect(MarkdownReformatter.isLikelyReflowable(input))
+        let expected = [
+            "The operative danger is the gradient between the source's coherence and the receiver's capacity. "
+                + "A prepared vessel metabolizes contact as gnosis while an unprepared vessel can undergo "
+                + "fragmentation or symbolic death.",
+            "",
+            "The face is the stable interface between the inner being and the social world. "
+                + "Divine contact transforms that interface when the inherited identity cannot carry the revelation.",
+        ].joined(separator: "\n")
+        #expect(MarkdownReformatter.reformat(input) == expected)
+    }
+
+    @Test
+    func `does not offer reflow for short intentional lines`() {
+        let input = """
+        First short line
+        Second short line
+        Third short line
+        """
+
+        #expect(!MarkdownReformatter.isLikelyReflowable(input))
+    }
+
+    @Test
+    func `removes leading blank lines while preserving paragraph breaks`() {
+        let input = [
+            "",
+            "   ",
+            "The first paragraph is hard wrapped across a deliberately long line that should",
+            "join cleanly without leaving whitespace before the pasted response.",
+            "",
+            "The second paragraph stays separate.",
+        ].joined(separator: "\n")
+
+        let expected = [
+            "The first paragraph is hard wrapped across a deliberately long line that should "
+                + "join cleanly without leaving whitespace before the pasted response.",
+            "",
+            "The second paragraph stays separate.",
+        ].joined(separator: "\n")
+
+        #expect(MarkdownReformatter.reformat(input) == expected)
+    }
+
+    @Test
+    func `can preserve leading blank lines`() {
+        let input = [
+            "",
+            "The first paragraph is hard wrapped across a deliberately long line that should",
+            "join while retaining the leading blank line when that preference is disabled.",
+        ].joined(separator: "\n")
+
+        let expected = "\nThe first paragraph is hard wrapped across a deliberately long line that should "
+            + "join while retaining the leading blank line when that preference is disabled."
+
+        #expect(MarkdownReformatter.reformat(input, trimLeadingBlankLines: false) == expected)
+    }
 }

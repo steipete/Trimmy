@@ -39,7 +39,11 @@ struct MarkdownReformatter {
         return false
     }
 
-    static func reformat(_ text: String) -> String {
+    static func isLikelyReflowable(_ text: String) -> Bool {
+        self.isLikelyMarkdown(text) || self.hasLikelyHardWrappedParagraph(text)
+    }
+
+    static func reformat(_ text: String, trimLeadingBlankLines: Bool = true) -> String {
         let normalized = self.normalizeLineEndings(text)
         let lines = normalized.split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
         var output: [String] = []
@@ -121,6 +125,12 @@ struct MarkdownReformatter {
         flushListItem()
         flushParagraph()
 
+        if trimLeadingBlankLines {
+            while output.first?.isEmpty == true {
+                output.removeFirst()
+            }
+        }
+
         return output.joined(separator: "\n")
     }
 
@@ -155,6 +165,54 @@ struct MarkdownReformatter {
         }
 
         return Analysis(headingCount: headingCount, listCount: listCount)
+    }
+
+    private static func hasLikelyHardWrappedParagraph(_ text: String) -> Bool {
+        let normalized = self.normalizeLineEndings(text)
+        let lines = normalized.split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
+        var paragraphLines: [String] = []
+        var fence: FenceState?
+
+        func paragraphLooksHardWrapped() -> Bool {
+            guard paragraphLines.count >= 2 else { return false }
+            return paragraphLines.dropLast().contains { line in
+                line.trimmingCharacters(in: CharacterSet.whitespaces).count >= 40
+            }
+        }
+
+        for lineSlice in lines {
+            let line = String(lineSlice)
+            if let fenceState = fence {
+                if self.isFenceClose(line, fence: fenceState) {
+                    fence = nil
+                }
+                continue
+            }
+
+            if let fenceState = self.fenceOpen(line) {
+                if paragraphLooksHardWrapped() {
+                    return true
+                }
+                paragraphLines.removeAll(keepingCapacity: true)
+                fence = fenceState
+                continue
+            }
+
+            if line.trimmingCharacters(in: CharacterSet.whitespaces).isEmpty
+                || self.isHeadingLine(line)
+                || self.listMatch(for: line) != nil
+            {
+                if paragraphLooksHardWrapped() {
+                    return true
+                }
+                paragraphLines.removeAll(keepingCapacity: true)
+                continue
+            }
+
+            paragraphLines.append(line)
+        }
+
+        return paragraphLooksHardWrapped()
     }
 
     private static func normalizeLineEndings(_ text: String) -> String {

@@ -1,6 +1,7 @@
 # Changelog
 
 ## 0.10.2 — Unreleased
+- Text reflow now recognizes hard-wrapped plain prose, optionally runs automatically during Auto-Trim, removes leading blank lines when configured, and preserves internal paragraph breaks, headings, lists, and fenced code.
 - Terminal detection now recognizes cmux by bundle identifier and app name, so copies use terminal-specific trimming (thanks @gustavosmendes).
 - Dependencies: update KeyboardShortcuts to 2.4.0 for shortcut-recorder fixes while preserving Swift 6.2 compatibility.
 

@@ -65,7 +65,7 @@ These paste actions need macOS Accessibility permission. Trimmy prompts for it w
 
 ## Other cleanup actions
 
-The menu can reflow hard-wrapped Markdown while preserving headings, lists, blank lines, and fenced code. A separate action removes URL query parameters while retaining configured identity parameters such as YouTube video IDs, GitHub tabs, and Figma node IDs.
+Trimmy can automatically reflow hard-wrapped prose and Markdown during Auto-Trim, or expose it as a manual paste action. Reflow preserves headings, lists, internal paragraph breaks, and fenced code; leading blank lines can be removed independently in Settings. A separate action removes URL query parameters while retaining configured identity parameters such as YouTube video IDs, GitHub tabs, and Figma node IDs.
 
 Box-drawing gutters such as `│` and `┃` can also be removed from copied terminal output without stripping real shell pipes.
 

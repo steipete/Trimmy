@@ -26,6 +26,8 @@ public final class AppSettings: ObservableObject {
     @Published public private(set) var parsedURLQueryParamRules: [URLQueryParamRule] = []
     @AppStorage("usePasteboardFallbacks") var usePasteboardFallbacks: Bool = false
     @AppStorage("showMarkdownReformatOption") var showMarkdownReformatOption: Bool = true
+    @AppStorage("autoReflowTextEnabled") var autoReflowTextEnabled: Bool = false
+    @AppStorage("trimLeadingBlankLinesOnReflow") var trimLeadingBlankLinesOnReflow: Bool = true
     @AppStorage("launchAtLogin") var launchAtLogin: Bool = false {
         didSet { LaunchAtLoginManager.setEnabled(self.launchAtLogin) }
     }

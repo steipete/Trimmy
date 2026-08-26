@@ -363,6 +363,61 @@ struct ClipboardMonitorTests {
     }
 
     @Test
+    func `auto reflow joins hard wrapped prose and removes leading blank lines`() {
+        let settings = AppSettings()
+        settings.autoTrimEnabled = true
+        settings.generalAggressiveness = .none
+        settings.autoReflowTextEnabled = true
+        settings.trimLeadingBlankLinesOnReflow = true
+        defer { settings.autoReflowTextEnabled = false }
+        let pasteboard = makeTestPasteboard()
+        let monitor = ClipboardMonitor(
+            settings: settings,
+            pasteboard: pasteboard,
+            accessibilityPermission: StubAccessibilityPermission())
+
+        let input = [
+            "",
+            "The operative danger is the gradient between the source's coherence and the",
+            "receiver's capacity. A prepared vessel metabolizes contact as gnosis.",
+            "",
+            "The second paragraph remains distinct.",
+        ].joined(separator: "\n")
+        let expected = [
+            "The operative danger is the gradient between the source's coherence and the receiver's capacity. "
+                + "A prepared vessel metabolizes contact as gnosis.",
+            "",
+            "The second paragraph remains distinct.",
+        ].joined(separator: "\n")
+        pasteboard.setString(input, forType: .string)
+
+        #expect(monitor.trimClipboardIfNeeded(force: false))
+        #expect(pasteboard.string(forType: .string) == expected)
+    }
+
+    @Test
+    func `hard wrapped prose is unchanged when auto reflow is disabled`() {
+        let settings = AppSettings()
+        settings.autoTrimEnabled = true
+        settings.generalAggressiveness = .none
+        settings.autoReflowTextEnabled = false
+        let pasteboard = makeTestPasteboard()
+        let monitor = ClipboardMonitor(
+            settings: settings,
+            pasteboard: pasteboard,
+            accessibilityPermission: StubAccessibilityPermission())
+
+        let input = """
+        The operative danger is the gradient between the source's coherence and the
+        receiver's capacity. A prepared vessel metabolizes contact as gnosis.
+        """
+        pasteboard.setString(input, forType: .string)
+
+        #expect(!monitor.trimClipboardIfNeeded(force: false))
+        #expect(pasteboard.string(forType: .string) == input)
+    }
+
+    @Test
     func `repairs wrapped URL even when aggressiveness is low`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .low
