@@ -182,4 +182,27 @@ struct MarkdownReformatterTests {
 
         #expect(MarkdownReformatter.reformat(input, trimLeadingBlankLines: false) == expected)
     }
+
+    @Test
+    func `rejects structured text from automatic reflow`() {
+        let yaml = """
+        description: This configuration description is deliberately long enough to trigger prose detection
+        enabled: true
+        """
+        let json = """
+        {
+          "description": "This configuration description is deliberately long enough to trigger prose detection",
+          "enabled": true
+        }
+        """
+        let toml = """
+        description = "This configuration description is deliberately long enough to trigger prose detection"
+        enabled = true
+        """
+
+        for input in [yaml, json, toml] {
+            #expect(MarkdownReformatter.isLikelyReflowable(input))
+            #expect(!MarkdownReformatter.isLikelyAutoReflowable(input))
+        }
+    }
 }

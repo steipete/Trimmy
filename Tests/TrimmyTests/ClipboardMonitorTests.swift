@@ -418,6 +418,44 @@ struct ClipboardMonitorTests {
     }
 
     @Test
+    func `auto reflow leaves structured text unchanged`() {
+        let settings = AppSettings()
+        settings.autoTrimEnabled = true
+        settings.generalAggressiveness = .none
+        settings.autoReflowTextEnabled = true
+        defer { settings.autoReflowTextEnabled = false }
+        let description = "This configuration description is deliberately long enough to trigger prose detection"
+        let inputs = [
+            (
+                "YAML",
+                "description: \(description)\nenabled: true"),
+            (
+                "JSON",
+                """
+                {
+                  "description": "\(description)",
+                  "enabled": true
+                }
+                """),
+            (
+                "TOML",
+                "description = \"\(description)\"\nenabled = true"),
+        ]
+
+        for (format, input) in inputs {
+            let pasteboard = makeTestPasteboard()
+            let monitor = ClipboardMonitor(
+                settings: settings,
+                pasteboard: pasteboard,
+                accessibilityPermission: StubAccessibilityPermission())
+            pasteboard.setString(input, forType: .string)
+
+            #expect(!monitor.trimClipboardIfNeeded(force: false), "Unexpected auto-reflow for \(format)")
+            #expect(pasteboard.string(forType: .string) == input, "Modified \(format)")
+        }
+    }
+
+    @Test
     func `repairs wrapped URL even when aggressiveness is low`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .low

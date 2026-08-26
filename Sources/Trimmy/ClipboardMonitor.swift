@@ -575,7 +575,7 @@ extension ClipboardMonitor {
         }
 
         if self.settings.autoReflowTextEnabled,
-           MarkdownReformatter.isLikelyReflowable(currentText)
+           MarkdownReformatter.isLikelyAutoReflowable(currentText)
         {
             let reflowed = MarkdownReformatter.reformat(
                 currentText,

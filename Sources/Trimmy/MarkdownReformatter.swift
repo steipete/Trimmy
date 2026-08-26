@@ -43,6 +43,10 @@ struct MarkdownReformatter {
         self.isLikelyMarkdown(text) || self.hasLikelyHardWrappedParagraph(text)
     }
 
+    static func isLikelyAutoReflowable(_ text: String) -> Bool {
+        !self.hasLikelyStructuredSyntax(text) && self.isLikelyReflowable(text)
+    }
+
     static func reformat(_ text: String, trimLeadingBlankLines: Bool = true) -> String {
         let normalized = self.normalizeLineEndings(text)
         let lines = normalized.split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
@@ -213,6 +217,37 @@ struct MarkdownReformatter {
         }
 
         return paragraphLooksHardWrapped()
+    }
+
+    private static func hasLikelyStructuredSyntax(_ text: String) -> Bool {
+        let normalized = self.normalizeLineEndings(text)
+        let lines = normalized
+            .split(omittingEmptySubsequences: true, whereSeparator: \.isNewline)
+            .map { $0.trimmingCharacters(in: CharacterSet.whitespaces) }
+            .filter { !$0.isEmpty }
+        guard lines.count >= 2 else { return false }
+
+        if let first = lines.first,
+           let last = lines.last,
+           first == "{" && last == "}" || first == "[" && last == "]"
+        {
+            return true
+        }
+
+        let structuredLineCount = lines.count(where: self.isLikelyStructuredLine)
+        return structuredLineCount >= 2
+    }
+
+    private static func isLikelyStructuredLine(_ line: String) -> Bool {
+        let patterns = [
+            #"^(?:-\s+)?(?:\"[^\"]+\"|'[^']+'|[A-Za-z_][A-Za-z0-9_.-]*)\s*:\s*\S+"#,
+            #"^[A-Za-z_][A-Za-z0-9_.-]*\s*=\s*\S+"#,
+            #"^\[[^\]]+\]\s*$"#,
+            #"^<[/!?]?[A-Za-z][^>]*>"#,
+        ]
+        return patterns.contains { pattern in
+            line.range(of: pattern, options: .regularExpression) != nil
+        }
     }
 
     private static func normalizeLineEndings(_ text: String) -> String {
