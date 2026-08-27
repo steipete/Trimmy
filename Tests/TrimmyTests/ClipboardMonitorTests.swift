@@ -363,6 +363,106 @@ struct ClipboardMonitorTests {
     }
 
     @Test
+    func `auto reflow joins hard wrapped prose and removes leading blank lines`() {
+        let settings = AppSettings()
+        settings.autoTrimEnabled = true
+        settings.generalAggressiveness = .none
+        settings.autoReflowTextEnabled = true
+        settings.trimLeadingBlankLinesOnReflow = true
+        defer { settings.autoReflowTextEnabled = false }
+        let pasteboard = makeTestPasteboard()
+        let monitor = ClipboardMonitor(
+            settings: settings,
+            pasteboard: pasteboard,
+            accessibilityPermission: StubAccessibilityPermission())
+
+        let input = [
+            "",
+            "The operative danger is the gradient between the source's coherence and the",
+            "receiver's capacity. A prepared vessel metabolizes contact as gnosis.",
+            "",
+            "The second paragraph remains distinct.",
+        ].joined(separator: "\n")
+        let expected = [
+            "The operative danger is the gradient between the source's coherence and the receiver's capacity. "
+                + "A prepared vessel metabolizes contact as gnosis.",
+            "",
+            "The second paragraph remains distinct.",
+        ].joined(separator: "\n")
+        pasteboard.setString(input, forType: .string)
+
+        #expect(monitor.trimClipboardIfNeeded(force: false))
+        #expect(pasteboard.string(forType: .string) == expected)
+    }
+
+    @Test
+    func `hard wrapped prose is unchanged when auto reflow is disabled`() {
+        let settings = AppSettings()
+        settings.autoTrimEnabled = true
+        settings.generalAggressiveness = .none
+        settings.autoReflowTextEnabled = false
+        let pasteboard = makeTestPasteboard()
+        let monitor = ClipboardMonitor(
+            settings: settings,
+            pasteboard: pasteboard,
+            accessibilityPermission: StubAccessibilityPermission())
+
+        let input = """
+        The operative danger is the gradient between the source's coherence and the
+        receiver's capacity. A prepared vessel metabolizes contact as gnosis.
+        """
+        pasteboard.setString(input, forType: .string)
+
+        #expect(!monitor.trimClipboardIfNeeded(force: false))
+        #expect(pasteboard.string(forType: .string) == input)
+    }
+
+    @Test
+    func `auto reflow leaves structured text unchanged`() {
+        let settings = AppSettings()
+        settings.autoTrimEnabled = true
+        settings.generalAggressiveness = .none
+        settings.autoReflowTextEnabled = true
+        defer { settings.autoReflowTextEnabled = false }
+        let description = "This configuration description is deliberately long enough to trigger prose detection"
+        let inputs = [
+            (
+                "YAML",
+                "description: \(description)\nenabled: true"),
+            (
+                "JSON",
+                """
+                {
+                  "description": "\(description)",
+                  "enabled": true
+                }
+                """),
+            (
+                "TOML",
+                "description = \"\(description)\"\nenabled = true"),
+            (
+                "YAML block scalar",
+                """
+                description: |
+                  \(description)
+                  while remaining valid YAML that must retain its line breaks.
+                """),
+        ]
+
+        for (format, input) in inputs {
+            let pasteboard = makeTestPasteboard()
+            let monitor = ClipboardMonitor(
+                settings: settings,
+                pasteboard: pasteboard,
+                accessibilityPermission: StubAccessibilityPermission())
+            pasteboard.setString(input, forType: .string)
+
+            #expect(!monitor.trimClipboardIfNeeded(force: false), "Unexpected auto-reflow for \(format)")
+            #expect(pasteboard.string(forType: .string) == input, "Modified \(format)")
+        }
+    }
+
+    @Test
     func `repairs wrapped URL even when aggressiveness is low`() {
         let settings = AppSettings()
         settings.generalAggressiveness = .low
@@ -440,6 +540,37 @@ struct ClipboardMonitorTests {
         let didPasteOriginal = monitor.pasteOriginal()
         #expect(didPasteOriginal)
         #expect(monitor.lastSummary.contains("echo hi"))
+    }
+
+    @Test
+    func `manual reflow preserves leading blank lines when removal is disabled`() {
+        let settings = AppSettings()
+        settings.showMarkdownReformatOption = true
+        settings.trimLeadingBlankLinesOnReflow = false
+        var pastedText: String?
+        let pasteboard = makeTestPasteboard()
+        let monitor = ClipboardMonitor(
+            settings: settings,
+            pasteboard: pasteboard,
+            pasteRestoreDelay: .seconds(60),
+            pasteAction: { pastedText = pasteboard.string(forType: .string) },
+            accessibilityPermission: StubAccessibilityPermission())
+        let input = [
+            "",
+            "- First item is deliberately wrapped across a long line that should be joined",
+            "  with its continuation while retaining the leading blank line.",
+            "- Second item remains separate.",
+        ].joined(separator: "\n")
+        let expected = [
+            "",
+            "- First item is deliberately wrapped across a long line that should be joined "
+                + "with its continuation while retaining the leading blank line.",
+            "- Second item remains separate.",
+        ].joined(separator: "\n")
+        pasteboard.setString(input, forType: .string)
+
+        #expect(monitor.pasteReformattedMarkdown())
+        #expect(pastedText == expected)
     }
 
     @Test

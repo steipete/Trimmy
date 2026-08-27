@@ -377,7 +377,7 @@ extension ClipboardMonitor {
     @discardableResult
     func pasteReformattedMarkdown() -> Bool {
         guard self.settings.showMarkdownReformatOption else {
-            self.lastSummary = "Markdown reformat disabled."
+            self.lastSummary = "Text reflow disabled."
             return false
         }
         guard self.accessibilityPermission.isTrusted else {
@@ -385,7 +385,7 @@ extension ClipboardMonitor {
             return false
         }
         guard let reformat = self.currentMarkdownReformat() else {
-            self.lastSummary = "No markdown to reformat."
+            self.lastSummary = "No text to reflow."
             return false
         }
         self.lastOriginalText = reformat.original
@@ -569,9 +569,23 @@ extension ClipboardMonitor {
             wasTransformed = true
         }
 
-        if let dedentedParagraph = self.detector.dedentParagraphIndent(currentText) {
+        if !MarkdownReformatter.isLikelyStructuredText(currentText),
+           let dedentedParagraph = self.detector.dedentParagraphIndent(currentText)
+        {
             currentText = dedentedParagraph
             wasTransformed = true
+        }
+
+        if self.settings.autoReflowTextEnabled,
+           MarkdownReformatter.isLikelyAutoReflowable(currentText)
+        {
+            let reflowed = MarkdownReformatter.reformat(
+                currentText,
+                trimLeadingBlankLines: self.settings.trimLeadingBlankLinesOnReflow)
+            if reflowed != currentText {
+                currentText = reflowed
+                wasTransformed = true
+            }
         }
 
         return ClipboardVariants(
@@ -588,8 +602,10 @@ extension ClipboardMonitor {
 
     private func currentMarkdownReformat() -> MarkdownReformat? {
         guard let text = self.clipboardText() ?? self.lastOriginalText else { return nil }
-        guard MarkdownReformatter.isLikelyMarkdown(text) else { return nil }
-        let reformatted = MarkdownReformatter.reformat(text)
+        guard MarkdownReformatter.isLikelyReflowable(text) else { return nil }
+        let reformatted = MarkdownReformatter.reformat(
+            text,
+            trimLeadingBlankLines: self.settings.trimLeadingBlankLinesOnReflow)
         return MarkdownReformat(original: text, reformatted: reformatted)
     }
 

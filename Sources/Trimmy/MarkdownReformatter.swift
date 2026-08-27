@@ -39,7 +39,19 @@ struct MarkdownReformatter {
         return false
     }
 
-    static func reformat(_ text: String) -> String {
+    static func isLikelyReflowable(_ text: String) -> Bool {
+        self.isLikelyMarkdown(text) || self.hasLikelyHardWrappedParagraph(text)
+    }
+
+    static func isLikelyAutoReflowable(_ text: String) -> Bool {
+        !self.isLikelyStructuredText(text) && self.isLikelyReflowable(text)
+    }
+
+    static func isLikelyStructuredText(_ text: String) -> Bool {
+        self.hasLikelyStructuredSyntax(text)
+    }
+
+    static func reformat(_ text: String, trimLeadingBlankLines: Bool = false) -> String {
         let normalized = self.normalizeLineEndings(text)
         let lines = normalized.split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
         var output: [String] = []
@@ -121,6 +133,12 @@ struct MarkdownReformatter {
         flushListItem()
         flushParagraph()
 
+        if trimLeadingBlankLines {
+            while output.first?.isEmpty == true {
+                output.removeFirst()
+            }
+        }
+
         return output.joined(separator: "\n")
     }
 
@@ -155,6 +173,94 @@ struct MarkdownReformatter {
         }
 
         return Analysis(headingCount: headingCount, listCount: listCount)
+    }
+
+    private static func hasLikelyHardWrappedParagraph(_ text: String) -> Bool {
+        let normalized = self.normalizeLineEndings(text)
+        let lines = normalized.split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
+        var paragraphLines: [String] = []
+        var fence: FenceState?
+
+        func paragraphLooksHardWrapped() -> Bool {
+            guard paragraphLines.count >= 2 else { return false }
+            return paragraphLines.dropLast().contains { line in
+                line.trimmingCharacters(in: CharacterSet.whitespaces).count >= 40
+            }
+        }
+
+        for lineSlice in lines {
+            let line = String(lineSlice)
+            if let fenceState = fence {
+                if self.isFenceClose(line, fence: fenceState) {
+                    fence = nil
+                }
+                continue
+            }
+
+            if let fenceState = self.fenceOpen(line) {
+                if paragraphLooksHardWrapped() {
+                    return true
+                }
+                paragraphLines.removeAll(keepingCapacity: true)
+                fence = fenceState
+                continue
+            }
+
+            if line.trimmingCharacters(in: CharacterSet.whitespaces).isEmpty
+                || self.isHeadingLine(line)
+                || self.listMatch(for: line) != nil
+            {
+                if paragraphLooksHardWrapped() {
+                    return true
+                }
+                paragraphLines.removeAll(keepingCapacity: true)
+                continue
+            }
+
+            paragraphLines.append(line)
+        }
+
+        return paragraphLooksHardWrapped()
+    }
+
+    private static func hasLikelyStructuredSyntax(_ text: String) -> Bool {
+        let normalized = self.normalizeLineEndings(text)
+        let lines = normalized
+            .split(omittingEmptySubsequences: true, whereSeparator: \.isNewline)
+            .map { $0.trimmingCharacters(in: CharacterSet.whitespaces) }
+            .filter { !$0.isEmpty }
+        guard lines.count >= 2 else { return false }
+
+        if let first = lines.first,
+           let last = lines.last,
+           first == "{" && last == "}" || first == "[" && last == "]"
+        {
+            return true
+        }
+
+        if lines.contains(where: self.isYAMLBlockScalarHeader) {
+            return true
+        }
+
+        let structuredLineCount = lines.count(where: self.isLikelyStructuredLine)
+        return structuredLineCount >= 2
+    }
+
+    private static func isYAMLBlockScalarHeader(_ line: String) -> Bool {
+        let pattern = #"^(?:-\s+)?(?:\"[^\"]+\"|'[^']+'|[A-Za-z_][A-Za-z0-9_.-]*)\s*:\s*[|>][+1-9-]{0,2}(?:\s+#.*)?$"#
+        return line.range(of: pattern, options: .regularExpression) != nil
+    }
+
+    private static func isLikelyStructuredLine(_ line: String) -> Bool {
+        let patterns = [
+            #"^(?:-\s+)?(?:\"[^\"]+\"|'[^']+'|[A-Za-z_][A-Za-z0-9_.-]*)\s*:\s*\S+"#,
+            #"^[A-Za-z_][A-Za-z0-9_.-]*\s*=\s*\S+"#,
+            #"^\[[^\]]+\]\s*$"#,
+            #"^<[/!?]?[A-Za-z][^>]*>"#,
+        ]
+        return patterns.contains { pattern in
+            line.range(of: pattern, options: .regularExpression) != nil
+        }
     }
 
     private static func normalizeLineEndings(_ text: String) -> String {
