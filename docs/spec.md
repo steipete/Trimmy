@@ -31,7 +31,7 @@ read_when:
 8. **Robust text read**: prefers `readObjects(forClasses:[NSString.self])`, falls back to common public text UTI types before declaring “no text”.
 9. **UI**
    - Menu bar icon/text "Trimmy" with menu items: Auto-Trim toggle, "Paste Trimmed", "Paste Reflowed Text" (when wrapped prose or Markdown is detected), "Paste Original", status line showing last action preview, Quit.
-   - General settings control automatic text reflow (default off), removal of leading blank lines during reflow (default on), and visibility of the manual reflow paste action (default on).
+   - General settings control automatic text reflow (default off), removal of leading blank lines during reflow (default off for compatibility), and visibility of the manual reflow paste action (default on).
    - SwiftUI Settings window (macOS-standard Settings scene) organized into General, Trimming, Rules, Shortcuts, Advanced, and About tabs.
    - Trimming contains sensitivity pickers for General apps and Terminals plus cleanup behavior.
    - Rules contains auto-trim app/site exclusions and URL content-identity parameter rules.

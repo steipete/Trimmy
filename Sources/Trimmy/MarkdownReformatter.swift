@@ -44,10 +44,14 @@ struct MarkdownReformatter {
     }
 
     static func isLikelyAutoReflowable(_ text: String) -> Bool {
-        !self.hasLikelyStructuredSyntax(text) && self.isLikelyReflowable(text)
+        !self.isLikelyStructuredText(text) && self.isLikelyReflowable(text)
     }
 
-    static func reformat(_ text: String, trimLeadingBlankLines: Bool = true) -> String {
+    static func isLikelyStructuredText(_ text: String) -> Bool {
+        self.hasLikelyStructuredSyntax(text)
+    }
+
+    static func reformat(_ text: String, trimLeadingBlankLines: Bool = false) -> String {
         let normalized = self.normalizeLineEndings(text)
         let lines = normalized.split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
         var output: [String] = []
@@ -234,8 +238,17 @@ struct MarkdownReformatter {
             return true
         }
 
+        if lines.contains(where: self.isYAMLBlockScalarHeader) {
+            return true
+        }
+
         let structuredLineCount = lines.count(where: self.isLikelyStructuredLine)
         return structuredLineCount >= 2
+    }
+
+    private static func isYAMLBlockScalarHeader(_ line: String) -> Bool {
+        let pattern = #"^(?:-\s+)?(?:\"[^\"]+\"|'[^']+'|[A-Za-z_][A-Za-z0-9_.-]*)\s*:\s*[|>][+1-9-]{0,2}(?:\s+#.*)?$"#
+        return line.range(of: pattern, options: .regularExpression) != nil
     }
 
     private static func isLikelyStructuredLine(_ line: String) -> Bool {

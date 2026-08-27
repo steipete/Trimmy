@@ -166,11 +166,11 @@ struct MarkdownReformatterTests {
             "The second paragraph stays separate.",
         ].joined(separator: "\n")
 
-        #expect(MarkdownReformatter.reformat(input) == expected)
+        #expect(MarkdownReformatter.reformat(input, trimLeadingBlankLines: true) == expected)
     }
 
     @Test
-    func `can preserve leading blank lines`() {
+    func `preserves leading blank lines by default`() {
         let input = [
             "",
             "The first paragraph is hard wrapped across a deliberately long line that should",
@@ -180,7 +180,7 @@ struct MarkdownReformatterTests {
         let expected = "\nThe first paragraph is hard wrapped across a deliberately long line that should "
             + "join while retaining the leading blank line when that preference is disabled."
 
-        #expect(MarkdownReformatter.reformat(input, trimLeadingBlankLines: false) == expected)
+        #expect(MarkdownReformatter.reformat(input) == expected)
     }
 
     @Test
@@ -199,8 +199,18 @@ struct MarkdownReformatterTests {
         description = "This configuration description is deliberately long enough to trigger prose detection"
         enabled = true
         """
+        let yamlLiteralBlock = """
+        description: |
+          This configuration description is deliberately long enough to trigger prose detection
+          while remaining valid YAML that must retain its line breaks.
+        """
+        let yamlFoldedBlock = """
+        description: >-
+          This configuration description is deliberately long enough to trigger prose detection
+          while remaining valid YAML that must retain its folding semantics.
+        """
 
-        for input in [yaml, json, toml] {
+        for input in [yaml, json, toml, yamlLiteralBlock, yamlFoldedBlock] {
             #expect(MarkdownReformatter.isLikelyReflowable(input))
             #expect(!MarkdownReformatter.isLikelyAutoReflowable(input))
         }

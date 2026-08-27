@@ -569,7 +569,9 @@ extension ClipboardMonitor {
             wasTransformed = true
         }
 
-        if let dedentedParagraph = self.detector.dedentParagraphIndent(currentText) {
+        if !MarkdownReformatter.isLikelyStructuredText(currentText),
+           let dedentedParagraph = self.detector.dedentParagraphIndent(currentText)
+        {
             currentText = dedentedParagraph
             wasTransformed = true
         }

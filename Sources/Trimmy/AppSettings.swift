@@ -27,7 +27,7 @@ public final class AppSettings: ObservableObject {
     @AppStorage("usePasteboardFallbacks") var usePasteboardFallbacks: Bool = false
     @AppStorage("showMarkdownReformatOption") var showMarkdownReformatOption: Bool = true
     @AppStorage("autoReflowTextEnabled") var autoReflowTextEnabled: Bool = false
-    @AppStorage("trimLeadingBlankLinesOnReflow") var trimLeadingBlankLinesOnReflow: Bool = true
+    @AppStorage("trimLeadingBlankLinesOnReflow") var trimLeadingBlankLinesOnReflow: Bool = false
     @AppStorage("launchAtLogin") var launchAtLogin: Bool = false {
         didSet { LaunchAtLoginManager.setEnabled(self.launchAtLogin) }
     }
