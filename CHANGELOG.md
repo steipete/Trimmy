@@ -1,6 +1,7 @@
 # Changelog
 
 ## 0.10.2 — Unreleased
+- Build: validate macOS builds with Swift 6.2.4 while retaining Swift 6.2 and macOS 15 support.
 - Dependencies: update Sparkle to 2.9.6 for installer security fixes and MenuBarExtraAccess to 1.3.1 for macOS 27 compatibility.
 - Terminal detection now recognizes cmux by bundle identifier and app name, so copies use terminal-specific trimming (thanks @gustavosmendes).
 - Dependencies: update KeyboardShortcuts to 2.4.0 for shortcut-recorder fixes while preserving Swift 6.2 compatibility.
