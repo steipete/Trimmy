@@ -143,7 +143,7 @@ public struct TextCleaner: Sendable {
         guard !self.isLikelyList(nonEmptyLines),
               !self.isLikelySourceCode(text),
               !self.isLikelyStructuredData(nonEmptyLines),
-              !self.containsYAMLBlockScalar(nonEmptyLines),
+              !Self.containsYAMLBlockScalar(text),
               !self.hasCommandPunctuation(text)
         else {
             return nil
@@ -177,11 +177,25 @@ public struct TextCleaner: Sendable {
 
     // MARK: - Public pipeline
 
+    public static func containsYAMLBlockScalar(_ text: String) -> Bool {
+        // Preserve raw scalar contents before cleanup can strip meaningful indentation or glyphs.
+        let prefix = #"(?:---\s+)?(?:(?:[^#\s][^\r\n]*)?:\s*)?(?:-\s+)*"#
+        let properties = #"(?:(?:!\S*|&\S+)\s+)*"#
+        let scalar = #"[|>](?:[1-9][+-]?|[+-][1-9]?)?(?:\s+#.*)?$"#
+        return text.split(whereSeparator: \.isNewline).contains { line in
+            line.trimmingCharacters(in: .whitespaces)
+                .range(of: "^" + prefix + properties + scalar, options: .regularExpression) != nil
+        }
+    }
+
     public func transform(
         _ text: String,
         config: TrimConfig,
         aggressivenessOverride: Aggressiveness? = nil) -> TrimResult
     {
+        if (aggressivenessOverride ?? config.aggressiveness) != .high, Self.containsYAMLBlockScalar(text) {
+            return TrimResult(original: text, trimmed: text, wasTransformed: false)
+        }
         var currentText = text
         var wasTransformed = false
 
@@ -250,7 +264,7 @@ public struct TextCleaner: Sendable {
 
         let nonEmptyLines = lines.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
         let aggressiveness = aggressivenessOverride ?? config.aggressiveness
-        if aggressiveness != .high, self.containsYAMLBlockScalar(nonEmptyLines) {
+        if aggressiveness != .high, Self.containsYAMLBlockScalar(text) {
             return nil
         }
 
@@ -479,16 +493,6 @@ public struct TextCleaner: Sendable {
             return false
         }
         return line.contains(where: \.isWhitespace) || line.range(of: #"[,.!?;:]"#, options: .regularExpression) != nil
-    }
-
-    private func containsYAMLBlockScalar(_ lines: [Substring]) -> Bool {
-        // A YAML literal marker is not a shell pipe, and its content indentation is significant.
-        let prefix = #"(?:(?:[^#\s][^\r\n]*)?:\s*|-\s+)?"#
-        let scalar = #"[|>](?:[1-9][+-]?|[+-][1-9]?)?(?:\s+#.*)?$"#
-        return lines.contains { line in
-            line.trimmingCharacters(in: .whitespaces)
-                .range(of: "^" + prefix + scalar, options: .regularExpression) != nil
-        }
     }
 
     private func isLikelyStructuredData(_ lines: [Substring]) -> Bool {

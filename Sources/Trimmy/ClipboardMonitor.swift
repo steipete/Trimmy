@@ -506,6 +506,16 @@ extension ClipboardMonitor {
     }
 
     private func transform(text: String, force: Bool, sourceContext: ClipboardSourceContext?) -> ClipboardVariants {
+        let isTerminal = sourceContext?.isTerminal == true
+        let useTerminalAggressiveness = isTerminal && self.settings.contextAwareTrimmingEnabled
+        let baseAggressiveness = useTerminalAggressiveness
+            ? self.settings.terminalAggressiveness
+            : self.settings.generalAggressiveness.coreAggressiveness
+        let overrideAggressiveness: Aggressiveness? = force ? .high : nil
+        let commandAggressiveness = overrideAggressiveness ?? baseAggressiveness
+        if commandAggressiveness != .high, TextCleaner.containsYAMLBlockScalar(text) {
+            return ClipboardVariants(original: text, trimmed: text, wasTransformed: false)
+        }
         var currentText = text
         var wasTransformed = false
 
@@ -542,14 +552,6 @@ extension ClipboardMonitor {
             currentText = quotedPath
             wasTransformed = true
         }
-
-        let isTerminal = sourceContext?.isTerminal == true
-        let useTerminalAggressiveness = isTerminal && self.settings.contextAwareTrimmingEnabled
-        let baseAggressiveness = useTerminalAggressiveness
-            ? self.settings.terminalAggressiveness
-            : self.settings.generalAggressiveness.coreAggressiveness
-        let overrideAggressiveness: Aggressiveness? = force ? .high : nil
-        let commandAggressiveness = overrideAggressiveness ?? baseAggressiveness
 
         if useTerminalAggressiveness, let sourceContext {
             Telemetry.clipboard.debug(

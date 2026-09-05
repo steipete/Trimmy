@@ -85,9 +85,13 @@ struct TrimmyCLITests {
         #expect(result.trimmed == input)
     }
 
-    @Test
-    func `preserves YAML literal blocks`() {
-        let input = "description: |\n  This paragraph belongs to a YAML scalar.\n  Its indentation is required."
+    @Test(arguments: [
+        "description: |\n  This paragraph belongs to a YAML scalar.\n  Its indentation is required.",
+        "art: |\n  │ hello\n  │ world",
+        "script: &anchor |\n  $ echo one\n  $ echo two",
+        "description: !!str |\n  This paragraph belongs to a YAML scalar.\n  Its indentation is required.",
+    ])
+    func `preserves YAML literal blocks`(input: String) {
         for aggressiveness in [Aggressiveness.low, .normal] {
             let result = cliTrim(input, settings: CLISettings(aggressiveness: aggressiveness), force: false)
             #expect(!result.transformed)

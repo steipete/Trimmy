@@ -42,8 +42,13 @@ struct ClipboardMonitorTests {
         #expect(monitor.clipboardText() != nil)
     }
 
-    @Test
-    func `automatic trimming preserves YAML literal indentation`() {
+    @Test(arguments: [
+        "description: |\n  This paragraph belongs to a YAML scalar.\n  Its indentation is required.",
+        "art: |\n  │ hello\n  │ world",
+        "script: &anchor |\n  $ echo one\n  $ echo two",
+        "description: !!str |\n  This paragraph belongs to a YAML scalar.\n  Its indentation is required.",
+    ])
+    func `automatic trimming preserves YAML literal indentation`(input: String) {
         let settings = AppSettings()
         let originalAutoTrim = settings.autoTrimEnabled
         let originalContextAware = settings.contextAwareTrimmingEnabled
@@ -55,7 +60,6 @@ struct ClipboardMonitorTests {
         }
         settings.autoTrimEnabled = true
         settings.contextAwareTrimmingEnabled = false
-        let input = "description: |\n  This paragraph belongs to a YAML scalar.\n  Its indentation is required."
         for aggressiveness in [GeneralAggressiveness.none, .low, .normal] {
             settings.generalAggressiveness = aggressiveness
             let pasteboard = makeTestPasteboard()

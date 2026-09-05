@@ -102,6 +102,10 @@ struct ParagraphDedentTests {
         "description: |2- # literal", "description: |-2", "description: >-",
         "- description: |", "- |", "\"description\": |", "'description': |",
         "release notes: |", "123: |", "説明: |", "https://example.com: |", "|", ": |",
+        "description: !custom |", "description: !!str |", "script: &anchor |",
+        "description: &anchor !!str |", "description: !!str &anchor |", "- !custom |",
+        "!<tag:yaml.org,2002:str> |",
+        "description: ! |", "--- |", "- - |",
     ])
     func `preserves YAML block scalar indentation`(header: String) {
         let input = "\(header)\n  This paragraph belongs to a YAML scalar.\n  Its indentation is required."
