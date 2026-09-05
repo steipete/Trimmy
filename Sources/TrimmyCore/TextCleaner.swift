@@ -143,6 +143,7 @@ public struct TextCleaner: Sendable {
         guard !self.isLikelyList(nonEmptyLines),
               !self.isLikelySourceCode(text),
               !self.isLikelyStructuredData(nonEmptyLines),
+              !self.containsYAMLBlockScalar(nonEmptyLines),
               !self.hasCommandPunctuation(text)
         else {
             return nil
@@ -248,6 +249,10 @@ public struct TextCleaner: Sendable {
         }
 
         let nonEmptyLines = lines.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+        let aggressiveness = aggressivenessOverride ?? config.aggressiveness
+        if aggressiveness != .high, self.containsYAMLBlockScalar(nonEmptyLines) {
+            return nil
+        }
 
         let hasLineContinuation = text.contains("\\\n")
         let hasLineJoinerAtEOL = text.range(
@@ -266,8 +271,6 @@ public struct TextCleaner: Sendable {
         {
             return nil
         }
-
-        let aggressiveness = aggressivenessOverride ?? config.aggressiveness
 
         let strongCommandSignals = text.contains("\\\n")
             || text.range(of: #"[|&]{1,2}"#, options: .regularExpression) != nil
@@ -476,6 +479,16 @@ public struct TextCleaner: Sendable {
             return false
         }
         return line.contains(where: \.isWhitespace) || line.range(of: #"[,.!?;:]"#, options: .regularExpression) != nil
+    }
+
+    private func containsYAMLBlockScalar(_ lines: [Substring]) -> Bool {
+        // A YAML literal marker is not a shell pipe, and its content indentation is significant.
+        let prefix = #"(?:(?:[^#\s][^\r\n]*)?:\s*|-\s+)?"#
+        let scalar = #"[|>](?:[1-9][+-]?|[+-][1-9]?)?(?:\s+#.*)?$"#
+        return lines.contains { line in
+            line.trimmingCharacters(in: .whitespaces)
+                .range(of: "^" + prefix + scalar, options: .regularExpression) != nil
+        }
     }
 
     private func isLikelyStructuredData(_ lines: [Substring]) -> Bool {

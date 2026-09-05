@@ -86,6 +86,16 @@ struct TrimmyCLITests {
     }
 
     @Test
+    func `preserves YAML literal blocks`() {
+        let input = "description: |\n  This paragraph belongs to a YAML scalar.\n  Its indentation is required."
+        for aggressiveness in [Aggressiveness.low, .normal] {
+            let result = cliTrim(input, settings: CLISettings(aggressiveness: aggressiveness), force: false)
+            #expect(!result.transformed)
+            #expect(result.trimmed == input)
+        }
+    }
+
+    @Test
     func `pyenv init stays multiline when safer`() {
         let input = """
         export PYENV_ROOT="$HOME/.pyenv"
