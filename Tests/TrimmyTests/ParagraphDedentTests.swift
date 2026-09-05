@@ -97,6 +97,42 @@ struct ParagraphDedentTests {
         #expect(result.trimmed == "echo hello && echo world")
     }
 
+    @Test(arguments: [
+        "description: |", "description: |-", "description: |+",
+        "description: |2- # literal", "description: |-2", "description: >-",
+        "- description: |", "- |", "\"description\": |", "'description': |",
+        "release notes: |", "123: |", "説明: |", "https://example.com: |", "|", ": |",
+        "description: !custom |", "description: !!str |", "script: &anchor |",
+        "description: &anchor !!str |", "description: !!str &anchor |", "- !custom |",
+        "!<tag:yaml.org,2002:str> |",
+        "description: ! |", "--- |", "- - |",
+    ])
+    func `preserves YAML block scalar indentation`(header: String) {
+        let input = "\(header)\n  This paragraph belongs to a YAML scalar.\n  Its indentation is required."
+        #expect(self.cleaner.dedentParagraphIndent(input) == nil)
+        for aggressiveness in [Aggressiveness.low, .normal] {
+            let result = self.cleaner.transform(
+                input,
+                config: TrimConfig(
+                    aggressiveness: aggressiveness,
+                    preserveBlankLines: false,
+                    removeBoxDrawing: true))
+            #expect(!result.wasTransformed)
+            #expect(result.trimmed == input)
+        }
+    }
+
+    @Test
+    func `manual high override still flattens YAML on request`() {
+        let input = "description: |\n  This paragraph belongs to a YAML scalar.\n  Its indentation is required."
+        let result = self.cleaner.transform(
+            input,
+            config: TrimConfig(aggressiveness: .low, preserveBlankLines: false, removeBoxDrawing: true),
+            aggressivenessOverride: .high)
+        #expect(result.wasTransformed)
+        #expect(!result.trimmed.contains("\n"))
+    }
+
     @Test
     func `clipboard detector exposes paragraph dedent`() {
         let settings = AppSettings()

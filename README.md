@@ -57,6 +57,8 @@ Trimmy uses separate sensitivity settings for general apps and terminals. It rec
 
 Prompt gutters such as `$` and `#` are removed when they prefix a command, while Markdown headings remain intact. Automatic trimming skips large clipboard blobs as a safety valve.
 
+Low and Normal sensitivity preserve YAML block scalars and their required indentation. High sensitivity and manual **Paste Trimmed** still flatten on request.
+
 ## Paste actions and permissions
 
 **Paste Trimmed** and **Paste Original** can be assigned global shortcuts. Their menu previews name the target app and show what trimming removed before sending a paste keystroke.

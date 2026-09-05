@@ -42,6 +42,37 @@ struct ClipboardMonitorTests {
         #expect(monitor.clipboardText() != nil)
     }
 
+    @Test(arguments: [
+        "description: |\n  This paragraph belongs to a YAML scalar.\n  Its indentation is required.",
+        "art: |\n  │ hello\n  │ world",
+        "script: &anchor |\n  $ echo one\n  $ echo two",
+        "description: !!str |\n  This paragraph belongs to a YAML scalar.\n  Its indentation is required.",
+    ])
+    func `automatic trimming preserves YAML literal indentation`(input: String) {
+        let settings = AppSettings()
+        let originalAutoTrim = settings.autoTrimEnabled
+        let originalContextAware = settings.contextAwareTrimmingEnabled
+        let originalAggressiveness = settings.generalAggressiveness
+        defer {
+            settings.autoTrimEnabled = originalAutoTrim
+            settings.contextAwareTrimmingEnabled = originalContextAware
+            settings.generalAggressiveness = originalAggressiveness
+        }
+        settings.autoTrimEnabled = true
+        settings.contextAwareTrimmingEnabled = false
+        for aggressiveness in [GeneralAggressiveness.none, .low, .normal] {
+            settings.generalAggressiveness = aggressiveness
+            let pasteboard = makeTestPasteboard()
+            let monitor = ClipboardMonitor(
+                settings: settings,
+                pasteboard: pasteboard,
+                accessibilityPermission: StubAccessibilityPermission())
+            pasteboard.setString(input, forType: .string)
+            #expect(!monitor.trimClipboardIfNeeded(force: false))
+            #expect(pasteboard.string(forType: .string) == input)
+        }
+    }
+
     @Test
     func `manual trim reads own marker`() {
         let settings = AppSettings()

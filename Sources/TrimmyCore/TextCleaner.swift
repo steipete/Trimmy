@@ -143,6 +143,7 @@ public struct TextCleaner: Sendable {
         guard !self.isLikelyList(nonEmptyLines),
               !self.isLikelySourceCode(text),
               !self.isLikelyStructuredData(nonEmptyLines),
+              !Self.containsYAMLBlockScalar(text),
               !self.hasCommandPunctuation(text)
         else {
             return nil
@@ -176,11 +177,25 @@ public struct TextCleaner: Sendable {
 
     // MARK: - Public pipeline
 
+    public static func containsYAMLBlockScalar(_ text: String) -> Bool {
+        // Preserve raw scalar contents before cleanup can strip meaningful indentation or glyphs.
+        let prefix = #"(?:---\s+)?(?:(?:[^#\s][^\r\n]*)?:\s*)?(?:-\s+)*"#
+        let properties = #"(?:(?:!\S*|&\S+)\s+)*"#
+        let scalar = #"[|>](?:[1-9][+-]?|[+-][1-9]?)?(?:\s+#.*)?$"#
+        return text.split(whereSeparator: \.isNewline).contains { line in
+            line.trimmingCharacters(in: .whitespaces)
+                .range(of: "^" + prefix + properties + scalar, options: .regularExpression) != nil
+        }
+    }
+
     public func transform(
         _ text: String,
         config: TrimConfig,
         aggressivenessOverride: Aggressiveness? = nil) -> TrimResult
     {
+        if (aggressivenessOverride ?? config.aggressiveness) != .high, Self.containsYAMLBlockScalar(text) {
+            return TrimResult(original: text, trimmed: text, wasTransformed: false)
+        }
         var currentText = text
         var wasTransformed = false
 
@@ -248,6 +263,10 @@ public struct TextCleaner: Sendable {
         }
 
         let nonEmptyLines = lines.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+        let aggressiveness = aggressivenessOverride ?? config.aggressiveness
+        if aggressiveness != .high, Self.containsYAMLBlockScalar(text) {
+            return nil
+        }
 
         let hasLineContinuation = text.contains("\\\n")
         let hasLineJoinerAtEOL = text.range(
@@ -266,8 +285,6 @@ public struct TextCleaner: Sendable {
         {
             return nil
         }
-
-        let aggressiveness = aggressivenessOverride ?? config.aggressiveness
 
         let strongCommandSignals = text.contains("\\\n")
             || text.range(of: #"[|&]{1,2}"#, options: .regularExpression) != nil
