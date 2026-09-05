@@ -2,10 +2,11 @@
 
 ## 0.10.2 — Unreleased
 
-**Highlights:** Safer automatic updates and terminal-aware trimming for cmux.
+**Highlights:** Safer automatic updates and clipboard handling.
 
 - Update Sparkle to 2.9.6 for installer security fixes.
 - Terminal detection now recognizes cmux by bundle identifier and app name, so copies use terminal-specific trimming (thanks @gustavosmendes).
+- Preserve YAML block-scalar indentation during automatic trimming in the app and CLI (thanks @rewtraw).
 - Update KeyboardShortcuts to 2.4.0 for shortcut-recorder fixes while preserving Swift 6.2 compatibility.
 - Update MenuBarExtraAccess to 1.3.1 for macOS 27 compatibility.
 - Build: validate macOS builds with Swift 6.2.4 while retaining Swift 6.2 and macOS 15 support.
