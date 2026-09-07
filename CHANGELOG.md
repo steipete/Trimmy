@@ -1,6 +1,12 @@
 # Changelog
 
-## 0.10.3 — Unreleased
+## 0.11.0 — Unreleased
+
+**Highlights:** Optional automatic reflow for copied prose and Markdown.
+
+- Join hard-wrapped prose and Markdown automatically with a new default-off setting, respecting app/site exclusions and preserving fenced examples before command cleanup (thanks @rewtraw).
+- Expand the manual action to Paste Reflowed Text, with shared checks that leave recognized source code and configuration out of both reflow paths (thanks @rewtraw).
+- Add optional removal of leading blank lines during reflow, disabled by default to preserve existing paste behavior (thanks @rewtraw).
 
 ## 0.10.2 — 2026-09-05
 
