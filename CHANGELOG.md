@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.11.1 — Unreleased
+
 ## 0.11.0 — 2026-09-07
 
 **Highlights:** Optional automatic reflow for copied prose and Markdown.
