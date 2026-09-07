@@ -10,7 +10,7 @@ read_when:
 Goal: ship a real macOS Settings window (⌘,) using only SwiftUI—no custom AppKit controllers. You get toolbar-style tabs, grouped two-column rows, and modern window behavior out of the box.
 
 ## Current Trimmy organization
-- **General**: auto-trim, optional menu actions, launch and menu-bar behavior.
+- **General**: auto-trim, optional automatic text reflow and leading-blank removal (both default off), manual reflow visibility, launch and menu-bar behavior.
 - **Trimming**: regular-app and terminal sensitivity, live preview.
 - **Rules**: app/site auto-trim exclusions and preserved URL query parameters.
 - **Shortcuts**: global paste and auto-trim shortcuts.

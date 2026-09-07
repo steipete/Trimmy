@@ -196,8 +196,8 @@ struct AggressivenessExample {
         switch level {
         case .none:
             AggressivenessExample(
-                title: "None keeps regular app copies intact",
-                caption: "Auto-trim stays off for non-terminal apps.",
+                title: "None skips command flattening",
+                caption: "Commands stay multiline in non-terminal apps. Optional text reflow still applies.",
                 sample: """
                 brew update \\
                   && brew upgrade

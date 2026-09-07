@@ -1,4 +1,5 @@
 import Foundation
+import TrimmyCore
 
 struct MarkdownReformatter {
     private struct Analysis {
@@ -39,7 +40,12 @@ struct MarkdownReformatter {
         return false
     }
 
-    static func reformat(_ text: String) -> String {
+    static func isLikelyReflowable(_ text: String) -> Bool {
+        !self.hasLikelyStructuredSyntax(text)
+            && (self.isLikelyMarkdown(text) || self.hasLikelyHardWrappedParagraph(text))
+    }
+
+    static func reformat(_ text: String, trimLeadingBlankLines: Bool = false) -> String {
         let normalized = self.normalizeLineEndings(text)
         let lines = normalized.split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
         var output: [String] = []
@@ -121,6 +127,12 @@ struct MarkdownReformatter {
         flushListItem()
         flushParagraph()
 
+        if trimLeadingBlankLines {
+            while output.first?.isEmpty == true {
+                output.removeFirst()
+            }
+        }
+
         return output.joined(separator: "\n")
     }
 
@@ -155,6 +167,222 @@ struct MarkdownReformatter {
         }
 
         return Analysis(headingCount: headingCount, listCount: listCount)
+    }
+
+    private static func hasLikelyHardWrappedParagraph(_ text: String) -> Bool {
+        let normalized = self.normalizeLineEndings(text)
+        let lines = normalized.split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
+        var paragraphLines: [String] = []
+        var fence: FenceState?
+
+        func paragraphLooksHardWrapped() -> Bool {
+            guard paragraphLines.count >= 2 else { return false }
+            let wrappedLines = paragraphLines.dropLast()
+            guard wrappedLines.allSatisfy({ $0.split(whereSeparator: \.isWhitespace).count >= 4 }) else {
+                return false
+            }
+            return wrappedLines.contains { line in
+                line.trimmingCharacters(in: CharacterSet.whitespaces).count >= 40
+            }
+        }
+
+        for lineSlice in lines {
+            let line = String(lineSlice)
+            if let fenceState = fence {
+                if self.isFenceClose(line, fence: fenceState) {
+                    fence = nil
+                }
+                continue
+            }
+
+            if let fenceState = self.fenceOpen(line) {
+                if paragraphLooksHardWrapped() {
+                    return true
+                }
+                paragraphLines.removeAll(keepingCapacity: true)
+                fence = fenceState
+                continue
+            }
+
+            if line.trimmingCharacters(in: CharacterSet.whitespaces).isEmpty
+                || self.isHeadingLine(line)
+                || self.listMatch(for: line) != nil
+            {
+                if paragraphLooksHardWrapped() {
+                    return true
+                }
+                paragraphLines.removeAll(keepingCapacity: true)
+                continue
+            }
+
+            paragraphLines.append(line)
+        }
+
+        return paragraphLooksHardWrapped()
+    }
+
+    private static func hasLikelyStructuredSyntax(_ text: String) -> Bool {
+        let unfenced = self.unfencedLines(text)
+        if self.containsIndentedCode(in: unfenced) {
+            return true
+        }
+        if zip(unfenced, unfenced.dropFirst()).contains(where: { line, next in
+            !next.trimmingCharacters(in: .whitespaces).isEmpty
+                && line.trimmingCharacters(in: .whitespaces).range(
+                    of: #"(?:[A-Za-z][A-Za-z0-9+.-]*://|\]\()[^\s]+$"#,
+                    options: .regularExpression) != nil
+        }) {
+            return true
+        }
+        let lines = unfenced
+            .map { $0.trimmingCharacters(in: CharacterSet.whitespaces) }
+            .filter { !$0.isEmpty }
+        if TextCleaner.containsYAMLBlockScalar(lines.joined(separator: "\n"))
+            || lines.contains(where: self.isSourceOrConfigurationLine)
+            || self.containsDelimitedRecords(lines)
+        {
+            return true
+        }
+
+        let structuredLineCount = lines.count(where: self.isLikelyStructuredLine)
+        return structuredLineCount >= 2
+    }
+
+    private static func containsDelimitedRecords(_ lines: [String]) -> Bool {
+        for separator: Character in [",", "\t"] {
+            var fields: [String] = []
+            var field = ""
+            var quoted = false
+            var multiline = false
+            var previousCount = 0
+            var previousExplicit = false
+            var previousHeader = false
+            for character in lines.joined(separator: "\n") + "\n" {
+                if character == "\"" {
+                    quoted.toggle()
+                }
+                if character == "\n", quoted {
+                    multiline = true
+                }
+                if character == separator, !quoted {
+                    fields.append(field)
+                    field = ""
+                    continue
+                }
+                guard character == "\n", !quoted else {
+                    field.append(character)
+                    continue
+                }
+                fields.append(field)
+                let trimmed = fields.map { $0.trimmingCharacters(in: .whitespaces) }
+                let shortFieldCount = trimmed.count { field in
+                    !field.isEmpty && field.split(whereSeparator: \.isWhitespace).count < 4
+                }
+                let explicit = separator == "\t"
+                    || shortFieldCount > 0
+                    || trimmed.contains { $0.hasPrefix("\"") && $0.hasSuffix("\"") }
+                    || fields.dropFirst().contains { $0.first?.isWhitespace == false }
+                let header = shortFieldCount == trimmed.count
+                if fields.count > 1,
+                   multiline && explicit
+                   || fields.count == previousCount && (explicit && previousExplicit || header || previousHeader)
+                {
+                    return true
+                }
+                previousCount = fields.count
+                previousExplicit = explicit
+                previousHeader = header
+                fields.removeAll(keepingCapacity: true)
+                field = ""
+                multiline = false
+            }
+            if quoted, multiline, !fields.isEmpty {
+                return true
+            }
+        }
+        return false
+    }
+
+    private static func unfencedLines(_ text: String) -> [String] {
+        var fence: FenceState?
+        return self.normalizeLineEndings(text).components(separatedBy: "\n").map { line in
+            if let current = fence {
+                if self.isFenceClose(line, fence: current) {
+                    fence = nil
+                }
+                return ""
+            }
+            if let opened = self.fenceOpen(line) {
+                fence = opened
+                return ""
+            }
+            return line
+        }
+    }
+
+    static func containsIndentedCode(_ text: String) -> Bool {
+        self.containsIndentedCode(in: self.unfencedLines(text))
+    }
+
+    private static func containsIndentedCode(in lines: [String]) -> Bool {
+        var startsBlock = true
+        var listContentIndent: Int?
+        for line in lines {
+            if line.trimmingCharacters(in: .whitespaces).isEmpty {
+                startsBlock = true
+                continue
+            }
+            let (_, indent) = self.leadingWhitespace(in: line)
+            if indent < 4, self.isHeadingLine(line) {
+                startsBlock = true
+                listContentIndent = nil
+                continue
+            }
+            if let list = self.listMatch(for: line) {
+                listContentIndent = list.indentCount + list.marker.count + 1
+                startsBlock = false
+                continue
+            }
+            if let contentIndent = listContentIndent, indent < contentIndent {
+                listContentIndent = nil
+            }
+            if startsBlock, indent >= (listContentIndent ?? 0) + 4 || line.hasPrefix("\t") {
+                return true
+            }
+            startsBlock = false
+        }
+        return false
+    }
+
+    private static func isSourceOrConfigurationLine(_ line: String) -> Bool {
+        let patterns = [
+            #"^[rRuUfFbB#]*(?:\"{3}|'{3})"#,
+            #"^\|?\s*:?-+:?\s*(?:\|\s*:?-+:?\s*)+\|?$"#,
+            #"^>|^[-=]{3,}$"#,
+            #"^[│┃╭╮╰╯┌┐└┘├┤┬┴┼─━]"#,
+            #"^(?://|--|/\*|\*/|[{}\[\]])"#,
+            #"^(?:import|from|package|namespace|using|class|struct|enum|extension|protocol|interface|"#
+                + #"func|function|def|fn|let|var|const|public|private|internal|protected)\s"#,
+            #"^[A-Za-z_][A-Za-z0-9_.]*\s*\("#,
+            #"^(?:if|for|while|with|try|except|elif|else)\b.*[:{]$"#,
+            #"^(?:sudo|git|npm|pnpm|yarn|swift|docker|kubectl|cd|ls|cat|echo|printf|curl|wget|export)\s"#,
+            #"^(?:\$\s|--[A-Za-z])|(?:\\|\||&&)\s*$"#,
+            #"[;{}]$"#,
+            #"^(?:\"[^\"]+\"|'[^']+'|[\p{L}\p{N}_][\p{L}\p{N}_. -]*)\s*[:=]"#,
+        ]
+        return patterns.contains { line.range(of: $0, options: .regularExpression) != nil }
+    }
+
+    private static func isLikelyStructuredLine(_ line: String) -> Bool {
+        let patterns = [
+            #"^(?:-\s+)?(?:\"[^\"]+\"|'[^']+'|[A-Za-z_][A-Za-z0-9_.-]*)\s*:"#,
+            #"^[A-Za-z_][A-Za-z0-9_.-]*\s*=\s*\S+"#,
+            #"^\[[^\]]+\]\s*$"#,
+            #"^<[/!?]?[A-Za-z][^>]*>"#,
+        ]
+        return patterns.contains { pattern in
+            line.range(of: pattern, options: .regularExpression) != nil
+        }
     }
 
     private static func normalizeLineEndings(_ text: String) -> String {

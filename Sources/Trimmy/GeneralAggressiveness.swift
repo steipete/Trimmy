@@ -14,7 +14,7 @@ public enum GeneralAggressiveness: String, CaseIterable, Identifiable, Codable, 
     public var title: String {
         switch self {
         case .none:
-            "None (no auto-trim)"
+            "None (no command flattening)"
         case .low:
             Aggressiveness.low.title
         case .normal:
@@ -36,7 +36,7 @@ public enum GeneralAggressiveness: String, CaseIterable, Identifiable, Codable, 
     public var blurb: String {
         switch self {
         case .none:
-            "Skip auto-flattening for non-terminal apps. Manual “Paste Trimmed” still uses High."
+            "Skip command flattening for non-terminal apps. Optional text reflow still applies."
         case .low:
             Aggressiveness.low.blurb
         case .normal:

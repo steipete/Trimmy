@@ -30,8 +30,10 @@ read_when:
 7. **Grace delay**: small (~80ms) deferred read after detecting a changeCount bump to allow promised/late pasteboard data to become available; skipped if changeCount moves again.
 8. **Robust text read**: prefers `readObjects(forClasses:[NSString.self])`, falls back to common public text UTI types before declaring “no text”.
 9. **UI**
-   - Menu bar icon/text "Trimmy" with menu items: Auto-Trim toggle, "Paste Trimmed", "Paste Reformatted Markdown" (when markdown detected), "Paste Original", status line showing last action preview, Quit.
-   - General setting: “Show Markdown reformat option” (default on) toggles the menu-only markdown paste action.
+   - Menu bar icon/text "Trimmy" with menu items: Auto-Trim toggle, "Paste Trimmed", "Paste Reflowed Text" (when wrapped prose or Markdown is detected), "Paste Original", status line showing last action preview, Quit.
+   - General settings control automatic text reflow (default off), removal of leading blank lines during reflow (default off for compatibility), and visibility of the manual reflow paste action (default on).
+   - Manual and automatic reflow share a fence-aware eligibility check that rejects recognized unfenced code and configuration. Automatic reflow runs before command cleanup, preserving fenced examples regardless of command sensitivity; None disables command flattening, not explicitly enabled reflow. The watcher toggle and app/site exclusions still gate automatic reflow. Manual Paste Trimmed retains its forced-command behavior.
+   - Reflow eligibility is heuristic, as with command detection. Short record-like fields favor preserving line boundaries; ordinary sentence-like comma clauses remain eligible. Untyped plain text can be ambiguous between prose and delimited data, so this is not universal file-format detection.
    - SwiftUI Settings window (macOS-standard Settings scene) organized into General, Trimming, Rules, Shortcuts, Advanced, and About tabs.
    - Trimming contains sensitivity pickers for General apps and Terminals plus cleanup behavior.
    - Rules contains auto-trim app/site exclusions and URL content-identity parameter rules.

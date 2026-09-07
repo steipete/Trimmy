@@ -394,8 +394,220 @@ struct ClipboardMonitorTests {
     }
 
     @Test
-    func `repairs wrapped URL even when aggressiveness is low`() {
+    func `auto reflow joins hard wrapped prose and removes leading blank lines`() {
         let settings = AppSettings()
+        settings.autoTrimEnabled = true
+        settings.generalAggressiveness = .none
+        settings.autoReflowTextEnabled = true
+        settings.trimLeadingBlankLinesOnReflow = true
+        defer { settings.autoReflowTextEnabled = false }
+        let pasteboard = makeTestPasteboard()
+        let monitor = ClipboardMonitor(
+            settings: settings,
+            pasteboard: pasteboard,
+            accessibilityPermission: StubAccessibilityPermission())
+
+        let input = [
+            "",
+            "The operative danger is the gradient between the source's coherence and the",
+            "receiver's capacity. A prepared vessel metabolizes contact as gnosis.",
+            "",
+            "The second paragraph remains distinct.",
+        ].joined(separator: "\n")
+        let expected = [
+            "The operative danger is the gradient between the source's coherence and the receiver's capacity. "
+                + "A prepared vessel metabolizes contact as gnosis.",
+            "",
+            "The second paragraph remains distinct.",
+        ].joined(separator: "\n")
+        pasteboard.setString(input, forType: .string)
+
+        #expect(monitor.trimClipboardIfNeeded(force: false))
+        #expect(pasteboard.string(forType: .string) == expected)
+    }
+
+    @Test
+    func `hard wrapped prose is unchanged when auto reflow is disabled`() {
+        let settings = AppSettings()
+        settings.autoTrimEnabled = true
+        settings.generalAggressiveness = .none
+        settings.autoReflowTextEnabled = false
+        let pasteboard = makeTestPasteboard()
+        let monitor = ClipboardMonitor(
+            settings: settings,
+            pasteboard: pasteboard,
+            accessibilityPermission: StubAccessibilityPermission())
+
+        let input = """
+        The operative danger is the gradient between the source's coherence and the
+        receiver's capacity. A prepared vessel metabolizes contact as gnosis.
+        """
+        pasteboard.setString(input, forType: .string)
+
+        #expect(!monitor.trimClipboardIfNeeded(force: false))
+        #expect(pasteboard.string(forType: .string) == input)
+    }
+
+    @Test
+    func `auto reflow leaves structured text unchanged`() {
+        let settings = AppSettings()
+        settings.autoTrimEnabled = true
+        settings.generalAggressiveness = .none
+        settings.autoReflowTextEnabled = true
+        defer { settings.autoReflowTextEnabled = false }
+        let description = "This configuration description is deliberately long enough to trigger prose detection"
+        let inputs = [
+            (
+                "YAML",
+                "description: \(description)\nenabled: true"),
+            (
+                "JSON",
+                """
+                {
+                  "description": "\(description)",
+                  "enabled": true
+                }
+                """),
+            (
+                "TOML",
+                "description = \"\(description)\"\nenabled = true"),
+            (
+                "YAML block scalar",
+                """
+                description: |
+                  \(description)
+                  while remaining valid YAML that must retain its line breaks.
+                """),
+        ]
+
+        for (format, input) in inputs {
+            let pasteboard = makeTestPasteboard()
+            let monitor = ClipboardMonitor(
+                settings: settings,
+                pasteboard: pasteboard,
+                accessibilityPermission: StubAccessibilityPermission())
+            pasteboard.setString(input, forType: .string)
+
+            #expect(!monitor.trimClipboardIfNeeded(force: false), "Unexpected auto-reflow for \(format)")
+            #expect(pasteboard.string(forType: .string) == input, "Modified \(format)")
+        }
+    }
+
+    private nonisolated static let protectedReflowInputs: [String] = [
+        "For more details, consult the documentation at https://example.com/a-deliberately-long-path\nsegment",
+        "-- This comment is deliberately long enough to resemble wrapped prose\n"
+            + "SELECT first_name, last_name FROM users",
+        "description: This configuration description is deliberately long enough to trigger reflow\nenabled: true",
+        "\"\"\"\nThis is a deliberately long multiline string literal\nwith a meaningful newline.\n\"\"\"",
+        "A deliberately long column heading | Another column\n--- | ---\none | two",
+        "description:\n  This is a deliberately long YAML plain scalar value\n"
+            + "  that spans two lines.\nenabled:\n  true",
+        "name,description,enabled\nexample,A deliberately long description with many words,true\n"
+            + "other,Another value,false",
+        "1,\"This field is deliberately long enough to resemble wrapped prose\nand intentionally continues here\",true",
+        "1, A deliberately long description with many words, true\n"
+            + "2, Another deliberately long description with many words, false",
+        "Alice, A deliberately long description with several words\n"
+            + "Bob, Another deliberately long description with several words",
+        "John Doe, This field contains enough ordinary words to exceed forty characters\n"
+            + "Jane Doe, Another field contains enough ordinary words to exceed forty characters",
+        "    This output line is deliberately long enough to look like a prose paragraph\n"
+            + "    These words are still part of an indented code block.",
+        "# Output\n    This output line is deliberately long enough to look like a prose paragraph\n"
+            + "    These words are still part of an indented code block.",
+        "func showMessageToUser(_ message: String) {\n"
+            + "    // Keep this comment separate from the call.\n    print(message)\n}",
+    ]
+
+    @Test(arguments: ClipboardMonitorTests.protectedReflowInputs)
+    func `both reflow paths preserve code and configuration`(input: String) {
+        let settings = AppSettings()
+        settings.autoTrimEnabled = true
+        settings.generalAggressiveness = .none
+        settings.contextAwareTrimmingEnabled = false
+        settings.autoReflowTextEnabled = true
+        settings.showMarkdownReformatOption = true
+        defer { settings.autoReflowTextEnabled = false }
+        let pasteboard = makeTestPasteboard()
+        var pasted = false
+        let monitor = ClipboardMonitor(
+            settings: settings,
+            pasteboard: pasteboard,
+            pasteAction: { pasted = true },
+            accessibilityPermission: StubAccessibilityPermission())
+        pasteboard.setString(input, forType: .string)
+
+        #expect(!monitor.trimClipboardIfNeeded(force: false))
+        #expect(pasteboard.string(forType: .string) == input)
+        #expect(monitor.markdownReformatPreviewSource() == nil)
+        #expect(!monitor.pasteReformattedMarkdown())
+        #expect(!pasted)
+        #expect(pasteboard.string(forType: .string) == input)
+    }
+
+    @Test(arguments: [GeneralAggressiveness.none, .low, .normal, .high])
+    func `automatic reflow preserves fenced examples before command cleanup`(aggressiveness: GeneralAggressiveness) {
+        let settings = AppSettings()
+        settings.autoTrimEnabled = true
+        settings.generalAggressiveness = aggressiveness
+        settings.contextAwareTrimmingEnabled = false
+        settings.autoReflowTextEnabled = true
+        defer { settings.autoReflowTextEnabled = false }
+        let pasteboard = makeTestPasteboard()
+        let monitor = ClipboardMonitor(settings: settings, pasteboard: pasteboard)
+        let prose = "This paragraph is deliberately long enough to be recognized as wrapped prose"
+        let example = "```yaml\nscript: |\n  $ echo one\n  │ literal gutter\nenabled: true\n```"
+        let input = "\(prose)\nand this is its continuation.\n\n\(example)"
+        pasteboard.setString(input, forType: .string)
+        #expect(monitor.trimClipboardIfNeeded(force: false))
+        #expect(pasteboard.string(forType: .string) == "\(prose) and this is its continuation.\n\n\(example)")
+    }
+
+    @Test
+    func `automatic reflow respects disabled watcher and app exclusions`() {
+        let settings = AppSettings()
+        settings.autoTrimEnabled = false
+        settings.autoReflowTextEnabled = true
+        settings.autoTrimExcludedApps = "com.example.reflow-test"
+        defer {
+            settings.autoReflowTextEnabled = false
+            settings.autoTrimExcludedApps = ""
+        }
+        let pasteboard = makeTestPasteboard()
+        let monitor = ClipboardMonitor(settings: settings, pasteboard: pasteboard)
+        let input = "This paragraph is deliberately long enough to be recognized as wrapped prose\nand continues here."
+        pasteboard.setString(input, forType: .string)
+        #expect(!monitor.trimClipboardIfNeeded(force: false))
+        settings.autoTrimEnabled = true
+        let context = ClipboardSourceContext(
+            timestamp: Date(),
+            capture: .eventTap,
+            bundleIdentifier: "com.example.reflow-test",
+            appName: "Reflow Test",
+            processIdentifier: nil)
+        #expect(!monitor.trimClipboardIfNeeded(force: false, sourceContext: context))
+        #expect(pasteboard.string(forType: .string) == input)
+    }
+
+    @Test
+    func `automatic reflow leaves command cleanup in charge of shell continuations`() {
+        let settings = AppSettings()
+        settings.autoTrimEnabled = true
+        settings.generalAggressiveness = .normal
+        settings.autoReflowTextEnabled = true
+        defer { settings.autoReflowTextEnabled = false }
+        let pasteboard = makeTestPasteboard()
+        let monitor = ClipboardMonitor(settings: settings, pasteboard: pasteboard)
+        pasteboard.setString("curl https://example.com/a-deliberately-long-path \\\n  --fail", forType: .string)
+        #expect(monitor.trimClipboardIfNeeded(force: false))
+        #expect(pasteboard.string(forType: .string) == "curl https://example.com/a-deliberately-long-path --fail")
+    }
+
+    @Test(arguments: [false, true])
+    func `repairs wrapped URL even when aggressiveness is low`(autoReflow: Bool) {
+        let settings = AppSettings()
+        settings.autoReflowTextEnabled = autoReflow
+        defer { settings.autoReflowTextEnabled = false }
         settings.generalAggressiveness = .low
         settings.autoTrimEnabled = true
         let pasteboard = makeTestPasteboard()
@@ -471,6 +683,37 @@ struct ClipboardMonitorTests {
         let didPasteOriginal = monitor.pasteOriginal()
         #expect(didPasteOriginal)
         #expect(monitor.lastSummary.contains("echo hi"))
+    }
+
+    @Test
+    func `manual reflow preserves leading blank lines when removal is disabled`() {
+        let settings = AppSettings()
+        settings.showMarkdownReformatOption = true
+        settings.trimLeadingBlankLinesOnReflow = false
+        var pastedText: String?
+        let pasteboard = makeTestPasteboard()
+        let monitor = ClipboardMonitor(
+            settings: settings,
+            pasteboard: pasteboard,
+            pasteRestoreDelay: .seconds(60),
+            pasteAction: { pastedText = pasteboard.string(forType: .string) },
+            accessibilityPermission: StubAccessibilityPermission())
+        let input = [
+            "",
+            "- First item is deliberately wrapped across a long line that should be joined",
+            "  with its continuation while retaining the leading blank line.",
+            "- Second item remains separate.",
+        ].joined(separator: "\n")
+        let expected = [
+            "",
+            "- First item is deliberately wrapped across a long line that should be joined "
+                + "with its continuation while retaining the leading blank line.",
+            "- Second item remains separate.",
+        ].joined(separator: "\n")
+        pasteboard.setString(input, forType: .string)
+
+        #expect(monitor.pasteReformattedMarkdown())
+        #expect(pastedText == expected)
     }
 
     @Test

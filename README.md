@@ -50,7 +50,7 @@ Trimmy uses separate sensitivity settings for general apps and terminals. It rec
 
 | Level | Behavior |
 | --- | --- |
-| **None** | Disables automatic trimming in general apps. |
+| **None** | Disables command flattening in general apps; optional text reflow still applies. |
 | **Low** | Requires strong cues such as pipes, redirects, or `\` continuations. |
 | **Normal** | Handles typical multi-line commands with flags. This is the terminal default. |
 | **High** | Flattens most command-shaped text. **Paste Trimmed** always uses this level. |
@@ -67,7 +67,7 @@ These paste actions need macOS Accessibility permission. Trimmy prompts for it w
 
 ## Other cleanup actions
 
-The menu can reflow hard-wrapped Markdown while preserving headings, lists, blank lines, and fenced code. A separate action removes URL query parameters while retaining configured identity parameters such as YouTube video IDs, GitHub tabs, and Figma node IDs.
+Enable **Settings → General → Automatically reflow copied text** to join hard-wrapped prose and Markdown during Auto-Trim. It defaults off, respects app/site exclusions, and preserves headings, lists, paragraph breaks, and fenced code. Recognized source code and configuration are excluded. The manual **Paste Reflowed Text** action uses the same checks; optional removal of leading blank lines also defaults off. Recognized documents are reflowed before command cleanup so fenced examples stay intact. A separate action removes URL query parameters while retaining configured identity parameters such as YouTube video IDs, GitHub tabs, and Figma node IDs.
 
 Box-drawing gutters such as `│` and `┃` can also be removed from copied terminal output without stripping real shell pipes.
 

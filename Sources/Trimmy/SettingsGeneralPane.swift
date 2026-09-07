@@ -18,18 +18,35 @@ struct GeneralSettingsPane: View {
             {
                 PreferenceToggleRow(
                     title: "Enable auto-trim",
-                    subtitle: "Automatically clean clipboard content when it looks like a command.",
+                    subtitle: "Automatically clean clipboard content using the enabled trimming rules.",
                     binding: self.$settings.autoTrimEnabled)
             }
 
             SettingsSection(
-                "Menu actions",
-                subtitle: "Choose which optional transformations appear in the Trimmy menu.")
+                "Text reflow",
+                subtitle: "Join hard-wrapped prose and Markdown while preserving document structure.")
             {
-                PreferenceToggleRow(
-                    title: "Show Markdown reformat",
-                    subtitle: "Reflow wrapped Markdown while preserving headings, lists, and code fences.",
-                    binding: self.$settings.showMarkdownReformatOption)
+                VStack(alignment: .leading, spacing: 16) {
+                    PreferenceToggleRow(
+                        title: "Automatically reflow copied text",
+                        subtitle: "Apply text reflow as part of Auto-Trim, without using the menu action.",
+                        binding: self.$settings.autoReflowTextEnabled)
+                        .disabled(!self.settings.autoTrimEnabled)
+
+                    Divider()
+
+                    PreferenceToggleRow(
+                        title: "Remove leading blank lines",
+                        subtitle: "Strip empty or whitespace-only lines before the first paragraph when reflowing.",
+                        binding: self.$settings.trimLeadingBlankLinesOnReflow)
+
+                    Divider()
+
+                    PreferenceToggleRow(
+                        title: "Show manual reflow action",
+                        subtitle: "Show “Paste Reflowed Text” in the Trimmy menu when reflowable text is copied.",
+                        binding: self.$settings.showMarkdownReformatOption)
+                }
             }
 
             SettingsSection(

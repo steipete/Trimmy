@@ -159,7 +159,7 @@ extension MenuContentView {
                let markdownPreviewSource = self.markdownPreviewSource
             {
                 let markdownStatsSuffix = self.statsSuffix(for: markdownPreviewSource)
-                Button("Paste Reformatted Markdown to \(self.targetAppLabel)\(markdownStatsSuffix)") {
+                Button("Paste Reflowed Text to \(self.targetAppLabel)\(markdownStatsSuffix)") {
                     self.handlePasteReformattedMarkdown()
                 }
                 Text(self.previewLine(for: markdownPreviewSource))
