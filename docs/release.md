@@ -72,7 +72,7 @@ Uploads not handled automatically—commit/publish appcast + zip to the feed loc
 
 ## Checklist (quick)
 - [ ] Read both this file and `~/Projects/agent-scripts/docs/RELEASING-MAC.md`; resolve any conflicts toward Trimmy’s specifics.
-- [ ] Update versions (Package scripts, About text, CHANGELOG) — `Scripts/release.sh` now pulls release notes from the top changelog section automatically, so finalize it first.
+- [ ] Update `version.env`, the standalone version fallback in `Sources/TrimmyCLI/main.swift`, and CHANGELOG; run `Scripts/sync-version-plists.sh`. `Scripts/release.sh` pulls release notes from the top changelog section automatically, so finalize it first.
 - [ ] `swiftformat .`, `swiftlint lint`, `swift test` (ensure zero warnings/errors)
 - [ ] Confirm CI is green for the release commit (`gh run list/view`; rerun/fix until green).
 - [ ] `./Scripts/build_icon.sh` if icon changed
