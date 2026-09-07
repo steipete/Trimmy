@@ -2,6 +2,25 @@
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
     <channel>
         <item>
+            <title>0.11.0</title>
+            <pubDate>Mon, 07 Sep 2026 03:08:40 -0700</pubDate>
+            <link>https://raw.githubusercontent.com/steipete/Trimmy/main/appcast.xml</link>
+            <sparkle:version>33</sparkle:version>
+            <sparkle:shortVersionString>0.11.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description><![CDATA[<h2>Trimmy 0.11.0</h2>
+<p><strong>Highlights:</strong> Optional automatic reflow for copied prose and Markdown.</p>
+<ul>
+<li>Join hard-wrapped prose and Markdown automatically with a new default-off setting, respecting app/site exclusions and preserving fenced examples before command cleanup (thanks @rewtraw).</li>
+<li>Expand the manual action to Paste Reflowed Text, with shared checks that leave recognized source code and configuration out of both reflow paths (thanks @rewtraw).</li>
+<li>Add optional removal of leading blank lines during reflow, disabled by default to preserve existing paste behavior (thanks @rewtraw).</li>
+</ul>
+<p><a href="https://github.com/steipete/Trimmy/blob/main/CHANGELOG.md">View full changelog</a></p>
+]]></description>
+            <enclosure url="https://github.com/steipete/Trimmy/releases/download/v0.11.0/Trimmy-0.11.0.zip" length="2705702" type="application/octet-stream" sparkle:edSignature="oCr2DbV0RzO7mPbDY7CGEHIynTJuO8MJ+GHqfNaU48BM5ixUHIMP3L8DoTcXWvx1dutFthFiLWIASfUkPFvMCQ=="/>
+        </item>
+        <item>
             <title>0.10.2</title>
             <pubDate>Sun, 06 Sep 2026 18:38:09 -0700</pubDate>
             <link>https://raw.githubusercontent.com/steipete/Trimmy/main/appcast.xml</link>
