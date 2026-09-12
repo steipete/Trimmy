@@ -2,6 +2,10 @@
 
 ## 0.11.1 — Unreleased
 
+**Highlights:** More reliable keyboard shortcuts and shortcut recording.
+
+- Update KeyboardShortcuts to 3.1.0 for shortcut-recorder fixes, responsive menu highlighting, function-key shortcuts while menus are open, and improved macOS 27 compatibility.
+
 ## 0.11.0 — 2026-09-07
 
 **Highlights:** Optional automatic reflow for copied prose and Markdown.
