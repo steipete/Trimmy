@@ -195,7 +195,7 @@ final class ClipboardMonitor: ObservableObject {
         return nil
     }
 
-    /// Exposes the current clipboard string (nil if empty or Trimmy marker).
+    /// Reads clipboard text, including Trimmy's own writes.
     func clipboardText() -> String? {
         self.readTextFromPasteboard(ignoreMarker: true)
     }
@@ -421,7 +421,7 @@ extension ClipboardMonitor {
         return self.currentURLQueryParamStrip()?.stripped
     }
 
-    func struckOriginalPreview(limit _: Int? = nil) -> AttributedString {
+    func struckOriginalPreview() -> AttributedString {
         guard let original = self.lastOriginalText else {
             return AttributedString(self.lastSummary.isEmpty ? "No actions yet" : self.lastSummary)
         }
@@ -659,7 +659,7 @@ extension ClipboardMonitor {
         up?.post(tap: .cghidEventTap)
     }
 
-    static func struck(original: String, trimmed: String, limit _: Int? = nil) -> AttributedString {
+    static func struck(original: String, trimmed: String) -> AttributedString {
         let o = Array(original)
         let t = Array(trimmed)
 

@@ -62,12 +62,6 @@ final class HotkeyManager: ObservableObject {
         self.handlePasteOriginalHotkey()
     }
 
-    /// Backwards compatibility for debugging hooks.
-    @discardableResult
-    func trimClipboardNow() -> Bool {
-        self.pasteTrimmedNow()
-    }
-
     private func registerHandlerIfNeeded() {
         guard !self.handlerRegistered else { return }
         KeyboardShortcuts.onKeyUp(for: .pasteTrimmed) { [weak self] in

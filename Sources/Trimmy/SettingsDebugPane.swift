@@ -3,7 +3,6 @@ import SwiftUI
 
 @MainActor
 struct DebugSettingsPane: View {
-    @ObservedObject var settings: AppSettings
     @ObservedObject var monitor: ClipboardMonitor
 
     private let sampleOriginal = """

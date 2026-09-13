@@ -4,7 +4,6 @@ import SwiftUI
 @MainActor
 struct HotkeySettingsPane: View {
     @ObservedObject var settings: AppSettings
-    @ObservedObject var hotkeyManager: HotkeyManager
 
     var body: some View {
         SettingsPaneLayout {

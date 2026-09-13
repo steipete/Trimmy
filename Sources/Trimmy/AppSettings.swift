@@ -92,7 +92,6 @@ extension AppSettings {
 enum LaunchAtLoginManager {
     @MainActor
     static func setEnabled(_ enabled: Bool) {
-        guard #available(macOS 13, *) else { return }
         let service = SMAppService.mainApp
         if enabled {
             try? service.register()
