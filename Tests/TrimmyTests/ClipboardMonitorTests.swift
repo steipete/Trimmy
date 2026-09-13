@@ -6,14 +6,6 @@ import TrimmyCore
 @MainActor
 @Suite(.serialized)
 struct ClipboardMonitorTests {
-    @MainActor
-    private final class StubAccessibilityPermission: AccessibilityPermissionChecking {
-        var isTrusted: Bool
-        init(isTrusted: Bool = true) {
-            self.isTrusted = isTrusted
-        }
-    }
-
     private final class StubBrowserLocationProvider: BrowserLocationProviding {
         let host: String?
         private(set) var callCount = 0
