@@ -520,12 +520,6 @@ extension ClipboardMonitor {
             : self.settings.generalAggressiveness.coreAggressiveness
         let overrideAggressiveness: Aggressiveness? = force ? .high : nil
         let commandAggressiveness = overrideAggressiveness ?? baseAggressiveness
-        if commandAggressiveness != .high, TextCleaner.containsYAMLBlockScalar(text) {
-            return ClipboardVariants(original: text, trimmed: text, wasTransformed: false)
-        }
-        var currentText = text
-        var wasTransformed = false
-
         if let sourceContext {
             Telemetry.clipboard.debug(
                 """
@@ -533,31 +527,6 @@ extension ClipboardMonitor {
                 terminal=\(sourceContext.isTerminal, privacy: .public) \
                 len=\(text.count, privacy: .public).
                 """)
-        }
-
-        if let cleaned = self.detector.cleanBoxDrawingCharacters(currentText) {
-            currentText = cleaned
-            wasTransformed = true
-        }
-
-        if let cleaned = self.detector.stripClaudeCodeDecoration(currentText) {
-            currentText = cleaned
-            wasTransformed = true
-        }
-
-        if let promptStripped = self.detector.stripPromptPrefixes(currentText) {
-            currentText = promptStripped
-            wasTransformed = true
-        }
-
-        if let repairedURL = self.detector.repairWrappedURL(currentText) {
-            currentText = repairedURL
-            wasTransformed = true
-        }
-
-        if let quotedPath = self.detector.quotePathWithSpaces(currentText) {
-            currentText = quotedPath
-            wasTransformed = true
         }
 
         if useTerminalAggressiveness, let sourceContext {
@@ -568,15 +537,12 @@ extension ClipboardMonitor {
                 """)
         }
 
-        if let commandAggressiveness,
-           let commandTransformed = self.detector.transformIfCommand(
-               currentText,
-               aggressiveness: commandAggressiveness,
-               aggressivenessOverride: overrideAggressiveness)
-        {
-            currentText = commandTransformed
-            wasTransformed = true
-        }
+        let result = self.detector.transform(
+            text,
+            aggressiveness: commandAggressiveness,
+            aggressivenessOverride: overrideAggressiveness)
+        var currentText = result.trimmed
+        var wasTransformed = result.wasTransformed
 
         let preserveCodeIndentation = !force && self.settings.autoReflowTextEnabled
             && MarkdownReformatter.containsIndentedCode(currentText)

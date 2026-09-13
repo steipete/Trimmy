@@ -1,9 +1,7 @@
 import Foundation
 import Testing
 import TrimmyCore
-@testable import Trimmy
 
-@MainActor
 struct ClaudeCodePromptTests {
     private let cleaner = TextCleaner()
 
