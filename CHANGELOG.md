@@ -2,6 +2,7 @@
 
 ## 0.11.1 — Unreleased
 
+- Clipboard: use the latest copy for manual pastes and preserve all clipboard formats when restoring, without overwriting a newer copy.
 - CLI: correctly read `--trim -` from stdin, keep short options such as `-f` separate from file input, and report invalid arguments instead of silently ignoring them.
 - Build compatibility: Swift 6.3 or later is now required because Swift 6.2.4 crashes while compiling the updated shortcut dependency's isolated deinitializers; macOS 15 support is unchanged.
 - Dependencies: update KeyboardShortcuts to 3.0.1 for Swift 6 concurrency and release-build fixes.

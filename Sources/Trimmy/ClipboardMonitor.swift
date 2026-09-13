@@ -5,6 +5,8 @@ import TrimmyCore
 
 @MainActor
 final class ClipboardMonitor: ObservableObject {
+    typealias RestoreScheduler = @MainActor (@escaping @MainActor @Sendable () -> Void) -> Void
+
     private let settings: AppSettings
     private let pasteboard: NSPasteboard
     private let trimmyMarker = NSPasteboard.PasteboardType("com.steipete.trimmy")
@@ -20,9 +22,10 @@ final class ClipboardMonitor: ObservableObject {
     private let pollInterval: DispatchTimeInterval = .milliseconds(150)
     private let pollLeeway: DispatchTimeInterval = .milliseconds(50)
     private let graceDelay: DispatchTimeInterval = .milliseconds(80)
-    private let pasteRestoreDelay: DispatchTimeInterval
+    private let scheduleRestore: RestoreScheduler
     private let pasteIntoFrontmostApp: () -> Void
-    private var ignoredChangeCounts: Set<Int> = []
+    private var cachedChangeCount: Int?
+    private var pendingRestore: (changeCount: Int, snapshot: PasteboardSnapshot)?
     private var lastOriginalText: String?
     private var lastTrimmedText: String?
 
@@ -36,7 +39,8 @@ final class ClipboardMonitor: ObservableObject {
         pasteRestoreDelay: DispatchTimeInterval = .milliseconds(200),
         pasteAction: (() -> Void)? = nil,
         accessibilityPermission: AccessibilityPermissionChecking = AccessibilityPermissionManager(),
-        browserLocationProvider: BrowserLocationProviding = BrowserLocationProvider())
+        browserLocationProvider: BrowserLocationProviding = BrowserLocationProvider(),
+        restoreScheduler: RestoreScheduler? = nil)
     {
         self.settings = settings
         self.pasteboard = pasteboard
@@ -46,7 +50,9 @@ final class ClipboardMonitor: ObservableObject {
             settings: settings,
             pasteboard: pasteboard,
             accessibilityPermission: accessibilityPermission)
-        self.pasteRestoreDelay = pasteRestoreDelay
+        self.scheduleRestore = restoreScheduler ?? { action in
+            DispatchQueue.main.asyncAfter(deadline: .now() + pasteRestoreDelay) { action() }
+        }
         self.pasteIntoFrontmostApp = pasteAction ?? ClipboardMonitor.sendPasteCommand
         self.lastSeenChangeCount = self.pasteboard.changeCount
         self.updateFrontmostAppName(NSWorkspace.shared.frontmostApplication)
@@ -112,7 +118,6 @@ final class ClipboardMonitor: ObservableObject {
         }
 
         self.writeTrimmed(variants.trimmed)
-        self.lastSeenChangeCount = self.pasteboard.changeCount
         self.updateSummary(with: variants.trimmed)
         self.logTrimApplied(
             original: variants.original,
@@ -129,14 +134,7 @@ final class ClipboardMonitor: ObservableObject {
         let current = self.pasteboard.changeCount
         guard current != self.lastSeenChangeCount else { return }
 
-        let isIgnored = self.ignoredChangeCounts.contains(current)
-        self.logPasteboardChange(changeCount: current, ignored: isIgnored)
-
-        if self.ignoredChangeCounts.remove(current) != nil {
-            Telemetry.clipboard.debug("Ignoring changeCount=\(current, privacy: .public) (self-write).")
-            self.lastSeenChangeCount = current
-            return
-        }
+        self.logPasteboardChange(changeCount: current)
 
         let observed = current
         let sourceContext = self.sourceTracker.recordObservedChangeCount(observed)
@@ -204,6 +202,7 @@ final class ClipboardMonitor: ObservableObject {
         self.pasteboard.declareTypes([.string, self.trimmyMarker], owner: nil)
         self.pasteboard.setString(text, forType: .string)
         self.pasteboard.setData(Data(), forType: self.trimmyMarker)
+        self.recordOwnWrite()
     }
 
     private func updateSummary(with text: String) {
@@ -274,12 +273,11 @@ final class ClipboardMonitor: ObservableObject {
         return true
     }
 
-    private func logPasteboardChange(changeCount: Int, ignored: Bool) {
+    private func logPasteboardChange(changeCount: Int) {
         let types = self.pasteboard.types?.map(\.rawValue).joined(separator: ", ") ?? "none"
         Telemetry.clipboard.debug(
             """
             Pasteboard changeCount=\(changeCount, privacy: .public) \
-            ignored=\(ignored, privacy: .public) \
             types=\(types, privacy: .public)
             """)
     }
@@ -363,6 +361,7 @@ extension ClipboardMonitor {
             self.lastSummary = Self.accessibilityPermissionMessage
             return false
         }
+        self.refreshCacheIfNeeded()
         guard let original = self.lastOriginalText ?? self.clipboardText() else {
             self.lastSummary = "Nothing to paste."
             return false
@@ -472,6 +471,7 @@ extension ClipboardMonitor {
     }
 
     private func cachedOrCurrentVariantsForPaste(force: Bool) -> ClipboardVariants? {
+        self.refreshCacheIfNeeded()
         if let cachedOriginal = self.lastOriginalText {
             let variants = self.transform(text: cachedOriginal, force: force, sourceContext: nil)
             self.cache(original: cachedOriginal, trimmed: variants.trimmed)
@@ -487,7 +487,7 @@ extension ClipboardMonitor {
         sourceContext: ClipboardSourceContext? = nil) -> ClipboardVariants?
     {
         guard let text = self.readTextFromPasteboard(ignoreMarker: ignoreMarker || force) else {
-            self.cache(original: nil, trimmed: nil)
+            self.refreshCacheIfNeeded()
             self.logTrimSkip(reason: "emptyClipboard", force: force)
             return nil
         }
@@ -558,12 +558,14 @@ extension ClipboardMonitor {
     }
 
     private func currentURLQueryParamStrip() -> URLQueryParamStrip? {
+        self.refreshCacheIfNeeded()
         guard let text = self.clipboardText() ?? self.lastOriginalText else { return nil }
         guard let stripped = self.detector.stripURLQueryParams(text) else { return nil }
         return URLQueryParamStrip(original: text, stripped: stripped)
     }
 
     private func currentMarkdownReformat() -> MarkdownReformat? {
+        self.refreshCacheIfNeeded()
         guard let text = self.clipboardText() ?? self.lastOriginalText else { return nil }
         guard MarkdownReformatter.isLikelyReflowable(text) else { return nil }
         let reformatted = MarkdownReformatter.reformat(
@@ -575,41 +577,44 @@ extension ClipboardMonitor {
     private func cache(original: String?, trimmed: String?) {
         self.lastOriginalText = original
         self.lastTrimmedText = trimmed
+        self.cachedChangeCount = self.pasteboard.changeCount
+    }
+
+    private func refreshCacheIfNeeded() {
+        guard self.cachedChangeCount != self.pasteboard.changeCount else { return }
+        self.cache(original: self.clipboardText(), trimmed: nil)
+    }
+
+    private func recordOwnWrite() {
+        self.lastSeenChangeCount = self.pasteboard.changeCount
+        self.cachedChangeCount = self.lastSeenChangeCount
     }
 
     private func performPaste(with text: String) {
-        let previousString = self.clipboardText()
-
-        self.ignoreChangeWhile {
-            self.pasteboard.declareTypes([.string, self.trimmyMarker], owner: nil)
-            self.pasteboard.setString(text, forType: .string)
-            self.pasteboard.setData(Data(), forType: self.trimmyMarker)
+        let snapshot: PasteboardSnapshot = if let pending = self.pendingRestore,
+                                              pending.changeCount == self.pasteboard.changeCount
+        {
+            // Repeated paste actions share the clipboard that preceded the first temporary write.
+            pending.snapshot
+        } else {
+            PasteboardSnapshot(self.pasteboard)
         }
 
+        self.writeTrimmed(text)
+        let changeCount = self.pasteboard.changeCount
+        self.pendingRestore = (changeCount, snapshot)
         self.pasteIntoFrontmostApp()
-
-        guard let previousString else { return }
-        self.restorePasteboard(string: previousString)
-    }
-
-    private func ignoreChangeWhile(_ work: () -> Void) {
-        let before = self.pasteboard.changeCount
-        work()
-        let after = self.pasteboard.changeCount
-        if after != before {
-            self.ignoredChangeCounts.insert(after)
-            self.lastSeenChangeCount = after
+        self.scheduleRestore { [weak self] in
+            self?.restorePasteboard(ifOwnedAt: changeCount)
         }
     }
 
-    private func restorePasteboard(string: String) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + self.pasteRestoreDelay) { [weak self] in
-            guard let self else { return }
-            self.ignoreChangeWhile {
-                self.pasteboard.clearContents()
-                self.pasteboard.setString(string, forType: .string)
-            }
-        }
+    private func restorePasteboard(ifOwnedAt changeCount: Int) {
+        guard let pending = self.pendingRestore, pending.changeCount == changeCount else { return }
+        self.pendingRestore = nil
+        guard self.pasteboard.changeCount == changeCount else { return }
+        pending.snapshot.restore(to: self.pasteboard)
+        self.recordOwnWrite()
     }
 
     fileprivate static func sendPasteCommand() {
