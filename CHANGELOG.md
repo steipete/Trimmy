@@ -2,6 +2,7 @@
 
 ## 0.11.1 — Unreleased
 
+- Dependencies: update KeyboardShortcuts to 3.1.0 for macOS 27 compatibility, smoother menu highlighting, function-key handling, and shortcut recorder fixes.
 - App lifecycle: release Accessibility polling and system copy-event hooks when their owners go away and disable Sparkle in signed development builds.
 - Text reflow: preserve fenced content when a fence-like line has trailing text, and require valid Markdown numbered-list markers before rewriting lists.
 - Clipboard: use the latest copy for manual pastes and preserve all clipboard formats when restoring, without overwriting a newer copy.
