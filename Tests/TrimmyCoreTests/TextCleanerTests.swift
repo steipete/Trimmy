@@ -541,7 +541,7 @@ struct TextCleanerTests {
     @Test
     func `quotes home relative path with spaces`() {
         let path = "~/Library/Application Support/SomeApp"
-        #expect(self.cleaner.quotePathWithSpaces(path) == "\"~/Library/Application Support/SomeApp\"")
+        #expect(self.cleaner.quotePathWithSpaces(path) == "~/\"Library/Application Support/SomeApp\"")
     }
 
     @Test
