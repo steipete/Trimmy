@@ -630,41 +630,6 @@ extension ClipboardMonitor {
         up?.post(tap: .cghidEventTap)
     }
 
-    static func struck(original: String, trimmed: String) -> AttributedString {
-        let o = Array(original)
-        let t = Array(trimmed)
-
-        // Two-pointer diff on the raw strings (no ellipsizing, no visible whitespace yet).
-        var i = 0
-        var j = 0
-        var removedFlags = Array(repeating: false, count: o.count)
-
-        while i < o.count, j < t.count {
-            if o[i] == t[j] {
-                i += 1
-                j += 1
-            } else {
-                removedFlags[i] = true
-                i += 1
-            }
-        }
-        while i < o.count {
-            removedFlags[i] = true
-            i += 1
-        }
-
-        let (mappedString, mappedFlags) = PreviewMetrics.mapToVisibleWhitespace(String(o), removed: removedFlags)
-        let base = NSMutableAttributedString(string: mappedString)
-
-        for (idx, isRemoved) in mappedFlags.enumerated() where isRemoved {
-            base.addAttributes([
-                .strikethroughStyle: NSUnderlineStyle.single.rawValue,
-            ], range: NSRange(location: idx, length: 1))
-        }
-
-        return AttributedString(base)
-    }
-
     private func registerTrimEvent() {
         self.trimPulseID &+= 1
     }

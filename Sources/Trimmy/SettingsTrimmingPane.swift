@@ -126,63 +126,14 @@ enum AggressivenessPreviewEngine {
         preserveBlankLines: Bool,
         removeBoxDrawing: Bool) -> String
     {
-        var text = sample
-        if removeBoxDrawing {
-            text = CommandDetector.stripBoxDrawingCharacters(in: text) ?? text
-        }
-        guard let level else { return text }
-        let score = self.score(for: text)
-        guard score >= level.scoreThreshold else { return text }
-        return self.flatten(text, preserveBlankLines: preserveBlankLines)
-    }
-
-    static func score(for text: String) -> Int {
-        guard text.contains("\n") else { return 0 }
-        let lines = text.split(whereSeparator: { $0.isNewline })
-        if lines.count < 2 || lines.count > 10 {
-            return 0
-        }
-
-        var score = 0
-        if text.contains("\\\n") {
-            score += 1
-        }
-        if text.range(of: #"[|&]{1,2}"#, options: .regularExpression) != nil {
-            score += 1
-        }
-        if text.range(of: #"(^|\n)\s*\$"#, options: .regularExpression) != nil {
-            score += 1
-        }
-        if text.range(of: #"(?m)^\s*(sudo\s+)?[A-Za-z0-9./~_-]+"#, options: .regularExpression) != nil {
-            score += 1
-        }
-        if text.range(of: #"[-/]"#, options: .regularExpression) != nil {
-            score += 1
-        }
-        return score
-    }
-
-    static func flatten(_ text: String, preserveBlankLines: Bool) -> String {
-        let placeholder = "__BLANK_SEP__"
-        var result = text
-        if preserveBlankLines {
-            result = result.replacingOccurrences(of: "\n\\s*\n", with: placeholder, options: .regularExpression)
-        }
-        result = result.replacingOccurrences(
-            of: #"(?<!\n)([A-Z0-9_.-])\s*\n\s*([A-Z0-9_.-])(?!\n)"#,
-            with: "$1$2",
-            options: .regularExpression)
-        result = result.replacingOccurrences(
-            of: #"(?<=[/~])\s*\n\s*([A-Za-z0-9._-])"#,
-            with: "$1",
-            options: .regularExpression)
-        result = result.replacingOccurrences(of: #"\\\s*\n"#, with: " ", options: .regularExpression)
-        result = result.replacingOccurrences(of: #"\n+"#, with: " ", options: .regularExpression)
-        result = result.replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
-        if preserveBlankLines {
-            result = result.replacingOccurrences(of: placeholder, with: "\n\n")
-        }
-        return result.trimmingCharacters(in: .whitespacesAndNewlines)
+        TextCleaner().transform(
+            sample,
+            config: TrimConfig(
+                aggressiveness: level ?? .normal,
+                preserveBlankLines: preserveBlankLines,
+                removeBoxDrawing: removeBoxDrawing),
+            commandFlatteningEnabled: level != nil,
+            paragraphDedentEnabled: true).trimmed
     }
 }
 
