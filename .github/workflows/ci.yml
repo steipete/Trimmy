@@ -2,72 +2,78 @@ name: CI
 
 on:
   push:
-    branches: ["*"]
+    branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  lint-build-test:
-    runs-on: macos-latest
+  lint:
+    runs-on: macos-15
+    timeout-minutes: 10
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
     steps:
-      - uses: actions/checkout@v7
-
-      - name: Select Xcode 26.1.1 (if present) or fallback to default
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install pinned lint tools
         run: |
-          set -euo pipefail
-          for candidate in /Applications/Xcode_26.1.1.app /Applications/Xcode_26.1.app /Applications/Xcode.app; do
-            if [[ -d "$candidate" ]]; then
-              sudo xcode-select -s "$candidate"
-              echo "DEVELOPER_DIR=${candidate}/Contents/Developer" >> "$GITHUB_ENV"
-              break
-            fi
-          done
-          /usr/bin/xcodebuild -version
-
-      - name: Install Swift 6.2.4 toolchain
-        run: |
-          curl -fL https://download.swift.org/swift-6.2.4-release/xcode/swift-6.2.4-RELEASE/swift-6.2.4-RELEASE-osx.pkg -o /tmp/swift.pkg
-          sudo installer -pkg /tmp/swift.pkg -target /
-          echo "/Library/Developer/Toolchains/swift-6.2.4-RELEASE.xctoolchain/usr/bin" >> "$GITHUB_PATH"
-          echo "TOOLCHAINS=swift-6.2.4-RELEASE" >> "$GITHUB_ENV"
-
-      - name: Install lint tools
-        run: |
-          brew list swiftlint >/dev/null 2>&1 || brew install swiftlint
-          brew list swiftformat >/dev/null 2>&1 || brew install swiftformat
-
-      - name: SwiftFormat (lint)
-        run: swiftformat Sources Tests --lint
-
+          ./Scripts/install_lint_tools.sh "$RUNNER_TEMP/trimmy-lint"
+          echo "$RUNNER_TEMP/trimmy-lint" >> "$GITHUB_PATH"
+      - name: SwiftFormat
+        run: swiftformat . --lint
       - name: SwiftLint
-        run: swiftlint --strict
+        run: swiftlint lint --strict
+      - name: Packaging script tests
+        run: python3 -m unittest discover -s Scripts/tests -v
 
-      - name: Swift Test
+  test-macos:
+    name: macOS Swift ${{ matrix.swift }}
+    runs-on: macos-15
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        swift: ["6.3", "6.3.3"]
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Swift ${{ matrix.swift }}
+        run: ./Scripts/install_swift_ci.sh '${{ matrix.swift }}'
+      - name: Swift tests
         run: swift test --parallel
+      - name: Release app build
+        if: matrix.swift == '6.3.3'
+        run: swift build -c release --product Trimmy
 
   build-linux-cli:
-    runs-on: ubuntu-latest
+    name: Linux Swift ${{ matrix.swift }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        swift: ["6.3", "6.3.3"]
     steps:
-      - uses: actions/checkout@v7
-
-      - name: Setup Swift 6.2.1
-        uses: swift-actions/setup-swift@v2.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          swift-version: "6.2.1"
-
-      - name: Build TrimmyCLI (release, static Swift stdlib)
+          persist-credentials: false
+      - name: Install Swift ${{ matrix.swift }}
+        run: ./Scripts/install_swift_ci.sh '${{ matrix.swift }}'
+      - name: Portable core and CLI tests
+        run: swift test --parallel
+      - name: Build release CLI with static Swift standard library
         run: swift build -c release --product TrimmyCLI --static-swift-stdlib
-
-      - name: Smoke test TrimmyCLI
-        shell: bash
+      - name: Smoke test release CLI
         run: |
-          set -euo pipefail
           BIN_DIR="$(swift build -c release --product TrimmyCLI --static-swift-stdlib --show-bin-path)"
-          BIN="$BIN_DIR/TrimmyCLI"
-
-          "$BIN" --help >/dev/null
-
-          OUT="$(
-            printf 'echo hi \\\\\nls -la\n' | "$BIN" --json
-          )"
-
-          OUT="$OUT" python3 -c 'import json, os, sys; payload=json.loads(os.environ["OUT"]); trimmed=str(payload.get("trimmed","")); transformed=bool(payload.get("transformed")); ok=transformed and ("\\n" not in trimmed) and ("echo hi" in trimmed) and ("ls -la" in trimmed); (not ok) and print(f"Unexpected result: transformed={transformed!r} trimmed={trimmed!r}", file=sys.stderr); sys.exit(0 if ok else 1)'
+          python3 Scripts/smoke_cli.py "$BIN_DIR/TrimmyCLI"
