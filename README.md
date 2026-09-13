@@ -97,6 +97,8 @@ The [technical specification](docs/spec.md) covers the detection heuristics, set
 
 Trimmy requires Swift 6.2 and macOS 15 or later.
 
+`TrimmyCore` owns the shared text-cleaning pipeline. Its tests and the CLI tests run on macOS and Linux; `TrimmyTests` covers the macOS clipboard and UI integration. SwiftPM includes app dependencies only on macOS.
+
 ```sh
 swift build
 swift test
