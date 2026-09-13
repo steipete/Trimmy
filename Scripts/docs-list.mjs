@@ -116,4 +116,4 @@ for (const relativePath of markdownFiles) {
   }
 }
 
-console.log('\nReminder: keep docs up to date as behavior changes. When your task matches any "Read when" hint above (React hooks, cache directives, database work, tests, etc.), read that doc before coding, and suggest new coverage when it is missing.');
+console.log('\nReminder: keep docs up to date as behavior changes. When your task matches any "Read when" hint above (clipboard behavior, settings, CLI usage, tests, etc.), read that doc before coding, and suggest new coverage when it is missing.');

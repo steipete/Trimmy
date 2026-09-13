@@ -2,6 +2,8 @@
 
 ## 0.11.1 — Unreleased
 
+- Development: reuse SwiftPM builds when packaging the debug app, simplify signed shortcut-resource packaging, and replace the obsolete Xcode project with the supported `Package.swift` workflow.
+
 ## 0.11.0 — 2026-09-07
 
 **Highlights:** Optional automatic reflow for copied prose and Markdown.

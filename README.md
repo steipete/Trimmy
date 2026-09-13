@@ -99,6 +99,8 @@ Trimmy requires Swift 6.2 and macOS 15 or later.
 
 `TrimmyCore` owns the shared text-cleaning pipeline. Its tests and the CLI tests run on macOS and Linux; `TrimmyTests` covers the macOS clipboard and UI integration. SwiftPM includes app dependencies only on macOS.
 
+Open `Package.swift` in Xcode, or use the commands below. Debug packaging reuses the current SwiftPM build and signs a fresh app bundle; release packaging starts with a clean build.
+
 ```sh
 swift build
 swift test

@@ -6,7 +6,7 @@ read_when:
   - Reviewing product scope or requirements
 ---
 
-# Trimmy Specification (draft)
+# Trimmy specification
 
 ## Purpose
 - macOS 15+ menu-bar utility that watches the pasteboard for copied terminal commands and automatically flattens line breaks to make commands pasteable in one go.
@@ -28,7 +28,7 @@ read_when:
 5. **Auto-trim toggle**: enable/disable automatic rewrite without quitting the app; manual "Paste Trimmed" works regardless and does not permanently alter the clipboard.
 6. **Self-write marker**: Trimmy writes an extra pasteboard type (`com.steipete.trimmy`) so subsequent polls can ignore its own writes and only react to user changes.
 7. **Grace delay**: small (~80ms) deferred read after detecting a changeCount bump to allow promised/late pasteboard data to become available; skipped if changeCount moves again.
-8. **Robust text read**: prefers `readObjects(forClasses:[NSString.self])`, falls back to common public text UTI types before declaring “no text”.
+8. **Robust text read**: prefers `NSPasteboard.string(forType: .string)` and normalizes line endings; the optional compatibility setting enables additional text representations.
 9. **UI**
    - Menu bar icon/text "Trimmy" with menu items: Auto-Trim toggle, "Paste Trimmed", "Paste Reflowed Text" (when wrapped prose or Markdown is detected), "Paste Original", status line showing last action preview, Quit.
    - General settings control automatic text reflow (default off), removal of leading blank lines during reflow (default off for compatibility), and visibility of the manual reflow paste action (default on).
@@ -37,22 +37,18 @@ read_when:
    - SwiftUI Settings window (macOS-standard Settings scene) organized into General, Trimming, Rules, Shortcuts, Advanced, and About tabs.
    - Trimming contains sensitivity pickers for General apps and Terminals plus cleanup behavior.
    - Rules contains auto-trim app/site exclusions and URL content-identity parameter rules.
-7. **Last action preview**: menu shows truncated (~70 chars) version of last trimmed command.
-8. **Accessory app**: no Dock icon, lives in menu bar; quit from menu.
-9. **Accessibility permission UX**: when Accessibility is missing, Trimmy blocks paste commands and shows actionable callouts (menu + Settings) to trigger the system prompt and open the Privacy & Security › Accessibility pane.
-10. **CLI helper**: Settings → Advanced exposes an installer that symlinks the bundled helper into `/usr/local/bin` and `/opt/homebrew/bin` as `trimmy` for headless use.
+10. **Last action preview**: menu shows truncated (~70 chars) version of last trimmed command.
+11. **Accessory app**: no Dock icon, lives in menu bar; quit from menu.
+12. **Accessibility permission UX**: when Accessibility is missing, Trimmy blocks paste commands and shows actionable callouts (menu + Settings) to trigger the system prompt and open the Privacy & Security › Accessibility pane.
+13. **CLI helper**: Settings → Advanced exposes an installer that symlinks the bundled helper into `/usr/local/bin` and `/opt/homebrew/bin` as `trimmy` for headless use.
 
 ## Non-Functional Requirements
 - Platform: macOS 15.0+; Swift 6; SwiftUI for UI and settings; AppKit for pasteboard access.
 - Performance: lightweight polling; avoid excessive CPU; operations on main actor for UI safety.
-- Privacy: clipboard data stays local; no network usage.
+- Privacy: clipboard data stays local; Sparkle checks for updates, with no telemetry or account system.
 
-## Build & Run
-- Build: `swift build` (or `swift build -c release`).
-- Run from CLI: `swift run &` or execute `.build/debug/Trimmy &`.
-- Bundle as .app: run `Scripts/package_app.sh [debug|release]` → outputs `Trimmy.app` with `LSUIElement` set (menu-bar only). Copy to `/Applications` or Drag to Login Items for auto-start. Optional: add an SMLoginItem helper for automatic login launch.
+## Build and run
 
-## Open Items
-- Add packaging script to emit a ready-to-install `.app` bundle and optional notarization pipeline.
-- Optional notification/HUD when a trim occurs.
-- Tune heuristics set; consider whitelist for file extensions or URLs.
+SwiftPM defines the app, portable core, CLI, and test targets. Open `Package.swift` in Xcode, or use `swift build` and `swift test` from the checkout. `Scripts/compile_and_run.sh` builds, tests, packages and launches the signed development app. `Scripts/package_app.sh [debug|release]` emits `Trimmy.app`; debug packaging is incremental and release packaging starts clean.
+
+The app runs as an accessory (`LSUIElement`) and uses `SMAppService` for its Start at Login preference. See [the release checklist](release.md) for authorized distribution work.

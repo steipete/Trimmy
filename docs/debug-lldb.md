@@ -1,46 +1,29 @@
 ---
-summary: "LLDB/tmux script to drive Trimmy headlessly and inspect clipboard paths."
+summary: "Debug clipboard behavior with focused tests, signed app runs, and unified logging."
 read_when:
-  - Debugging Trimmy without UI access (remote/ssh)
-  - Investigating clipboard trimming behavior interactively
+  - Investigating clipboard transformations or pasteboard ownership
+  - Debugging Trimmy from a terminal or Xcode
 ---
 
-# Trimmy LLDB Drive-by Debugging
+# Debugging clipboard behavior
 
-Use this when you can’t click the UI (e.g., remote session) but need to exercise menu actions and inspect state end-to-end.
+Build and launch the signed development app from the checkout:
 
-## One-shot script (start, drive, inspect)
-```bash
-# from repo root
-tmux new -s trimdebug -d 'cd /Users/steipete/Projects/Trimmy && lldb .build/debug/Trimmy'
-tmux send-keys -t trimdebug "run" C-m
-# wait for menu to appear, then interrupt
-tmux send-keys -t trimdebug "process interrupt" C-m
-# drive Trimmy without UI clicks
-tmux send-keys -t trimdebug "expr -l Swift -- import AppKit; import Trimmy" C-m
-tmux send-keys -t trimdebug "expr -l Swift -- _ = NSPasteboard.general.setString(\"echo test\\\\nls -l\", forType: .string)" C-m
-tmux send-keys -t trimdebug "expr -l Swift -- Trimmy.DebugHooks.hotkeyManager?.pasteTrimmedNow()" C-m
-tmux send-keys -t trimdebug "expr -l Swift -- Trimmy.DebugHooks.monitor?.lastSummary" C-m
-# when finished
-tmux send-keys -t trimdebug "quit" C-m
-tmux kill-session -t trimdebug
-pkill -f \"Trimmy.app/Contents/MacOS/Trimmy\" || true
+```sh
+./Scripts/compile_and_run.sh
+log stream --level debug --predicate 'subsystem == "com.steipete.trimmy"'
 ```
 
-## What the commands do
-- `DebugHooks.hotkeyManager?.pasteTrimmedNow()` calls the same path as the “Paste Trimmed” button/hotkey (force trim at High + summary update).
-- `DebugHooks.monitor?.lastSummary` reads the string shown under “Last:” in the menu.
-- You can clear/reset with `DebugHooks.monitor?.lastSummary = ""` if needed.
+Clipboard logs report pasteboard change counts, source-app context, selected sensitivity, skip reasons and text lengths. Preserve the user's clipboard and settings when exercising synthetic copies.
 
-## Breakpoints to inspect trimming
-Inside LLDB:
-```
-breakpoint set --name Trimmy.ClipboardMonitor.trimClipboardIfNeeded
-breakpoint set --name Trimmy.ClipboardMonitor.readTextFromPasteboard
-breakpoint set --name Trimmy.ClipboardMonitor.writeTrimmed
-continue
-```
-Use `frame variable` and `bt` at stops to inspect flow; `force` should be `true` for manual trims.
+Use focused Swift Testing suites for reproducible inputs:
 
-## Reset/clean
-Run `Scripts/compile_and_run.sh` to kill old instances, build, test, package, relaunch, and verify the app stays up. Always do this after code edits before debugging so you only have one Trimmy running.
+```sh
+swift test --filter TextCleanerTests
+swift test --filter ClipboardMonitorTests
+swift test --filter MarkdownReformatterTests
+```
+
+For breakpoints, open `Package.swift` in Xcode and debug the relevant test. The transformation boundary is `TextCleaner.transform`; app-specific reflow and sensitivity selection live in `ClipboardMonitor.transform`. Manual paste actions enter `pasteTrimmed`, `pasteOriginal`, `pasteReformattedMarkdown`, or `pasteStrippingURLQueryParams` before `performPaste`.
+
+Debug builds also expose **Advanced → Enable debug tools**, which reveals the Debug tab's sample-preview and trim-animation buttons. There is no global `DebugHooks` object; use these controls or a focused test to drive the current code.
