@@ -3,7 +3,6 @@ import SwiftUI
 @MainActor
 struct SettingsView: View {
     @ObservedObject var settings: AppSettings
-    @ObservedObject var hotkeyManager: HotkeyManager
     @ObservedObject var monitor: ClipboardMonitor
     @ObservedObject var permissions: AccessibilityPermissionManager
     weak var updater: UpdaterProviding?
@@ -23,7 +22,7 @@ struct SettingsView: View {
                 .tabItem { Label("Rules", systemImage: "list.bullet.rectangle.portrait") }
                 .tag(SettingsTab.rules)
 
-            HotkeySettingsPane(settings: self.settings, hotkeyManager: self.hotkeyManager)
+            HotkeySettingsPane(settings: self.settings)
                 .tabItem { Label("Shortcuts", systemImage: "command") }
                 .tag(SettingsTab.shortcuts)
 
@@ -33,7 +32,7 @@ struct SettingsView: View {
 
             #if DEBUG
             if self.settings.debugPaneEnabled {
-                DebugSettingsPane(settings: self.settings, monitor: self.monitor)
+                DebugSettingsPane(monitor: self.monitor)
                     .tabItem { Label("Debug", systemImage: "ant.fill") }
                     .tag(SettingsTab.debug)
             }

@@ -7,7 +7,6 @@ import SwiftUI
 struct MenuContentView: View {
     @ObservedObject var monitor: ClipboardMonitor
     @ObservedObject var settings: AppSettings
-    @ObservedObject var hotkeyManager: HotkeyManager
     @ObservedObject var permissions: AccessibilityPermissionManager
     let updater: UpdaterProviding
     @Bindable private var updateStatus: UpdateStatus
@@ -17,13 +16,11 @@ struct MenuContentView: View {
     init(
         monitor: ClipboardMonitor,
         settings: AppSettings,
-        hotkeyManager: HotkeyManager,
         permissions: AccessibilityPermissionManager,
         updater: UpdaterProviding)
     {
         self._monitor = ObservedObject(wrappedValue: monitor)
         self._settings = ObservedObject(wrappedValue: settings)
-        self._hotkeyManager = ObservedObject(wrappedValue: hotkeyManager)
         self._permissions = ObservedObject(wrappedValue: permissions)
         self.updater = updater
         self._updateStatus = Bindable(wrappedValue: updater.updateStatus)
@@ -75,68 +72,11 @@ struct MenuContentView: View {
         ClipboardMonitor.ellipsize(self.monitor.frontmostAppName, limit: 30)
     }
 
-    private var previewLine: Text {
-        Text(self.monitor.struckOriginalPreview())
-    }
-
     private func open(tab: SettingsTab) {
         SettingsTabRouter.request(tab)
         NSApp.activate(ignoringOtherApps: true)
         self.openSettings()
         NotificationCenter.default.post(name: .trimmySelectSettingsTab, object: tab)
-    }
-
-    private func showAbout() {
-        NSApp.activate(ignoringOtherApps: true)
-
-        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "–"
-        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? ""
-        let versionString = build.isEmpty ? version : "\(version) (\(build))"
-        let credits = NSMutableAttributedString(string: "Peter Steinberger — MIT License\n")
-        credits.append(self.makeLink("GitHub", urlString: "https://github.com/steipete/Trimmy"))
-        credits.append(self.separator)
-        credits.append(self.makeLink("Website", urlString: "https://steipete.me"))
-        credits.append(self.separator)
-        credits.append(self.makeLink("Twitter", urlString: "https://twitter.com/steipete"))
-        credits.append(self.separator)
-        credits.append(self.makeLink("Email", urlString: "mailto:peter@steipete.me"))
-
-        let options: [NSApplication.AboutPanelOptionKey: Any] = [
-            .applicationName: "Trimmy",
-            .applicationVersion: versionString,
-            .version: versionString,
-            .credits: credits,
-            .applicationIcon: (NSApplication.shared.applicationIconImage ?? NSImage()) as Any,
-        ]
-
-        NSApplication.shared.orderFrontStandardAboutPanel(options: options)
-        if let aboutPanel = NSApp.windows.first(where: { $0.className.contains("About") }) {
-            self.removeFocusRings(in: aboutPanel.contentView)
-        }
-    }
-
-    private func makeLink(_ title: String, urlString: String) -> NSAttributedString {
-        let attributes: [NSAttributedString.Key: Any] = [
-            .link: URL(string: urlString) as Any,
-            .font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize),
-        ]
-        return NSAttributedString(string: title, attributes: attributes)
-    }
-
-    private var separator: NSAttributedString {
-        NSAttributedString(string: " · ", attributes: [
-            .font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize),
-        ])
-    }
-
-    private func removeFocusRings(in view: NSView?) {
-        guard let view else { return }
-        if let imageView = view as? NSImageView {
-            imageView.focusRingType = .none
-        }
-        for subview in view.subviews {
-            self.removeFocusRings(in: subview)
-        }
     }
 }
 
@@ -340,5 +280,3 @@ extension EventModifiers {
         self = value
     }
 }
-
-// Previously used an AppKit wrapping label; we now rely on SwiftUI Text to avoid menu rendering issues.

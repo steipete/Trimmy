@@ -1,10 +1,6 @@
 import Foundation
 
 enum PreviewMetrics {
-    static func charCountSuffix(count: Int) -> String {
-        " (\(self.formattedChars(count)))"
-    }
-
     static func prettyBadge(count: Int) -> String {
         " · \(self.formattedChars(count))"
     }
@@ -13,13 +9,6 @@ enum PreviewMetrics {
         text
             .replacingOccurrences(of: "\n", with: "⏎ ")
             .replacingOccurrences(of: "\t", with: "⇥ ")
-    }
-
-    static func displayStringWithVisibleWhitespace(_ text: String) -> String {
-        text
-            .replacingOccurrences(of: " ", with: "·")
-            .replacingOccurrences(of: "\t", with: "⇥")
-            .replacingOccurrences(of: "\n", with: "⏎")
     }
 
     /// Map a source string to a visible-whitespace string while carrying per-character flags.
