@@ -405,7 +405,7 @@ struct MarkdownReformatter {
         let trimmed = line.drop(while: { $0 == " " || $0 == "\t" })
         guard trimmed.first == fence.character else { return false }
         let count = trimmed.prefix(while: { $0 == fence.character }).count
-        return count >= fence.count
+        return count >= fence.count && trimmed.dropFirst(count).allSatisfy { $0 == " " || $0 == "\t" }
     }
 
     private static func isHeadingLine(_ line: String) -> Bool {
@@ -432,14 +432,15 @@ struct MarkdownReformatter {
 
         var index = rest.startIndex
         var digits = ""
-        while index < rest.endIndex, rest[index].isNumber {
+        while index < rest.endIndex, rest[index].isASCII, rest[index].isNumber {
             digits.append(rest[index])
             index = rest.index(after: index)
         }
-        guard !digits.isEmpty, index < rest.endIndex else { return nil }
+        guard !digits.isEmpty, digits.count <= 9, index < rest.endIndex else { return nil }
         let markerChar = rest[index]
         guard markerChar == "." || markerChar == ")" else { return nil }
         var contentStart = rest.index(after: index)
+        guard contentStart < rest.endIndex, rest[contentStart] == " " || rest[contentStart] == "\t" else { return nil }
         while contentStart < rest.endIndex, rest[contentStart].isWhitespace {
             contentStart = rest.index(after: contentStart)
         }
