@@ -40,7 +40,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        swift: ["6.2.4", "6.3.3"]
+        swift: ["6.3", "6.3.3"]
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
     steps:
@@ -62,7 +62,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        swift: ["6.2.4", "6.3.3"]
+        swift: ["6.3", "6.3.3"]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

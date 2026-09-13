@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Install an exact official release on the macOS and Ubuntu 24.04 CI runners.
 set -euo pipefail
-swift_version=${1:?usage: install_swift_ci.sh <major.minor.patch>}
+swift_version=${1:?usage: install_swift_ci.sh <major.minor[.patch]>}
 swift_script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 : "${GITHUB_PATH:?This installer is for GitHub Actions}"
 : "${GITHUB_ENV:?This installer is for GitHub Actions}"
 : "${RUNNER_TEMP:?This installer is for GitHub Actions}"
-[[ "$swift_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "Expected an exact Swift release version." >&2; exit 2; }
+[[ "$swift_version" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]] || { echo "Expected an exact Swift release version." >&2; exit 2; }
 swift_release="swift-${swift_version}-RELEASE"
 swift_url="https://download.swift.org/swift-${swift_version}-release"
 swift_work=$(mktemp -d "$RUNNER_TEMP/trimmy-swift.XXXXXX")

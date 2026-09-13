@@ -34,7 +34,15 @@ class SwiftInstallerTests(unittest.TestCase):
             "verify\n",
         )
 
-    def run_fixture(self, platform, extra_commands, expected_trace, expected_code=None):
+    def test_release_without_patch_number_is_supported(self):
+        self.run_fixture(
+            "Linux",
+            {"gpg": 'case "$*" in *--verify*) echo verify >> "$TEST_TRACE"; exit 1;; *) exit 0;; esac'},
+            "verify\n",
+            version="6.3",
+        )
+
+    def run_fixture(self, platform, extra_commands, expected_trace, expected_code=None, version="6.3.3"):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             commands = root / "bin"
@@ -60,7 +68,7 @@ class SwiftInstallerTests(unittest.TestCase):
                 command.write_text("#!/bin/sh\n" + script + "\n")
                 command.chmod(0o755)
             result = subprocess.run(
-                ["/bin/bash", str(INSTALLER), "6.3.3"],
+                ["/bin/bash", str(INSTALLER), version],
                 env={
                     "PATH": str(commands) + os.pathsep + "/usr/bin:/bin",
                     "RUNNER_TEMP": str(runner),
