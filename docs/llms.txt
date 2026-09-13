@@ -3,7 +3,7 @@
 Trimmy flattens copied multi-line shell snippets so they paste and run cleanly.
 
 Canonical documentation:
-- Trimmy: https://trimmy.app/ - Tiny macOS menu bar app that flattens multi-line shell snippets so they paste and run.
+- Trimmy — Paste once, run once.: https://trimmy.app/ - Tiny macOS menu bar app that flattens multi-line shell snippets so they paste and run.
 
 Source: https://github.com/steipete/Trimmy
 

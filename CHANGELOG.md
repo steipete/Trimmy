@@ -2,6 +2,7 @@
 
 ## 0.11.1 — Unreleased
 
+- Website: remove stale release numbers from download and social-card labels and clarify that clipboard processing stays local.
 - Development: reuse SwiftPM builds when packaging the debug app, simplify signed shortcut-resource packaging, and replace the obsolete Xcode project with the supported `Package.swift` workflow.
 
 ## 0.11.0 — 2026-09-07

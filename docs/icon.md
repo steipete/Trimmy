@@ -35,3 +35,7 @@ Why this approach:
 Notes:
 - If Xcode is in a nonstandard location, set `XCODE_APP=/path/to/Xcode.app` before running.
 - Script is CI-friendly; no Xcode project needed.
+
+## Website social card
+
+`docs/social.html` is the 1200×630 source for the website's social preview. Render and inspect it, attach the generated PNG to its GitHub PR, then update both the Open Graph and Twitter image URLs in `docs/index.html` to the permanent GitHub asset URL. Keep older published image URLs available for existing links and caches.
