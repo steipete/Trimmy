@@ -16,7 +16,7 @@ swift run TrimmyCLI --trim /path/to/file
 pbpaste | swift run TrimmyCLI --trim -
 ```
 
-Or install the packaged helper from the app: Settings → Advanced → “Install CLI”, which symlinks the bundled helper to `/usr/local/bin/trimmy` and `/opt/homebrew/bin/trimmy`. Then you can run `trimmy --help`.
+Or install the packaged helper from the app: Settings → Advanced → “Install CLI”, which symlinks the bundled helper to `/usr/local/bin/trimmy` and `/opt/homebrew/bin/trimmy`. The app stays responsive while macOS requests administrator authorization. Paths containing shell characters are handled literally. Then you can run `trimmy --help`.
 
 ## Options
 - `--trim <file>`: input file (use `-` or omit to read stdin)
