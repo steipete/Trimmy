@@ -6,6 +6,21 @@ import Foundation
 ///
 /// Requires Accessibility / Input Monitoring permission depending on macOS settings.
 final class CopyEventTap {
+    final class Registration {
+        let tap: CFMachPort
+        let source: CFRunLoopSource
+
+        init(tap: CFMachPort, source: CFRunLoopSource) {
+            self.tap = tap
+            self.source = source
+        }
+
+        deinit {
+            CFMachPortInvalidate(self.tap)
+            CFRunLoopSourceInvalidate(self.source)
+        }
+    }
+
     struct CopyKeypressContext {
         let timestamp: Date
         let pasteboardChangeCount: Int
@@ -16,8 +31,7 @@ final class CopyEventTap {
 
     private let pasteboard: NSPasteboard
     private let onCopy: @Sendable (CopyKeypressContext) -> Void
-    private var tap: CFMachPort?
-    private var runLoopSource: CFRunLoopSource?
+    private var registration: Registration?
 
     @MainActor
     init(
@@ -29,12 +43,12 @@ final class CopyEventTap {
     }
 
     var isRunning: Bool {
-        self.tap != nil
+        self.registration != nil
     }
 
     @MainActor
     func start() -> Bool {
-        guard self.tap == nil else { return true }
+        guard self.registration == nil else { return true }
 
         let mask = CGEventMask(1 << CGEventType.keyDown.rawValue)
         let refcon = Unmanaged.passUnretained(self).toOpaque()
@@ -49,27 +63,25 @@ final class CopyEventTap {
             return false
         }
 
-        let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0)
+        guard let source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0) else {
+            CFMachPortInvalidate(tap)
+            return false
+        }
         CFRunLoopAddSource(CFRunLoopGetMain(), source, .commonModes)
         CGEvent.tapEnable(tap: tap, enable: true)
 
-        self.tap = tap
-        self.runLoopSource = source
+        self.registration = Registration(tap: tap, source: source)
         return true
     }
 
     @MainActor
     func stop() {
-        guard let tap = self.tap, let source = self.runLoopSource else { return }
-        CGEvent.tapEnable(tap: tap, enable: false)
-        CFRunLoopRemoveSource(CFRunLoopGetMain(), source, .commonModes)
-        self.tap = nil
-        self.runLoopSource = nil
+        self.registration = nil
     }
 
     private func handleEventTap(type: CGEventType, event: CGEvent) {
         if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
-            if let tap = self.tap {
+            if let tap = self.registration?.tap {
                 Telemetry.eventTap.warning("Event tap disabled; re-enabling.")
                 CGEvent.tapEnable(tap: tap, enable: true)
             }

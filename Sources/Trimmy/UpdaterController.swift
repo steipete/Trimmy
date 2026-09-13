@@ -132,6 +132,9 @@ private func isDeveloperIDSigned(bundleURL: URL) -> Bool {
 
 @MainActor
 func makeUpdaterController() -> UpdaterProviding {
+    #if DEBUG
+    return DisabledUpdaterController(unavailableReason: "Updates are disabled in development builds.")
+    #else
     let bundleURL = Bundle.main.bundleURL
     let isBundledApp = bundleURL.pathExtension == "app"
     guard isBundledApp else {
@@ -152,4 +155,5 @@ func makeUpdaterController() -> UpdaterProviding {
     // Default to true; honor the user's last choice otherwise.
     let savedAutoUpdate = (defaults.object(forKey: autoUpdateKey) as? Bool) ?? true
     return SparkleUpdaterController(savedAutoUpdate: savedAutoUpdate)
+    #endif
 }

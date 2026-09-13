@@ -2,6 +2,7 @@
 
 ## 0.11.1 — Unreleased
 
+- App lifecycle: release Accessibility polling and system copy-event hooks when their owners go away and disable Sparkle in signed development builds.
 - Clipboard: use the latest copy for manual pastes and preserve all clipboard formats when restoring, without overwriting a newer copy.
 - Text cleanup: preserve literal path characters and home expansion, keep placeholder-like text intact when preserving blank lines, and recognize CRLF/CR command continuations.
 - CLI: correctly read `--trim -` from stdin, keep short options such as `-f` separate from file input, and report invalid arguments instead of silently ignoring them.
