@@ -60,7 +60,7 @@ extension TextCleaner {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
 
         // Skip if empty or multi-line
-        guard !trimmed.isEmpty, !trimmed.contains("\n") else { return nil }
+        guard !trimmed.isEmpty, !trimmed.contains(where: \.isNewline) else { return nil }
 
         // Skip if already quoted
         if (trimmed.hasPrefix("\"") && trimmed.hasSuffix("\""))
@@ -103,8 +103,13 @@ extension TextCleaner {
             return nil
         }
 
-        // Escape any existing double quotes and wrap in double quotes
-        let escaped = trimmed.replacingOccurrences(of: "\"", with: "\\\"")
-        return "\"\(escaped)\""
+        // Keep home expansion outside quotes; the rest of the path is literal shell data.
+        let isHomeRelative = trimmed.hasPrefix("~/")
+        let path = isHomeRelative ? String(trimmed.dropFirst(2)) : trimmed
+        let escaped = path.replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+            .replacingOccurrences(of: "$", with: "\\$")
+            .replacingOccurrences(of: "`", with: "\\`")
+        return (isHomeRelative ? "~/" : "") + "\"\(escaped)\""
     }
 }

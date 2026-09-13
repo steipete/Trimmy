@@ -72,6 +72,8 @@ extension TextCleaner {
         config: TrimConfig,
         aggressivenessOverride: Aggressiveness? = nil) -> String?
     {
+        let text = text.replacingOccurrences(of: "\r\n", with: "\n")
+            .replacingOccurrences(of: "\r", with: "\n")
         guard text.contains("\n") else { return nil }
 
         let lines = text.split(whereSeparator: { $0.isNewline })
@@ -350,11 +352,13 @@ extension TextCleaner {
     }
 
     private func flatten(_ text: String, preserveBlankLines: Bool) -> String {
-        let placeholder = "__BLANK_SEP__"
-        var result = text
         if preserveBlankLines {
-            result = result.replacingOccurrences(of: "\n\\s*\n", with: placeholder, options: .regularExpression)
+            return text.split(separator: /\n\s*\n/, omittingEmptySubsequences: false)
+                .map { self.flatten(String($0), preserveBlankLines: false) }
+                .joined(separator: "\n\n")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
         }
+        var result = text
         result = result.replacingOccurrences(
             of: #"(?<=[A-Za-z0-9._~-])-\s*\n\s*([A-Za-z0-9._~-])"#,
             with: "-$1",
@@ -370,9 +374,6 @@ extension TextCleaner {
         result = result.replacingOccurrences(of: #"\\\s*\n"#, with: " ", options: .regularExpression)
         result = result.replacingOccurrences(of: #"\n+"#, with: " ", options: .regularExpression)
         result = result.replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
-        if preserveBlankLines {
-            result = result.replacingOccurrences(of: placeholder, with: "\n\n")
-        }
         return result.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
