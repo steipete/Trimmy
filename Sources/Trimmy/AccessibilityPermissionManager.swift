@@ -61,11 +61,15 @@ final class AccessibilityPermissionManager: AccessibilityPermissionHandling {
 
     private func startPolling() {
         self.pollTask?.cancel()
+        let interval = self.pollInterval
         self.pollTask = Task { [weak self] in
-            guard let self else { return }
             while !Task.isCancelled {
-                let delay = UInt64(self.pollInterval * 1_000_000_000)
-                try? await Task.sleep(nanoseconds: delay)
+                do {
+                    try await Task.sleep(for: .seconds(interval))
+                } catch {
+                    return
+                }
+                guard let self else { return }
                 self.refresh()
             }
         }
