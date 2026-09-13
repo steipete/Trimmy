@@ -2,6 +2,8 @@
 
 ## 0.11.1 — Unreleased
 
+- Dependencies: update KeyboardShortcuts to 3.0.1 for Swift 6 concurrency and release-build fixes, retaining Swift 6.2 and macOS 15 support.
+- Build: validate macOS and Linux with Swift 6.2.4 and 6.3.3, pin Actions and lint tools, and run portable text and packaging-script tests in CI.
 - Website: remove stale release numbers from download and social-card labels and clarify that clipboard processing stays local.
 - Development: reuse SwiftPM builds when packaging the debug app, simplify signed shortcut-resource packaging, and replace the obsolete Xcode project with the supported `Package.swift` workflow.
 

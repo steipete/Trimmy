@@ -101,6 +101,8 @@ Trimmy requires Swift 6.2 and macOS 15 or later.
 
 Open `Package.swift` in Xcode, or use the commands below. Debug packaging reuses the current SwiftPM build and signs a fresh app bundle; release packaging starts with a clean build.
 
+CI covers Swift 6.2.4 and 6.3.3 on macOS and Linux, using SwiftFormat 0.63.0 and SwiftLint 0.65.1. `Scripts/install_lint_tools.sh <directory>` installs checksum-verified macOS lint binaries into a chosen directory.
+
 ```sh
 swift build
 swift test
