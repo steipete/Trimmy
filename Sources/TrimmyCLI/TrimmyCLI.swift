@@ -64,19 +64,15 @@ struct TrimmyCLI {
 
     static func readInput(
         path: String?,
-        stdinData: Data? = nil,
-        isTTY: Bool = isatty(STDIN_FILENO) == 1) -> String?
+        isTTY: Bool = isatty(STDIN_FILENO) == 1,
+        readStandardInput: () -> Data = { FileHandle.standardInput.readDataToEndOfFile() }) -> String?
     {
         if let path, !path.isEmpty, path != "-" {
             return try? String(contentsOfFile: path, encoding: .utf8)
         }
 
-        if isTTY {
-            guard let data = stdinData, !data.isEmpty else { return nil }
-            return String(data: data, encoding: .utf8)
-        }
-
-        let data = stdinData ?? FileHandle.standardInput.readDataToEndOfFile()
+        guard path == "-" || !isTTY else { return nil }
+        let data = readStandardInput()
         guard !data.isEmpty else { return nil }
         return String(data: data, encoding: .utf8)
     }

@@ -6,8 +6,19 @@ import TrimmyCore
 struct TrimmyCLITests {
     @Test
     func `explicit stdin marker reads piped input`() {
-        let input = TrimmyCLI.readInput(path: "-", stdinData: Data("echo hello".utf8), isTTY: false)
+        let input = TrimmyCLI.readInput(path: "-", isTTY: false) { Data("echo hello".utf8) }
         #expect(input == "echo hello")
+    }
+
+    @Test
+    func `explicit stdin marker reads interactive input`() {
+        var read = false
+        let input = TrimmyCLI.readInput(path: "-", isTTY: true) {
+            read = true
+            return Data("interactive input".utf8)
+        }
+        #expect(read)
+        #expect(input == "interactive input")
     }
 
     @Test
@@ -125,11 +136,11 @@ struct TrimmyCLITests {
 
     @Test
     func `read input does not block when tty`() {
-        let input = TrimmyCLI.readInput(path: nil, stdinData: nil, isTTY: true)
+        let input = TrimmyCLI.readInput(path: nil, isTTY: true)
         #expect(input == nil)
 
         let piped = Data("echo hi".utf8)
-        let pipedResult = TrimmyCLI.readInput(path: nil, stdinData: piped, isTTY: false)
+        let pipedResult = TrimmyCLI.readInput(path: nil, isTTY: false) { piped }
         #expect(pipedResult == "echo hi")
     }
 
