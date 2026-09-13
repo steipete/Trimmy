@@ -17,12 +17,10 @@ on:
 permissions:
   contents: write
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-
 jobs:
   build-linux-cli:
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -30,10 +28,8 @@ jobs:
           ref: ${{ github.event.release.tag_name || inputs.ref }}
           persist-credentials: false
 
-      - name: Setup Swift 6.3.3
-        uses: swift-actions/setup-swift@7ca6abe6b3b0e8b5421b88be48feee39cbf52c6a # v2.4.0
-        with:
-          swift-version: "6.3.3"
+      - name: Install Swift 6.3.3
+        run: ./Scripts/install_swift_ci.sh 6.3.3
 
       - name: Build TrimmyCLI (release)
         run: swift build -c release --product TrimmyCLI --static-swift-stdlib

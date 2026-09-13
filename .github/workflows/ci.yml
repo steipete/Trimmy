@@ -12,12 +12,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-
 jobs:
   lint:
     runs-on: macos-15
+    timeout-minutes: 10
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
     steps:
@@ -38,6 +36,7 @@ jobs:
   test-macos:
     name: macOS Swift ${{ matrix.swift }}
     runs-on: macos-15
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -48,9 +47,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: swift-actions/setup-swift@7ca6abe6b3b0e8b5421b88be48feee39cbf52c6a # v2.4.0
-        with:
-          swift-version: ${{ matrix.swift }}
+      - name: Install Swift ${{ matrix.swift }}
+        run: ./Scripts/install_swift_ci.sh '${{ matrix.swift }}'
       - name: Swift tests
         run: swift test --parallel
       - name: Release app build
@@ -60,6 +58,7 @@ jobs:
   build-linux-cli:
     name: Linux Swift ${{ matrix.swift }}
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
@@ -68,9 +67,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: swift-actions/setup-swift@7ca6abe6b3b0e8b5421b88be48feee39cbf52c6a # v2.4.0
-        with:
-          swift-version: ${{ matrix.swift }}
+      - name: Install Swift ${{ matrix.swift }}
+        run: ./Scripts/install_swift_ci.sh '${{ matrix.swift }}'
       - name: Portable core and CLI tests
         run: swift test --parallel
       - name: Build release CLI with static Swift standard library

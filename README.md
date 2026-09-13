@@ -103,6 +103,8 @@ Open `Package.swift` in Xcode, or use the commands below. Debug packaging reuses
 
 CI covers Swift 6.2.4 and 6.3.3 on macOS and Linux, using SwiftFormat 0.63.0 and SwiftLint 0.65.1. `Scripts/install_lint_tools.sh <directory>` installs checksum-verified macOS lint binaries into a chosen directory.
 
+`Scripts/install_swift_ci.sh` installs exact official Swift releases in CI. It requires the macOS package's signer to be Swift Open Source (`V9AUD2URP3`) and verifies Linux archives against the pinned public Swift release key (`52BB7E3DE28A71BE22EC05FFEF80A866B47A981F`, from [Swift's published keys](https://www.swift.org/keys/all-keys.asc)). Review the signing identity when updating toolchains to a release signed by a different key.
+
 ```sh
 swift build
 swift test
