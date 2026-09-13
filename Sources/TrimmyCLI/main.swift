@@ -1,17 +1,15 @@
 import Foundation
 import TrimmyCore
 
-struct CLISettings {
-    var aggressiveness: Aggressiveness = .normal
-    var preserveBlankLines: Bool = false
-    var removeBoxDrawing: Bool = true
+struct CLITrimResult: Encodable {
+    let original: String
+    let trimmed: String
+    let transformed: Bool
 }
-
-struct CLITrimResult { let original: String; let trimmed: String; let transformed: Bool }
 
 @main
 struct TrimmyCLI {
-    private static let bundledVersion: String = {
+    static let bundledVersion: String = {
         if let infoVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
             return infoVersion
         }
@@ -20,61 +18,36 @@ struct TrimmyCLI {
 
     static func main() {
         let args = Array(CommandLine.arguments.dropFirst())
-        var force = false
-        var inputPath: String?
-        var json = false
-        var settings = CLISettings()
-
         if args.contains("--version") || args.contains("-v") {
             print("TrimmyCLI \(self.bundledVersion)")
             exit(0)
         }
 
-        var idx = 0
-        while idx < args.count {
-            switch args[idx] {
-            case "--trim":
-                if idx + 1 < args.count, !args[idx + 1].hasPrefix("--") {
-                    inputPath = args[idx + 1]; idx += 1
-                }
-            case "--force", "-f":
-                force = true
-            case "--json":
-                json = true
-            case "--aggressiveness":
-                if idx + 1 < args.count, let aggr = Aggressiveness(rawValue: args[idx + 1].lowercased()) {
-                    settings.aggressiveness = aggr; idx += 1
-                }
-            case "--preserve-blank-lines":
-                settings.preserveBlankLines = true
-            case "--no-preserve-blank-lines":
-                settings.preserveBlankLines = false
-            case "--remove-box-drawing":
-                settings.removeBoxDrawing = true
-            case "--keep-box-drawing":
-                settings.removeBoxDrawing = false
-            case "--help", "-h":
-                self.printHelp(); return
-            default: break
-            }
-            idx += 1
+        if args.contains("--help") || args.contains("-h") {
+            print(self.helpText())
+            return
         }
 
-        guard let input = readInput(path: inputPath) else {
+        let options: CLIArguments
+        do {
+            options = try CLIArguments(args)
+        } catch {
+            FileHandle.standardError.write(Data("\(error)\n".utf8))
+            exit(1)
+        }
+
+        guard let input = readInput(path: options.inputPath) else {
             FileHandle.standardError.write(Data("No input provided. Use --trim <file> or pipe to stdin.\n".utf8))
             exit(1)
         }
 
-        let result = cliTrim(input, settings: settings, force: force)
+        let result = cliTrim(input, settings: options.settings, force: options.force)
 
-        if json {
-            let payload: [String: Any] = [
-                "original": result.original,
-                "trimmed": result.trimmed,
-                "transformed": result.transformed,
-            ]
+        if options.json {
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = [.prettyPrinted]
             do {
-                let data = try JSONSerialization.data(withJSONObject: payload, options: [.prettyPrinted])
+                let data = try encoder.encode(result)
                 FileHandle.standardOutput.write(data)
                 FileHandle.standardOutput.write(Data([0x0A]))
             } catch {
@@ -82,19 +55,19 @@ struct TrimmyCLI {
                 exit(3)
             }
         } else {
-            FileHandle.standardOutput.write(result.trimmed.data(using: String.Encoding.utf8) ?? Data())
+            FileHandle.standardOutput.write(Data(result.trimmed.utf8))
             FileHandle.standardOutput.write(Data([0x0A]))
         }
 
         exit(result.transformed ? 0 : 2)
     }
 
-    private static func readInput(
+    static func readInput(
         path: String?,
         stdinData: Data? = nil,
         isTTY: Bool = isatty(STDIN_FILENO) == 1) -> String?
     {
-        if let path, !path.isEmpty {
+        if let path, !path.isEmpty, path != "-" {
             return try? String(contentsOfFile: path, encoding: .utf8)
         }
 
@@ -108,16 +81,6 @@ struct TrimmyCLI {
         return String(data: data, encoding: .utf8)
     }
 
-    #if DEBUG
-    static func _testReadInput(path: String?, stdinData: Data?, isTTY: Bool) -> String? {
-        self.readInput(path: path, stdinData: stdinData, isTTY: isTTY)
-    }
-
-    static var _testVersion: String {
-        self.bundledVersion
-    }
-    #endif
-
     static func helpText(version: String = TrimmyCLI.bundledVersion) -> String {
         """
         trimmy – flattens multi-line shell snippets so they execute
@@ -127,7 +90,7 @@ struct TrimmyCLI {
           trimmy --trim [file] [options]    Trim input from file or stdin.
 
         Options:
-          --trim <file>              Input file (optional; stdin if omitted)
+          --trim <file>              Input file (optional; - or omitted reads stdin)
           --force, -f                Force High aggressiveness
           --aggressiveness <level>   low | normal | high
           --preserve-blank-lines     Keep blank lines when flattening
@@ -139,18 +102,15 @@ struct TrimmyCLI {
           --help, -h                 Show help
 
         Exit codes:
-          0  trimmed (or unchanged if no transformations needed and force not requested)
-          1  no input / error reading
+          0  transformation applied
+          1  invalid arguments / no input / error reading
           2  no transformation applied (for callers who need to detect changes)
+          3  JSON encoding error
         """
-    }
-
-    private static func printHelp() {
-        print(self.helpText())
     }
 }
 
-// MARK: - Trimming pipeline (standalone, mirrors app heuristics)
+// MARK: - Shared trimming
 
 func cliTrim(_ text: String, settings: CLISettings, force: Bool) -> CLITrimResult {
     let cleaner = TextCleaner()

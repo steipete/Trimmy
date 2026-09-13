@@ -5,6 +5,12 @@ import TrimmyCore
 
 struct TrimmyCLITests {
     @Test
+    func `explicit stdin marker reads piped input`() {
+        let input = TrimmyCLI.readInput(path: "-", stdinData: Data("echo hello".utf8), isTTY: false)
+        #expect(input == "echo hello")
+    }
+
+    @Test
     func `trims multiline command`() {
         let input = """
         echo hi \\
@@ -119,17 +125,17 @@ struct TrimmyCLITests {
 
     @Test
     func `read input does not block when tty`() {
-        let input = TrimmyCLI._testReadInput(path: nil, stdinData: nil, isTTY: true)
+        let input = TrimmyCLI.readInput(path: nil, stdinData: nil, isTTY: true)
         #expect(input == nil)
 
         let piped = Data("echo hi".utf8)
-        let pipedResult = TrimmyCLI._testReadInput(path: nil, stdinData: piped, isTTY: false)
+        let pipedResult = TrimmyCLI.readInput(path: nil, stdinData: piped, isTTY: false)
         #expect(pipedResult == "echo hi")
     }
 
     @Test
     func `version string available`() {
-        #expect(!TrimmyCLI._testVersion.isEmpty)
+        #expect(!TrimmyCLI.bundledVersion.isEmpty)
     }
 
     @Test

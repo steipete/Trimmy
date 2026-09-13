@@ -28,9 +28,11 @@ Or install the packaged helper from the app: Settings → Advanced → “Instal
 - `--version, -v`: print Trimmy CLI version
 - `--help, -h`: show help
 
+`-` also selects stdin on its own. Qualify a filename that matches an option, such as `./-f`, to treat it as a file. Unknown arguments and invalid sensitivity levels produce an error before input is read.
+
 ## Exit codes
 - `0`: success
-- `1`: no input / read error
+- `1`: invalid arguments / no input / read error
 - `2`: no transformation applied
 - `3`: JSON encoding error
 
