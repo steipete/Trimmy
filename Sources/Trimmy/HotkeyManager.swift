@@ -3,8 +3,9 @@ import KeyboardShortcuts
 
 @MainActor
 extension KeyboardShortcuts.Name {
-    static let pasteTrimmed = Self("trimClipboard") // preserve existing user-defaults key
-    static let pasteOriginal = Self("pasteOriginal")
+    // Keep the trimClipboard name for existing saved shortcuts.
+    static let pasteTrimmed = Self("trimClipboard", initial: .init(.t, modifiers: [.command, .option]))
+    static let pasteOriginal = Self("pasteOriginal", initial: .init(.t, modifiers: [.command, .option, .shift]))
     static let toggleAutoTrim = Self("toggleAutoTrim")
 }
 
@@ -26,7 +27,6 @@ final class HotkeyManager: ObservableObject {
         self.settings.autoTrimHotkeyEnabledChanged = { [weak self] _ in
             self?.refreshRegistration()
         }
-        self.ensureDefaultShortcut()
         self.registerHandlerIfNeeded()
         self.refreshRegistration()
     }
@@ -74,20 +74,6 @@ final class HotkeyManager: ObservableObject {
             self?.toggleAutoTrim()
         }
         self.handlerRegistered = true
-    }
-
-    private func ensureDefaultShortcut() {
-        if KeyboardShortcuts.getShortcut(for: .pasteTrimmed) == nil {
-            KeyboardShortcuts.setShortcut(
-                .init(.t, modifiers: [.command, .option]),
-                for: .pasteTrimmed)
-        }
-        if KeyboardShortcuts.getShortcut(for: .pasteOriginal) == nil {
-            KeyboardShortcuts.setShortcut(
-                .init(.t, modifiers: [.command, .option, .shift]),
-                for: .pasteOriginal)
-        }
-        // No default for auto-trim toggle; user can opt in via Settings.
     }
 
     @discardableResult

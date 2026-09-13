@@ -140,16 +140,16 @@ extension MenuContentView {
         }
     }
 
-    private var pasteTrimmedKeyboardShortcut: KeyboardShortcut? {
+    var pasteTrimmedKeyboardShortcut: KeyboardShortcut? {
         guard self.settings.pasteTrimmedHotkeyEnabled,
               let shortcut = KeyboardShortcuts.getShortcut(for: .pasteTrimmed) else { return nil }
-        return shortcut.swiftUIShortcut
+        return shortcut.toSwiftUI
     }
 
     private var pasteOriginalKeyboardShortcut: KeyboardShortcut? {
         guard self.settings.pasteOriginalHotkeyEnabled,
               let shortcut = KeyboardShortcuts.getShortcut(for: .pasteOriginal) else { return nil }
-        return shortcut.swiftUIShortcut
+        return shortcut.toSwiftUI
     }
 
     private var trimmedPreviewLine: String {
@@ -195,88 +195,4 @@ extension View {
 
 private enum MenuPreview {
     static let limit = 30
-}
-
-extension KeyboardShortcuts.Shortcut {
-    fileprivate var swiftUIShortcut: KeyboardShortcut? {
-        guard let keyEquivalent = self.key?.swiftUIKeyEquivalent else { return nil }
-        let modifiers = EventModifiers(self.modifiers)
-        return KeyboardShortcut(keyEquivalent, modifiers: modifiers)
-    }
-}
-
-extension KeyboardShortcuts.Key {
-    fileprivate var swiftUIKeyEquivalent: KeyEquivalent? {
-        switch self {
-        case .a: KeyEquivalent("a")
-        case .b: KeyEquivalent("b")
-        case .c: KeyEquivalent("c")
-        case .d: KeyEquivalent("d")
-        case .e: KeyEquivalent("e")
-        case .f: KeyEquivalent("f")
-        case .g: KeyEquivalent("g")
-        case .h: KeyEquivalent("h")
-        case .i: KeyEquivalent("i")
-        case .j: KeyEquivalent("j")
-        case .k: KeyEquivalent("k")
-        case .l: KeyEquivalent("l")
-        case .m: KeyEquivalent("m")
-        case .n: KeyEquivalent("n")
-        case .o: KeyEquivalent("o")
-        case .p: KeyEquivalent("p")
-        case .q: KeyEquivalent("q")
-        case .r: KeyEquivalent("r")
-        case .s: KeyEquivalent("s")
-        case .t: KeyEquivalent("t")
-        case .u: KeyEquivalent("u")
-        case .v: KeyEquivalent("v")
-        case .w: KeyEquivalent("w")
-        case .x: KeyEquivalent("x")
-        case .y: KeyEquivalent("y")
-        case .z: KeyEquivalent("z")
-        case .zero: KeyEquivalent("0")
-        case .one: KeyEquivalent("1")
-        case .two: KeyEquivalent("2")
-        case .three: KeyEquivalent("3")
-        case .four: KeyEquivalent("4")
-        case .five: KeyEquivalent("5")
-        case .six: KeyEquivalent("6")
-        case .seven: KeyEquivalent("7")
-        case .eight: KeyEquivalent("8")
-        case .nine: KeyEquivalent("9")
-        case .comma: KeyEquivalent(",")
-        case .period: KeyEquivalent(".")
-        case .slash: KeyEquivalent("/")
-        case .semicolon: KeyEquivalent(";")
-        case .quote: KeyEquivalent("\"")
-        case .leftBracket: KeyEquivalent("[")
-        case .rightBracket: KeyEquivalent("]")
-        case .minus: KeyEquivalent("-")
-        case .equal: KeyEquivalent("=")
-        case .space: .space
-        case .tab: .tab
-        case .return: .return
-        case .escape: .escape
-        default: nil
-        }
-    }
-}
-
-extension EventModifiers {
-    fileprivate init(_ flags: NSEvent.ModifierFlags) {
-        var value: EventModifiers = []
-        if flags.contains(.command) {
-            value.insert(.command)
-        }
-        if flags.contains(.option) {
-            value.insert(.option)
-        }
-        if flags.contains(.control) {
-            value.insert(.control)
-        }
-        if flags.contains(.shift) {
-            value.insert(.shift)
-        }
-        self = value
-    }
 }
