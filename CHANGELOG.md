@@ -7,6 +7,7 @@
 - Clipboard: use the latest copy for manual pastes and preserve all clipboard formats when restoring, without overwriting a newer copy.
 - Text cleanup: preserve literal path characters and home expansion, keep placeholder-like text intact when preserving blank lines, and recognize CRLF/CR command continuations.
 - Previews: mark removals correctly around emoji and inserted characters, and use the real cleanup engine for sensitivity examples.
+- Shortcuts: keep cleared paste shortcuts unset across restarts and show recorded function keys and keyboard-layout equivalents correctly in the menu.
 - CLI: correctly read `--trim -` from stdin, keep short options such as `-f` separate from file input, and report invalid arguments instead of silently ignoring them.
 - CLI installer: keep the app responsive during authorization and install correctly from paths containing shell characters, without a shared temporary script.
 - Build compatibility: Swift 6.3 or later is now required because Swift 6.2.4 crashes while compiling the updated shortcut dependency's isolated deinitializers; macOS 15 support is unchanged.

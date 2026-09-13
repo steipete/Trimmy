@@ -53,6 +53,7 @@ public final class AppSettings: ObservableObject {
     #endif
 
     public init() {
+        Self.migrateShortcutDefaults(.standard)
         Self.migrateAggressivenessDefaults()
         LaunchAtLoginManager.setEnabled(self.launchAtLogin)
         self.refreshParsedURLQueryParamRules()
@@ -64,6 +65,20 @@ public final class AppSettings: ObservableObject {
 }
 
 extension AppSettings {
+    static func migrateShortcutDefaults(_ defaults: UserDefaults) {
+        let migrationKey = "hasMigratedInitialShortcuts"
+        guard !defaults.bool(forKey: migrationKey) else { return }
+        let shortcutKeys = ["KeyboardShortcuts_trimClipboard", "KeyboardShortcuts_pasteOriginal"]
+        let existingKeys = shortcutKeys + ["aggressiveness", "terminalAggressiveness"]
+        if existingKeys.contains(where: { defaults.object(forKey: $0) != nil }) {
+            // Older names removed cleared entries; the SDK's false sentinel preserves that choice.
+            for key in shortcutKeys where defaults.object(forKey: key) == nil {
+                defaults.set(false, forKey: key)
+            }
+        }
+        defaults.set(true, forKey: migrationKey)
+    }
+
     private static let legacyAggressivenessKey = "aggressiveness"
     private static let generalAggressivenessKey = "generalAggressiveness"
     private static let terminalAggressivenessKey = "terminalAggressiveness"
