@@ -2,16 +2,17 @@
 
 ## Project Structure & Module Organization
 - `Sources/Trimmy`: Swift 6 macOS menu-bar app (clipboard watcher, command detector, settings panes; entry `TrimmyApp.swift`).
-- `Tests/TrimmyTests`: Swift Testing suites (e.g., `ClipboardMonitorTests`, `AggressivenessPreviewExamplesTests`) covering heuristics and pasteboard safety.
+- `Sources/TrimmyCore`: shared text cleanup; `Sources/TrimmyCLI`: headless executable.
+- `Tests/TrimmyCoreTests` and `Tests/TrimmyCLITests`: portable Swift Testing suites. `Tests/TrimmyTests` covers macOS clipboard and UI integration.
 - `Scripts`: helper shell scripts; prefer them over ad-hoc build/run/sign steps.
-- `docs/`: contributor notes (spec, release, prefs). Keep `CHANGELOG.md` Trimmy-only. Assets and project files live at the root (`Trimmy.xcodeproj`, `Info*.plist`, icons, `appcast.xml`).
+- `docs/`: contributor notes and website. Keep `CHANGELOG.md` Trimmy-only. SwiftPM is the build definition; open `Package.swift` in Xcode. Assets, `Info*.plist`, icons, and `appcast.xml` live at the root.
 
 ## Build, Test, and Development Commands
-- `./Scripts/compile_and_run.sh` — clean rebuild and launch the dev app; run after code changes to avoid stale bundles.
+- `./Scripts/compile_and_run.sh` — build, test, package, and launch the signed dev app; run after code changes.
 - `swift build` / `swift build -c release` — package builds for macOS 15+/Swift 6.2.
 - `./Scripts/package_app.sh [debug|release]` — produce `Trimmy.app`; run before validation.
 - `./Scripts/sign-and-notarize.sh` — ship-ready signing + notarization.
-- `swift test [--filter …]` — executes Swift Testing/XCTest suite.
+- `swift test [--filter …]` — executes the Swift Testing suites.
 - `swiftformat .` then `swiftlint lint --fix` (or `swiftlint lint`) — enforce formatting and linting.
 - After any code change, run `pnpm check` and fix all reported format/lint issues before handoff.
 
@@ -21,7 +22,7 @@
 - Follow existing names like `Settings*Pane`, `*Monitor`, `CommandDetector`; favor small, focused types and functions.
 
 ## Testing Guidelines
-- Tests live in `Tests/TrimmyTests`; add Swift Testing suites with `@Suite`/`@Test` and `#expect`.
+- Add Swift Testing suites with `@Suite`/`@Test` and `#expect` in the target that owns the behavior; pure text tests belong in `TrimmyCoreTests`.
 - Mirror current naming (`ClipboardMonitorTests`, `AggressivenessPreviewExamplesTests`) and cover new heuristics, pasteboard fallbacks, and regressions.
 - Maintain or improve coverage; do not skip `swift test` before PRs.
 
@@ -37,6 +38,6 @@
 - Releases must only be performed when explicitly requested in the current prompt; permission is one-time and does not persist to future sessions.
 
 # Building Trimmy
-- Preferred workflow: run `Scripts/compile_and_run.sh` after code changes. It kills any running instance, runs build + tests, packages a debug app, and relaunches the menu bar app.
+- Preferred workflow: run `Scripts/compile_and_run.sh` after code changes. It stops running instances, builds and tests the package, packages a debug app, and relaunches the menu bar app. Debug packaging reuses SwiftPM build outputs; release packaging starts with `swift package clean`.
 - Use `Scripts/package_app.sh release` + `Scripts/sign-and-notarize.sh` only when preparing a signed release build.
-- Settings tabs once animated per tab (spring + `contentHeight`/`preferredHeight`); restore from pre-2025-11-19 ~18:40 commit if needed.
+- Preserve the spring tab-selection animation in `SettingsView` and the window dimensions in `SettingsTab`.

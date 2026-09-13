@@ -31,6 +31,10 @@ SwiftPM only; manual package/sign/notarize. Sparkle feed served from GitHub Rele
 - Shared release helper: `Scripts/mac-release` resolves `MAC_RELEASE_TOOL`, sibling `../agent-scripts`, or `~/Projects/agent-scripts`.
 - Sparkle auto-checks are **enabled by default** for release builds (set in `package_app.sh`); leave this on so update checks run without user toggles.
 
+## SwiftPM resources
+
+The packager copies resource bundles into `Contents/Resources`. SwiftPM's generated `Bundle.module` searches the app root, which macOS code signing rejects for extra resources. `Scripts/patch_keyboard_shortcuts.py` rebuilds the dependency's localization source from its pinned Git revision, changing the lookup to prefer the packaged resource location and retain normal SwiftPM lookup for tests. This replaces earlier generated patches without discarding the build cache. It fails if the pinned dependency changes that lookup; review this patch when updating KeyboardShortcuts. Treat dependency sources under `.build` as generated files.
+
 ## Icon
 If the .icon changes:
 ```
@@ -100,4 +104,4 @@ Uploads not handled automatically—commit/publish appcast + zip to the feed loc
 ## Troubleshooting
 - **Notarization invalid / app “damaged”**: repackage/sign with script; when installing locally use `ditto` to avoid `._*` files; verify with `spctl -a -t exec -vv Trimmy.app` and `stapler validate`.
 - **Feed not updating**: ensure GitHub release asset URL in appcast matches the published version and is reachable (no 404).
-- **About links missing**: confirm credits string construction in `Trimmy.swift` shows the inline links.
+- **About links missing**: check `AboutPane` and `AboutLinkRow` in `Sources/Trimmy/SettingsAboutPane.swift`.

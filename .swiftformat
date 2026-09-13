@@ -1,9 +1,8 @@
-# SwiftFormat configuration for Peekaboo project
+# SwiftFormat configuration for Trimmy
 # Compatible with Swift 6 strict concurrency mode
 
 # IMPORTANT: Don't remove self where it's required for Swift 6 concurrency
 --self insert # Insert self for member references (required for Swift 6)
---selfrequired # List of functions that require explicit self
 --importgrouping testable-bottom # Group @testable imports at the bottom
 --extensionacl on-declarations # Set ACL on extension members
 
@@ -47,4 +46,4 @@
 --allman false
 
 # Exclusions
---exclude .build,.swiftpm,DerivedData,node_modules,dist,coverage,xcuserdata,Core/PeekabooCore/Sources/PeekabooCore/Extensions/NSArray+Extensions.swift
+--exclude .build,.swiftpm,DerivedData,node_modules,dist,coverage,xcuserdata

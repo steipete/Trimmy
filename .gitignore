@@ -9,7 +9,6 @@
 /.build
 /Packages
 DerivedData/
-Carthage/Build/
 
 # Xcode workspace/user data
 xcuserdata/
@@ -19,12 +18,6 @@ xcuserdata/
 # Debug symbols
 *.dSYM
 *.dSYM.zip
-
-# Fastlane artefacts
-fastlane/report.xml
-fastlane/Preview.html
-fastlane/screenshots/**/*.png
-fastlane/test_output
 
 # Playgrounds
 timeline.xctimeline
@@ -40,3 +33,8 @@ playground.xcworkspace
 *.delta
 Trimmy.app
 Icon.iconset
+
+# Local script-runner state (package.json has no JavaScript dependencies)
+node_modules/
+pnpm-lock.yaml
+__pycache__/

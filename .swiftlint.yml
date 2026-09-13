@@ -1,29 +1,14 @@
-# SwiftLint configuration for Peekaboo - Swift 6 compatible
+# SwiftLint configuration for Trimmy
 
 # Paths to include
 included:
   - Sources
   - Tests
 
-# Paths to exclude
 excluded:
   - .build
+  - .swiftpm
   - DerivedData
-  - "**/Generated"
-  - "**/Resources"
-  - "**/.build"
-  - "**/Package.swift"
-  - "**/Tests/Resources"
-  - "Apps/CLI/.build"
-  - "**/DerivedData"
-  - "**/.swiftpm"
-  - Pods
-  - Carthage
-  - fastlane
-  - vendor
-  - "*.playground"
-  # Exclude specific files that should not be linted/formatted
-  - "Core/PeekabooCore/Sources/PeekabooCore/Extensions/NSArray+Extensions.swift"
 
 # Analyzer rules (require compilation)
 analyzer_rules:
@@ -153,8 +138,6 @@ line_length:
   error: 250
   ignores_comments: true
   ignores_urls: true
-
-# Custom rules can be added here if needed
 
 # Reporter type
 reporter: "xcode"

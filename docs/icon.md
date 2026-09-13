@@ -10,7 +10,7 @@ read_when:
 We use the new macOS 26 “glass” `.icon` bundle from Icon Composer/IconStudio and convert it to `.icns` via Xcode’s hidden CLI (ictool/icontool), without an Xcode project.
 
 ## Script
-`Scripts/build_icon.sh ICON.icon CodexBar [outdir]`
+`Scripts/build_icon.sh ICON.icon Trimmy [outdir]`
 
 What it does:
 1) Finds `ictool` (or `icontool`) in `/Applications/Xcode.app/Contents/Applications/Icon Composer.app/Contents/Executables/`.
@@ -25,7 +25,7 @@ Requirements:
 
 Usage:
 ```bash
-./Scripts/build_icon.sh Icon.icon CodexBar
+./Scripts/build_icon.sh Icon.icon Trimmy
 ```
 Outputs `Icon.icns` at repo root.
 
