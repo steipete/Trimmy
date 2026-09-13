@@ -207,7 +207,6 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .btn.ink { background: var(--ink); color: var(--paper); border-color: var(--ink); box-shadow: 4px 4px 0 var(--cut); }
 .btn.ink:hover { box-shadow: 6px 6px 0 var(--cut); }
 .btn.ink:active { box-shadow: 0 0 0 var(--cut); }
-.btn.ink .dim { color: rgba(239, 231, 214, 0.55); margin-left: 4px; }
 
 .brew {
   font-family: "JetBrains Mono", monospace;
