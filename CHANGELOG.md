@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.11.2 — Unreleased
+
 ## 0.11.1 — 2026-09-13
 
 **Highlights:** macOS 27-ready shortcuts, clipboard restores that never clobber a newer copy, and CLI stdin/argument fixes.
