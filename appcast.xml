@@ -2,6 +2,36 @@
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
     <channel>
         <item>
+            <title>0.11.1</title>
+            <pubDate>Sun, 13 Sep 2026 18:50:01 -0700</pubDate>
+            <link>https://raw.githubusercontent.com/steipete/Trimmy/main/appcast.xml</link>
+            <sparkle:version>34</sparkle:version>
+            <sparkle:shortVersionString>0.11.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description><![CDATA[<h2>Trimmy 0.11.1</h2>
+<p><strong>Highlights:</strong> macOS 27-ready shortcuts, clipboard restores that never clobber a newer copy, and CLI stdin/argument fixes.</p>
+<ul>
+<li>Dependencies: update KeyboardShortcuts to 3.1.0 for macOS 27 compatibility, smoother menu highlighting, function-key handling, and shortcut recorder fixes.</li>
+<li>Clipboard: use the latest copy for manual pastes and preserve all clipboard formats when restoring, without overwriting a newer copy.</li>
+<li>Text reflow: preserve fenced content when a fence-like line has trailing text, and require valid Markdown numbered-list markers before rewriting lists.</li>
+<li>Text cleanup: preserve literal path characters and home expansion, keep placeholder-like text intact when preserving blank lines, and recognize CRLF/CR command continuations.</li>
+<li>Previews: mark removals correctly around emoji and inserted characters, and use the real cleanup engine for sensitivity examples.</li>
+<li>Shortcuts: keep cleared paste shortcuts unset across restarts and show recorded function keys and keyboard-layout equivalents correctly in the menu.</li>
+<li>CLI: correctly read <code>--trim -</code> from stdin, keep short options such as <code>-f</code> separate from file input, and report invalid arguments instead of silently ignoring them.</li>
+<li>CLI installer: keep the app responsive during authorization and install correctly from paths containing shell characters, without a shared temporary script.</li>
+<li>App lifecycle: release Accessibility polling and system copy-event hooks when their owners go away and disable Sparkle in signed development builds.</li>
+<li>Build compatibility: Swift 6.3 or later is now required because Swift 6.2.4 crashes while compiling the updated shortcut dependency&#x27;s isolated deinitializers; macOS 15 support is unchanged.</li>
+<li>Dependencies: update KeyboardShortcuts to 3.0.1 for Swift 6 concurrency and release-build fixes.</li>
+<li>Build: validate macOS and Linux with Swift 6.3 and 6.3.3, pin Actions and lint tools, and run portable text and packaging-script tests in CI.</li>
+<li>Website: remove stale release numbers from download and social-card labels and clarify that clipboard processing stays local.</li>
+<li>Development: reuse SwiftPM builds when packaging the debug app, simplify signed shortcut-resource packaging, and replace the obsolete Xcode project with the supported <code>Package.swift</code> workflow.</li>
+</ul>
+<p><a href="https://github.com/steipete/Trimmy/blob/main/CHANGELOG.md">View full changelog</a></p>
+]]></description>
+            <enclosure url="https://github.com/steipete/Trimmy/releases/download/v0.11.1/Trimmy-0.11.1.zip" length="2781031" type="application/octet-stream" sparkle:edSignature="sArVr/0RaXOtM3g+Qhy/OYS7rq9/mdr9xWSo5w5cehBLfFxjmXFIAjU27I+XnYahtxrG2LmbWeKU+91/K0y+DA=="/>
+        </item>
+        <item>
             <title>0.11.0</title>
             <pubDate>Mon, 07 Sep 2026 03:08:40 -0700</pubDate>
             <link>https://raw.githubusercontent.com/steipete/Trimmy/main/appcast.xml</link>
