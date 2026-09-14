@@ -1,16 +1,18 @@
 # Changelog
 
-## 0.11.1 — Unreleased
+## 0.11.1 — 2026-09-13
+
+**Highlights:** macOS 27-ready shortcuts, clipboard restores that never clobber a newer copy, and CLI stdin/argument fixes.
 
 - Dependencies: update KeyboardShortcuts to 3.1.0 for macOS 27 compatibility, smoother menu highlighting, function-key handling, and shortcut recorder fixes.
-- App lifecycle: release Accessibility polling and system copy-event hooks when their owners go away and disable Sparkle in signed development builds.
-- Text reflow: preserve fenced content when a fence-like line has trailing text, and require valid Markdown numbered-list markers before rewriting lists.
 - Clipboard: use the latest copy for manual pastes and preserve all clipboard formats when restoring, without overwriting a newer copy.
+- Text reflow: preserve fenced content when a fence-like line has trailing text, and require valid Markdown numbered-list markers before rewriting lists.
 - Text cleanup: preserve literal path characters and home expansion, keep placeholder-like text intact when preserving blank lines, and recognize CRLF/CR command continuations.
 - Previews: mark removals correctly around emoji and inserted characters, and use the real cleanup engine for sensitivity examples.
 - Shortcuts: keep cleared paste shortcuts unset across restarts and show recorded function keys and keyboard-layout equivalents correctly in the menu.
 - CLI: correctly read `--trim -` from stdin, keep short options such as `-f` separate from file input, and report invalid arguments instead of silently ignoring them.
 - CLI installer: keep the app responsive during authorization and install correctly from paths containing shell characters, without a shared temporary script.
+- App lifecycle: release Accessibility polling and system copy-event hooks when their owners go away and disable Sparkle in signed development builds.
 - Build compatibility: Swift 6.3 or later is now required because Swift 6.2.4 crashes while compiling the updated shortcut dependency's isolated deinitializers; macOS 15 support is unchanged.
 - Dependencies: update KeyboardShortcuts to 3.0.1 for Swift 6 concurrency and release-build fixes.
 - Build: validate macOS and Linux with Swift 6.3 and 6.3.3, pin Actions and lint tools, and run portable text and packaging-script tests in CI.
