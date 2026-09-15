@@ -36,8 +36,20 @@ struct TrimmyCLI {
             exit(1)
         }
 
-        guard let input = readInput(path: options.inputPath) else {
-            FileHandle.standardError.write(Data("No input provided. Use --trim <file> or pipe to stdin.\n".utf8))
+        let input: String
+        do {
+            guard let text = try readInput(path: options.inputPath) else {
+                FileHandle.standardError.write(Data("No input provided. Use --trim <file> or pipe to stdin.\n".utf8))
+                exit(1)
+            }
+            input = text
+        } catch {
+            let source = if let path = options.inputPath, !path.isEmpty, path != "-" {
+                "file \(String(reflecting: path))"
+            } else {
+                "stdin"
+            }
+            FileHandle.standardError.write(Data("Failed to read \(source): \(error.localizedDescription)\n".utf8))
             exit(1)
         }
 
@@ -65,16 +77,19 @@ struct TrimmyCLI {
     static func readInput(
         path: String?,
         isTTY: Bool = isatty(STDIN_FILENO) == 1,
-        readStandardInput: () -> Data = { FileHandle.standardInput.readDataToEndOfFile() }) -> String?
+        readStandardInput: () throws -> Data = { try FileHandle.standardInput.readToEnd() ?? Data() }) throws -> String?
     {
         if let path, !path.isEmpty, path != "-" {
-            return try? String(contentsOfFile: path, encoding: .utf8)
+            return try String(contentsOfFile: path, encoding: .utf8)
         }
 
         guard path == "-" || !isTTY else { return nil }
-        let data = readStandardInput()
+        let data = try readStandardInput()
         guard !data.isEmpty else { return nil }
-        return String(data: data, encoding: .utf8)
+        guard let text = String(data: data, encoding: .utf8) else {
+            throw CocoaError(.fileReadInapplicableStringEncoding)
+        }
+        return text
     }
 
     static func helpText(version: String = TrimmyCLI.bundledVersion) -> String {

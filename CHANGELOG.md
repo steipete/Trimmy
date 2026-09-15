@@ -2,6 +2,7 @@
 
 ## 0.11.2 — Unreleased
 
+- CLI: report file, stdin, and UTF-8 decoding failures with their input source instead of incorrectly claiming that no input was provided.
 - URL cleanup: preserve content-identity parameters with percent-encoded names and leave URLs followed by other text untouched.
 
 ## 0.11.1 — 2026-09-13

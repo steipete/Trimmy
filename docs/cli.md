@@ -36,6 +36,8 @@ Or install the packaged helper from the app: Settings → Advanced → “Instal
 - `2`: no transformation applied
 - `3`: JSON encoding error
 
+Read failures identify the input file or stdin and report the underlying error. Input must be valid UTF-8; invalid bytes are a read error, while an empty stdin stream reports that no input was provided.
+
 ## Examples
 
 Trim a file:
