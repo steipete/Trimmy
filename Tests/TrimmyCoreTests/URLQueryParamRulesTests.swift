@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 import TrimmyCore
 
@@ -69,6 +70,25 @@ struct URLQueryParamRulesTests {
         let cleaner = TextCleaner()
         let url = "https://example.com/file?node-id=42%3A1&ref=foo"
         #expect(cleaner.stripURLQueryParams(url, keeping: ["node-id"]) == "https://example.com/file?node-id=42%3A1")
+    }
+
+    @Test(arguments: ["%76", "v", "%6eode-id", "caf%C3%A9", "a%2Bb", "%2576"])
+    func `matches decoded parameter names without rewriting their encoding`(encodedName: String) throws {
+        let name = try #require(encodedName.removingPercentEncoding)
+        let url = "https://example.com/watch?\(encodedName)=42%3a1&ref=tracking"
+        #expect(TextCleaner().stripURLQueryParams(url, keeping: [name]) ==
+            "https://example.com/watch?\(encodedName)=42%3a1")
+    }
+
+    @Test
+    func `encoded identity alone does not need cleanup`() {
+        #expect(TextCleaner().stripURLQueryParams("https://youtube.com/watch?%76=video", keeping: ["v"]) == nil)
+    }
+
+    @Test(arguments: ["\n", "\r", "\t", " "])
+    func `does not strip text following a URL`(separator: String) {
+        let text = "https://example.com/?ref=tracking\(separator)keep this text"
+        #expect(TextCleaner().stripURLQueryParams(text) == nil)
     }
 
     @Test

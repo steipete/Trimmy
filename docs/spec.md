@@ -41,6 +41,7 @@ read_when:
 11. **Accessory app**: no Dock icon, lives in menu bar; quit from menu.
 12. **Accessibility permission UX**: when Accessibility is missing, Trimmy blocks paste commands and shows actionable callouts (menu + Settings) to trigger the system prompt and open the Privacy & Security › Accessibility pane.
 13. **CLI helper**: Settings → Advanced exposes an installer that symlinks the bundled helper into `/usr/local/bin` and `/opt/homebrew/bin` as `trimmy` for headless use.
+14. **URL query cleanup** accepts a single bare HTTP(S) URL, allowing surrounding whitespace but rejecting whitespace within the input. Preservation rules match parameter names after one percent-decoding pass; retained names and values keep their original percent encoding.
 
 ## Non-Functional Requirements
 - Platform: macOS 15.0+; Swift 6; SwiftUI for UI and settings; AppKit for pasteboard access.

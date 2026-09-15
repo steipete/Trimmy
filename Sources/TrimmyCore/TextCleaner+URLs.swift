@@ -15,7 +15,7 @@ extension TextCleaner {
         resolveKeeping: (_ host: String) -> Set<String>) -> String?
     {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.contains("\n") else { return nil }
+        guard !trimmed.contains(where: \.isWhitespace) else { return nil }
         let lowered = trimmed.lowercased()
         guard lowered.hasPrefix("http://") || lowered.hasPrefix("https://") else { return nil }
         guard var components = URLComponents(string: trimmed) else { return nil }
@@ -25,7 +25,10 @@ extension TextCleaner {
         if keeping.isEmpty {
             components.percentEncodedQueryItems = nil
         } else {
-            let filtered = original.filter { keeping.contains($0.name) }
+            let filtered = original.filter { item in
+                guard let name = item.name.removingPercentEncoding else { return false }
+                return keeping.contains(name)
+            }
             guard filtered.count < original.count else { return nil }
             components.percentEncodedQueryItems = filtered.isEmpty ? nil : filtered
         }
