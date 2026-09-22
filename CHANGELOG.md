@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.11.3 — Unreleased
+
 ## 0.11.2 — 2026-09-22
 
 **Highlights:** Safer shell prompt cleanup, clearer CLI errors, and more reliable app updates.
