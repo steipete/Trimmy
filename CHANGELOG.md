@@ -1,11 +1,14 @@
 # Changelog
 
-## 0.11.2 — Unreleased
+## 0.11.2 — 2026-09-22
+
+**Highlights:** Safer shell prompt cleanup, clearer CLI errors, and more reliable app updates.
 
 - Prompt cleanup: preserve shell variable references and Markdown headings whose words merely start with a command name.
 
 - CLI: report file, stdin, and UTF-8 decoding failures with their input source instead of incorrectly claiming that no input was provided.
 - URL cleanup: preserve content-identity parameters with percent-encoded names and leave URLs followed by other text untouched.
+- Updates: upgrade Sparkle to 2.10.0 for macOS 27 delta-update compression fixes and better download progress handling.
 
 ## 0.11.1 — 2026-09-13
 
