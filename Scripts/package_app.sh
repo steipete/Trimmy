@@ -16,7 +16,7 @@ swift package resolve
 python3 "$ROOT/Scripts/patch_keyboard_shortcuts.py" \
   "$ROOT/.build/checkouts/KeyboardShortcuts/Sources/KeyboardShortcuts/Utilities.swift"
 
-BUILD_ARGS=(-c "$CONF")
+BUILD_ARGS=(--build-system native -c "$CONF")
 if [[ "$CONF" == "release" ]]; then
   BUILD_ARGS+=(--arch arm64)
 fi

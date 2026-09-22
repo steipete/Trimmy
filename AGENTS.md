@@ -9,10 +9,10 @@
 
 ## Build, Test, and Development Commands
 - `./Scripts/compile_and_run.sh` — build, test, package, and launch the signed dev app; run after code changes.
-- `swift build` / `swift build -c release` — package builds for macOS 15+/Swift 6.3.
+- `swift build --build-system native` / `swift build --build-system native -c release` — package builds for macOS 15+/Swift 6.3.
 - `./Scripts/package_app.sh [debug|release]` — produce `Trimmy.app`; run before validation.
 - `./Scripts/sign-and-notarize.sh` — ship-ready signing + notarization.
-- `swift test [--filter …]` — executes the Swift Testing suites.
+- `swift test --build-system native [--filter …]` — executes the Swift Testing suites.
 - `swiftformat .` then `swiftlint lint --fix` (or `swiftlint lint`) — enforce formatting and linting.
 - After any code change, run `pnpm check` and fix all reported format/lint issues before handoff.
 

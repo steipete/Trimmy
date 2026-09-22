@@ -8,8 +8,8 @@
     "lint": "swiftlint lint --fix",
     "check": "swiftformat . --lint && swiftlint lint",
     "docs:list": "node Scripts/docs-list.mjs",
-    "build": "swift build",
-    "test": "swift test",
+    "build": "swift build --build-system native",
+    "test": "swift test --build-system native",
     "release": "./Scripts/package_app.sh release",
     "restart": "pnpm start",
     "stop": "./Scripts/kill_trimmy.sh || true"

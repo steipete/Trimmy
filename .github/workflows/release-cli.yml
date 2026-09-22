@@ -28,11 +28,11 @@ jobs:
           ref: ${{ github.event.release.tag_name || inputs.ref }}
           persist-credentials: false
 
-      - name: Install Swift 6.3.3
-        run: ./Scripts/install_swift_ci.sh 6.3.3
+      - name: Install Swift 6.4.0
+        run: ./Scripts/install_swift_ci.sh 6.4.0
 
       - name: Build TrimmyCLI (release)
-        run: swift build -c release --product TrimmyCLI --static-swift-stdlib
+        run: swift build --build-system native -c release --product TrimmyCLI --static-swift-stdlib
 
       - name: Package Linux CLI
         id: pkg
@@ -47,7 +47,7 @@ jobs:
             TAG="dev"
           fi
 
-          BIN_DIR="$(swift build -c release --product TrimmyCLI --static-swift-stdlib --show-bin-path)"
+          BIN_DIR="$(swift build --build-system native -c release --product TrimmyCLI --static-swift-stdlib --show-bin-path)"
           source version.env
           CLI_VERSION="$("$BIN_DIR/TrimmyCLI" --version)"
           echo "$CLI_VERSION"

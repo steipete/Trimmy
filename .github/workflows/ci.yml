@@ -40,7 +40,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        swift: ["6.3", "6.3.3"]
+        swift: ["6.3", "6.4.0"]
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
     steps:
@@ -50,10 +50,10 @@ jobs:
       - name: Install Swift ${{ matrix.swift }}
         run: ./Scripts/install_swift_ci.sh '${{ matrix.swift }}'
       - name: Swift tests
-        run: swift test --parallel
+        run: swift test --build-system native --parallel
       - name: Release app build
-        if: matrix.swift == '6.3.3'
-        run: swift build -c release --product Trimmy
+        if: matrix.swift == '6.4.0'
+        run: swift build --build-system native -c release --product Trimmy
 
   build-linux-cli:
     name: Linux Swift ${{ matrix.swift }}
@@ -62,7 +62,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        swift: ["6.3", "6.3.3"]
+        swift: ["6.3", "6.4.0"]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -70,10 +70,10 @@ jobs:
       - name: Install Swift ${{ matrix.swift }}
         run: ./Scripts/install_swift_ci.sh '${{ matrix.swift }}'
       - name: Portable core and CLI tests
-        run: swift test --parallel
+        run: swift test --build-system native --parallel
       - name: Build release CLI with static Swift standard library
-        run: swift build -c release --product TrimmyCLI --static-swift-stdlib
+        run: swift build --build-system native -c release --product TrimmyCLI --static-swift-stdlib
       - name: Smoke test release CLI
         run: |
-          BIN_DIR="$(swift build -c release --product TrimmyCLI --static-swift-stdlib --show-bin-path)"
+          BIN_DIR="$(swift build --build-system native -c release --product TrimmyCLI --static-swift-stdlib --show-bin-path)"
           python3 Scripts/smoke_cli.py "$BIN_DIR/TrimmyCLI"
