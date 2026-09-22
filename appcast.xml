@@ -2,6 +2,28 @@
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
     <channel>
         <item>
+            <title>0.11.2</title>
+            <pubDate>Tue, 22 Sep 2026 05:06:30 -0700</pubDate>
+            <link>https://raw.githubusercontent.com/steipete/Trimmy/main/appcast.xml</link>
+            <sparkle:version>35</sparkle:version>
+            <sparkle:shortVersionString>0.11.2</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description><![CDATA[<h2>Trimmy 0.11.2</h2>
+<p><strong>Highlights:</strong> Safer shell prompt cleanup, clearer CLI errors, and more reliable app updates.</p>
+<ul>
+<li>Prompt cleanup: preserve shell variable references and Markdown headings whose words merely start with a command name.</li>
+</ul>
+<ul>
+<li>CLI: report file, stdin, and UTF-8 decoding failures with their input source instead of incorrectly claiming that no input was provided.</li>
+<li>URL cleanup: preserve content-identity parameters with percent-encoded names and leave URLs followed by other text untouched.</li>
+<li>Updates: upgrade Sparkle to 2.10.0 for macOS 27 delta-update compression fixes and better download progress handling.</li>
+</ul>
+<p><a href="https://github.com/steipete/Trimmy/blob/main/CHANGELOG.md">View full changelog</a></p>
+]]></description>
+            <enclosure url="https://github.com/steipete/Trimmy/releases/download/v0.11.2/Trimmy-0.11.2.zip" length="2740766" type="application/octet-stream" sparkle:edSignature="lu54SVUFvEeYBGuFHNcG/DRxlv0AgYjKSKE4ocknNdN7OASki9hJAsTG9YQRzjnNGG6KT/Bqx4BvLC6lrA6dBw=="/>
+        </item>
+        <item>
             <title>0.11.1</title>
             <pubDate>Sun, 13 Sep 2026 18:50:01 -0700</pubDate>
             <link>https://raw.githubusercontent.com/steipete/Trimmy/main/appcast.xml</link>
