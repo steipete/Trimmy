@@ -45,8 +45,12 @@ esac
 
 swift_version_output=$("$swift_bin/swift" --version)
 printf '%s\n' "$swift_version_output"
+swift_short_version="$swift_version"
+if [[ "$swift_version" == *.*.0 ]]; then
+  swift_short_version="${swift_version%.0}"
+fi
 case "$swift_version_output" in
-  *"Swift version $swift_version ("*) ;;
+  *"Swift version $swift_version ("*|*"Swift version $swift_short_version ("*) ;;
   *) echo "Installed Swift does not match the requested version." >&2; exit 1 ;;
 esac
 echo "$swift_bin" >> "$GITHUB_PATH"
