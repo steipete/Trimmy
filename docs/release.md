@@ -47,7 +47,7 @@ Uses ictool/iconutil to produce Icon.icns.
 ./Scripts/sign-and-notarize.sh
 ```
 What it does:
-- `swift build -c release --arch arm64`
+- `swift build --build-system native -c release --arch arm64`
 - Packages `Trimmy.app` with Info.plist and Icon.icns
 - Embeds Sparkle.framework, Updater, Autoupdate, XPCs
 - Codesigns **everything** with runtime + timestamp (deep) and adds rpath

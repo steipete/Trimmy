@@ -42,13 +42,36 @@ class SwiftInstallerTests(unittest.TestCase):
             version="6.3",
         )
 
-    def run_fixture(self, platform, extra_commands, expected_trace, expected_code=None, version="6.3.3"):
+    def test_zero_patch_release_accepts_equivalent_compiler_version(self):
+        for reported in ["6.4", "6.4.0"]:
+            with self.subTest(reported=reported):
+                self.run_fixture(
+                    "Linux", {"gpg": "exit 0"}, "extracted\n",
+                    expected_code=0, version="6.4.0", reported_version=reported,
+                )
+
+    def test_other_compiler_versions_are_rejected(self):
+        for requested, reported in [("6.4.0", "6.4.1"), ("6.4.0", "6.3"), ("6.0", "6")]:
+            with self.subTest(requested=requested, reported=reported):
+                self.run_fixture(
+                    "Linux", {"gpg": "exit 0"}, "extracted\n",
+                    expected_code=1, version=requested, reported_version=reported,
+                )
+
+    def run_fixture(self, platform, extra_commands, expected_trace, expected_code=None,
+                    version="6.3.3", reported_version=None):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             commands = root / "bin"
             commands.mkdir()
             runner = root / "runner"
             runner.mkdir()
+            installed = runner / f"swift-{version}-RELEASE"
+            if reported_version is not None:
+                compiler = installed / "usr/bin/swift"
+                compiler.parent.mkdir(parents=True)
+                compiler.write_text(f"#!/bin/sh\necho 'Swift version {reported_version} (test-RELEASE)'\n")
+                compiler.chmod(0o755)
             trace = root / "trace"
             github_path = root / "github-path"
             github_path.write_text("existing-path\n")
@@ -79,12 +102,16 @@ class SwiftInstallerTests(unittest.TestCase):
                 capture_output=True,
                 text=True,
             )
-            self.assertNotEqual(result.returncode, 0)
-            if expected_code is not None:
+            if expected_code is None:
+                self.assertNotEqual(result.returncode, 0)
+            else:
                 self.assertEqual(result.returncode, expected_code, result.stderr)
             self.assertEqual(trace.read_text(), expected_trace)
-            self.assertEqual(github_path.read_text(), "existing-path\n")
-            self.assertEqual(list(runner.iterdir()), [])
+            expected_path = "existing-path\n"
+            if expected_code == 0:
+                expected_path += str(installed / "usr/bin") + "\n"
+            self.assertEqual(github_path.read_text(), expected_path)
+            self.assertEqual(list(runner.iterdir()), [installed] if reported_version is not None else [])
 
 
 if __name__ == "__main__":

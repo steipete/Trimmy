@@ -21,7 +21,7 @@ run_step() {
 run_step "stop app" "${ROOT_DIR}/Scripts/kill_trimmy.sh"
 
 # Tests build all package targets before packaging.
-run_step "swift test" swift test -q
+run_step "swift test" swift test --build-system native -q
 run_step "package app" "${ROOT_DIR}/Scripts/package_app.sh" debug
 
 run_step "launch app" open "${APP_BUNDLE}"
