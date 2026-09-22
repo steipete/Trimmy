@@ -181,13 +181,15 @@ extension TextCleaner {
 
         guard let first = remainder.first, first == "#" || first == "$" else { return nil }
 
-        let afterPrompt = remainder.dropFirst().drop { $0.isWhitespace }
-        guard self.isLikelyPromptCommand(afterPrompt) else { return nil }
+        let afterMarker = remainder.dropFirst()
+        guard afterMarker.first?.isWhitespace == true else { return nil }
+        let afterPrompt = afterMarker.drop { $0.isWhitespace }
+        guard self.isLikelyPromptCommand(afterPrompt, marker: first) else { return nil }
 
         return String(leadingWhitespace) + String(afterPrompt)
     }
 
-    private func isLikelyPromptCommand(_ content: Substring) -> Bool {
+    private func isLikelyPromptCommand(_ content: Substring, marker: Character) -> Bool {
         let trimmed = String(content.trimmingCharacters(in: .whitespaces))
         guard !trimmed.isEmpty else { return false }
         if let last = trimmed.last, [".", "?", "!"].contains(last) {
@@ -196,8 +198,11 @@ extension TextCleaner {
 
         let hasCommandPunctuation =
             trimmed.contains(where: { "-./~$".contains($0) }) || trimmed.contains(where: \.isNumber)
-        let firstToken = trimmed.split(separator: " ").first?.lowercased() ?? ""
-        let startsWithKnown = Self.knownCommandPrefixes.contains(where: { firstToken.hasPrefix($0) })
+        let firstToken = trimmed.split(whereSeparator: \.isWhitespace).first?.lowercased() ?? ""
+        // A hash can introduce a Markdown heading; a dollar prompt has no such ambiguity.
+        let startsWithKnown = Self.knownCommandPrefixes.contains {
+            firstToken == $0 || (marker == "$" && firstToken.hasPrefix($0))
+        }
 
         guard hasCommandPunctuation || startsWithKnown else { return false }
         return self.isLikelyCommandLine(trimmed[...])

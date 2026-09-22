@@ -55,7 +55,7 @@ Trimmy uses separate sensitivity settings for general apps and terminals. It rec
 | **Normal** | Handles typical multi-line commands with flags. This is the terminal default. |
 | **High** | Flattens most command-shaped text. **Paste Trimmed** always uses this level. |
 
-Prompt gutters such as `$` and `#` are removed when they prefix a command, while Markdown headings remain intact. Automatic trimming skips large clipboard blobs as a safety valve.
+Prompt gutters such as `$` and `#` are removed when separated from a command by whitespace. Shell variable references such as `$HOME/bin/tool` and Markdown headings such as `# GitHub Actions` remain intact. Automatic trimming skips large clipboard blobs as a safety valve.
 
 Low and Normal sensitivity preserve YAML block scalars and their required indentation. High sensitivity and manual **Paste Trimmed** still flatten on request.
 
