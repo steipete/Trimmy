@@ -633,6 +633,10 @@ struct TextCleanerTests {
     func `quotes a relative directory and file that contain spaces`() {
         #expect(self.cleaner.quotePathWithSpaces("src/My File.txt") == "\"src/My File.txt\"")
         #expect(self.cleaner.quotePathWithSpaces("src/My New File.txt") == "\"src/My New File.txt\"")
+        #expect(self.cleaner.quotePathWithSpaces("src/My New File") == "\"src/My New File\"")
+        let config = TrimConfig(aggressiveness: .low, preserveBlankLines: false, removeBoxDrawing: false)
+        let transformed = self.cleaner.transform("src/My New File", config: config)
+        #expect(transformed.trimmed == "\"src/My New File\"")
         #expect(self.cleaner
             .quotePathWithSpaces("folder/sub folder/file.txt") == "\"folder/sub folder/file.txt\"")
     }

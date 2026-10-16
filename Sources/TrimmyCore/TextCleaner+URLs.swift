@@ -130,19 +130,17 @@ extension TextCleaner {
             return true
         }
 
-        let sides = firstToken.split(separator: "/", maxSplits: 1, omittingEmptySubsequences: false)
-        guard sides.count == 2 else { return false }
-        let plainWordSlash = !sides[0].isEmpty && !sides[1].isEmpty
-            && sides[0].allSatisfy(\.isLetter) && sides[1].allSatisfy(\.isLetter)
-        guard plainWordSlash else { return true }
-
-        let trailing = fullText.split(whereSeparator: \.isWhitespace).dropFirst()
-        let trailingArePlainWords = trailing.allSatisfy { token in
-            !token.isEmpty && token.allSatisfy(\.isLetter)
-        }
-        if trailingArePlainWords, trailing.count >= 2 {
+        // A directory plus a spaced name, including `src/My New File`, stays a path.
+        // Only a short prose slash, such as `and/or`, `A/B`, or `i/o`, is a sentence.
+        if Self.proseSlashTokens.contains(firstToken.lowercased()) {
             return false
         }
-        return true
+        let sides = firstToken.split(separator: "/", maxSplits: 1, omittingEmptySubsequences: false)
+        guard sides.count == 2 else { return false }
+        let singleLetterSlash = sides[0].count == 1 && sides[1].count == 1
+            && sides[0].allSatisfy(\.isLetter) && sides[1].allSatisfy(\.isLetter)
+        return !singleLetterSlash
     }
+
+    private static let proseSlashTokens: Set<String> = ["and/or", "w/o", "n/a", "y/n"]
 }
