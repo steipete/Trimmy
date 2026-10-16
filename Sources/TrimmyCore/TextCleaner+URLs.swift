@@ -88,7 +88,7 @@ extension TextCleaner {
             || firstTokenText.hasPrefix("~/")
             || firstTokenText.hasPrefix("./")
             || firstTokenText.hasPrefix("../")
-        let looksLikeRelativePath = firstTokenText.contains("/")
+        let looksLikeRelativePath = Self.relativePathHasDirectory(firstTokenText, fullText: trimmed)
 
         guard hasExplicitPathPrefix || looksLikeRelativePath else { return nil }
 
@@ -115,4 +115,32 @@ extension TextCleaner {
             .replacingOccurrences(of: "`", with: "\\`")
         return (isHomeRelative ? "~/" : "") + "\"\(escaped)\""
     }
+
+    /// A relative clipboard path contains a directory separator.
+    /// `designcode.io/SwiftUI for iOS 17/...` and `src/My File.txt` qualify.
+    /// A sentence whose first word merely contains a slash, such as `and/or this needs spaces`, does not.
+    private static func relativePathHasDirectory(_ firstToken: String, fullText: String) -> Bool {
+        guard firstToken.contains("/") else { return false }
+        let slashCount = fullText.reduce(into: 0) { count, character in
+            if character == "/" {
+                count += 1
+            }
+        }
+        if slashCount >= 2 {
+            return true
+        }
+
+        // A directory plus a spaced name, including `src/My New File`, stays a path.
+        // Only a short prose slash, such as `and/or`, `A/B`, or `i/o`, is a sentence.
+        if Self.proseSlashTokens.contains(firstToken.lowercased()) {
+            return false
+        }
+        let sides = firstToken.split(separator: "/", maxSplits: 1, omittingEmptySubsequences: false)
+        guard sides.count == 2 else { return false }
+        let singleLetterSlash = sides[0].count == 1 && sides[1].count == 1
+            && sides[0].allSatisfy(\.isLetter) && sides[1].allSatisfy(\.isLetter)
+        return !singleLetterSlash
+    }
+
+    private static let proseSlashTokens: Set<String> = ["and/or", "w/o", "n/a", "y/n"]
 }
