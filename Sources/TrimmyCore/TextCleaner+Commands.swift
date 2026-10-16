@@ -8,6 +8,38 @@ extension TextCleaner {
         "perl", "bash", "zsh", "fish", "pwsh", "sh",
     ]
 
+    /// These names are also ordinary English words, so a longer token matches
+    /// only when it is not one of those words. `$ lsblk` and `$ shuf` still match.
+    private static let exactOnlyCommandPrefixes: Set<String> = [
+        "go", "sh", "cat", "open", "make", "cd", "ls", "az",
+    ]
+
+    private static let prosePrefixTokens: Set<String> = [
+        "going", "google", "share", "should", "show",
+    ]
+
+    private static let proseSecondWords: Set<String> = [
+        "a", "an", "the", "my", "your", "our", "their", "this", "that", "these", "those",
+        "we", "to", "now", "home", "videos", "video", "me",
+    ]
+
+    private static func matchesKnownCommandPrefix(_ token: String, prefix: String, allowPrefix: Bool) -> Bool {
+        if prefix == "./" || prefix == "~/" {
+            return token.hasPrefix(prefix)
+        }
+        if self.exactOnlyCommandPrefixes.contains(prefix) {
+            if token == prefix {
+                return true
+            }
+            guard allowPrefix, token.hasPrefix(prefix) else { return false }
+            return !self.prosePrefixTokens.contains(token)
+        }
+        if allowPrefix {
+            return token == prefix || token.hasPrefix(prefix)
+        }
+        return token == prefix
+    }
+
     /// Removes shared leading indentation from prose paragraphs while avoiding code, lists, and commands.
     public func dedentParagraphIndent(_ text: String) -> String? {
         guard text.contains(where: \.isNewline) else { return nil }
@@ -201,9 +233,10 @@ extension TextCleaner {
         let firstToken = trimmed.split(whereSeparator: \.isWhitespace).first?.lowercased() ?? ""
         // A hash can introduce a Markdown heading; a dollar prompt has no such ambiguity.
         let startsWithKnown = Self.knownCommandPrefixes.contains {
-            firstToken == $0 || (marker == "$" && firstToken.hasPrefix($0))
+            Self.matchesKnownCommandPrefix(firstToken, prefix: $0, allowPrefix: marker == "$")
         }
-
+        // Prompt stripping keeps a real command no matter how many arguments it has.
+        // Prose such as "show me the docs" still fails the known-prefix check.
         guard hasCommandPunctuation || startsWithKnown else { return false }
         return self.isLikelyCommandLine(trimmed[...])
     }
@@ -252,12 +285,43 @@ extension TextCleaner {
     }
 
     private func containsKnownCommandPrefix(in lines: [Substring]) -> Bool {
-        lines.contains { line in
+        let nonEmpty = lines.filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+        return nonEmpty.enumerated().contains { index, line in
             let trimmed = line.trimmingCharacters(in: .whitespaces)
             guard let firstToken = trimmed.split(separator: " ").first else { return false }
-            let lower = firstToken.lowercased()
-            return Self.knownCommandPrefixes.contains(where: { lower.hasPrefix($0) })
+            let original = String(firstToken)
+            let lower = original.lowercased()
+            guard Self.knownCommandPrefixes.contains(where: {
+                Self.matchesKnownCommandPrefix(lower, prefix: $0, allowPrefix: true)
+            }) else {
+                return false
+            }
+            if Self.exactOnlyCommandPrefixes.contains(lower) {
+                // A lowercase exact command on the first line is a shell line.
+                // `cat the` and `make build release install` stay commands.
+                // `Open the door`, and `go now` later in a sentence, do not.
+                if index == 0, original == lower {
+                    return true
+                }
+                return self.lineLooksLikeCommand(trimmed)
+            }
+            return true
         }
+    }
+
+    /// A short command name followed by ordinary words is a sentence, not a shell line.
+    private func lineLooksLikeCommand(_ trimmed: String) -> Bool {
+        let words = trimmed.split(whereSeparator: \.isWhitespace)
+        if words.count >= 4 {
+            return false
+        }
+        if words.count >= 2 {
+            let second = String(words[1]).lowercased()
+            if Self.proseSecondWords.contains(second) {
+                return false
+            }
+        }
+        return true
     }
 
     private func hasCommandPunctuation(_ text: String) -> Bool {

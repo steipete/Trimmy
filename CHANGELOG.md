@@ -2,6 +2,9 @@
 
 ## 0.11.3 — Unreleased
 
+- Claude prompt cleanup: flatten `/commit` and `/skill:name`, and leave filesystem notes such as `/etc` and `/Users` on their own lines.
+- Text cleanup: match short command names exactly. `show`, `going`, and `Google` are no longer treated as `sh` or `go`, while `$ git status` and `$ gitk` still lose the prompt. A real command such as `cat the` / `other` or `make build release install` / `check` still joins. `$ lsblk` and `$ shuf` still lose the prompt.
+
 ## 0.11.2 — 2026-09-22
 
 **Highlights:** Safer shell prompt cleanup, clearer CLI errors, and more reliable app updates.

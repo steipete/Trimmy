@@ -135,12 +135,8 @@ extension TextCleaner {
             return result == text ? nil : result
         }
 
-        // C. Slash command: first line matches /command or /skill:command pattern, multi-line
-        if firstNonEmpty.range(
-            of: #"^/[A-Za-z0-9_-]+(:[A-Za-z0-9_-]+)?($|[\s"])"#,
-            options: .regularExpression) != nil,
-            nonEmptyLines.count >= 2
-        {
+        // C. Slash command: /commit or /skill:name, not a filesystem directory such as /etc or /Users.
+        if nonEmptyLines.count >= 2, Self.isClaudeSlashCommand(firstNonEmpty) {
             let result = self.flattenWrappedLines(nonEmptyLines.map { String($0) })
             return result == text ? nil : result
         }
@@ -155,6 +151,29 @@ extension TextCleaner {
         }
 
         return nil
+    }
+
+    private static let filesystemDirectoryNames: Set<String> = [
+        "Applications", "Library", "System", "Users", "Volumes",
+        "bin", "boot", "cores", "dev", "etc", "home", "mnt", "net",
+        "nix", "opt", "private", "proc", "root", "run", "sbin",
+        "srv", "tmp", "usr", "var",
+    ]
+
+    private static func isClaudeSlashCommand(_ line: String) -> Bool {
+        guard line.range(
+            of: #"^/[A-Za-z0-9_-]+(:[A-Za-z0-9_-]+)?($|[\s"])"#,
+            options: .regularExpression) != nil
+        else {
+            return false
+        }
+        let token = line.split(whereSeparator: \.isWhitespace).first.map(String.init) ?? line
+        // `/run:test` is a namespaced slash command. Only a bare `/run` is a directory.
+        if token.contains(":") {
+            return true
+        }
+        let name = token.dropFirst()
+        return !Self.filesystemDirectoryNames.contains(String(name))
     }
 
     private func flattenWrappedLines(_ lines: [String]) -> String {
