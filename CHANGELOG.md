@@ -2,6 +2,8 @@
 
 ## 0.11.3 — Unreleased
 
+- Text cleanup: removing a box-drawing gutter no longer deletes the newlines around it. A label such as "Note:" keeps the space before the next word. A wrapped URL path such as "releases/ │ download" still joins. A Git remote written as host:path still joins when the gutter sits after the colon, including an uppercase host, a path with no punctuation, and a bracketed IPv6 address.
+
 ## 0.11.2 — 2026-09-22
 
 **Highlights:** Safer shell prompt cleanup, clearer CLI errors, and more reliable app updates.

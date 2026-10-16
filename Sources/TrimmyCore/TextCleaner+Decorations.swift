@@ -64,26 +64,73 @@ extension TextCleaner {
             }
         }
 
-        let boxAfterPipePattern = #"\|\s*\#(boxDrawingCharacterClass)+\s*"#
+        // Horizontal whitespace includes NBSP, and excludes line breaks.
+        let boxAfterPipePattern = #"\|[^\S\r\n]*\#(boxDrawingCharacterClass)+[^\S\r\n]*"#
         result = result.replacingOccurrences(
             of: boxAfterPipePattern,
             with: "| ",
             options: .regularExpression)
 
-        let boxPathJoinPattern = #"([:/])\s*\#(boxDrawingCharacterClass)+\s*([A-Za-z0-9])"#
+        // Join a wrapped URL path (`releases/ │ download`). A colon joins only for
+        // `mailto:` or `user@host:`, not for a label such as `Note:`.
+        let boxPathJoinPattern = #"(/)[^\S\r\n]*\#(boxDrawingCharacterClass)+[^\S\r\n]*([A-Za-z0-9])"#
         result = result.replacingOccurrences(
             of: boxPathJoinPattern,
             with: "$1$2",
             options: .regularExpression)
+        let boxMailtoJoinPattern = #"(mailto:)[^\S\r\n]*\#(boxDrawingCharacterClass)+[^\S\r\n]*([A-Za-z0-9])"#
+        result = result.replacingOccurrences(
+            of: boxMailtoJoinPattern,
+            with: "$1$2",
+            options: .regularExpression)
+        let boxRemoteJoinPattern = #"(@[A-Za-z0-9.-]+:)[^\S\r\n]*\#(boxDrawingCharacterClass)+[^\S\r\n]*([A-Za-z0-9])"#
+        result = result.replacingOccurrences(
+            of: boxRemoteJoinPattern,
+            with: "$1$2",
+            options: .regularExpression)
+        // Dotted hosts join in any case. Lowercase and all-caps hosts join
+        // without a dot. Title case such as `Note:` stays spaced.
+        // `git@[2001:db8::1]:repo` joins at the colon after the bracket.
+        let boxDottedHostJoinPattern = [
+            #"(?<![A-Za-z0-9])([A-Za-z0-9][A-Za-z0-9.-]*\.[A-Za-z0-9.-]*:)[^\S\r\n]*"#,
+            boxDrawingCharacterClass,
+            #"+[^\S\r\n]*([A-Za-z0-9._~/-]+)"#,
+        ].joined()
+        let boxPlainHostJoinPattern = [
+            #"(?<![A-Za-z0-9])([a-z0-9][a-z0-9-]*:)[^\S\r\n]*"#,
+            boxDrawingCharacterClass,
+            #"+[^\S\r\n]*([A-Za-z0-9._~/-]+)"#,
+        ].joined()
+        let boxUpperHostJoinPattern = [
+            #"(?<![A-Za-z0-9])([A-Z][A-Z0-9-]+:)[^\S\r\n]*"#,
+            boxDrawingCharacterClass,
+            #"+[^\S\r\n]*([A-Za-z0-9._~/-]+)"#,
+        ].joined()
+        let boxIPv6JoinPattern = [
+            #"(\[[0-9A-Fa-f:]+\]:)[^\S\r\n]*"#,
+            boxDrawingCharacterClass,
+            #"+[^\S\r\n]*([A-Za-z0-9._~/-]+)"#,
+        ].joined()
+        for pattern in [
+            boxDottedHostJoinPattern,
+            boxPlainHostJoinPattern,
+            boxUpperHostJoinPattern,
+            boxIPv6JoinPattern,
+        ] {
+            result = result.replacingOccurrences(
+                of: pattern,
+                with: "$1$2",
+                options: .regularExpression)
+        }
 
-        let boxMidTokenPattern = #"(\S)\s*\#(boxDrawingCharacterClass)+\s*(\S)"#
+        let boxMidTokenPattern = #"(\S)[^\S\r\n]*\#(boxDrawingCharacterClass)+[^\S\r\n]*(\S)"#
         result = result.replacingOccurrences(
             of: boxMidTokenPattern,
             with: "$1 $2",
             options: .regularExpression)
 
         result = result.replacingOccurrences(
-            of: #"\s*\#(self.boxDrawingCharacterClass)+\s*"#,
+            of: #"[^\S\r\n]*\#(self.boxDrawingCharacterClass)+[^\S\r\n]*"#,
             with: " ",
             options: .regularExpression)
 
