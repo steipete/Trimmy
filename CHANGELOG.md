@@ -2,6 +2,8 @@
 
 ## 0.11.3 — Unreleased
 
+- Text cleanup: quote a path that contains spaces only when it is a real filesystem path. A sentence whose first word contains a slash, such as "and/or this needs spaces", stays unchanged.
+
 ## 0.11.2 — 2026-09-22
 
 **Highlights:** Safer shell prompt cleanup, clearer CLI errors, and more reliable app updates.

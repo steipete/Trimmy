@@ -630,6 +630,27 @@ struct TextCleanerTests {
     }
 
     @Test
+    func `quotes a relative directory and file that contain spaces`() {
+        #expect(self.cleaner.quotePathWithSpaces("src/My File.txt") == "\"src/My File.txt\"")
+        #expect(self.cleaner.quotePathWithSpaces("src/My New File.txt") == "\"src/My New File.txt\"")
+        #expect(self.cleaner
+            .quotePathWithSpaces("folder/sub folder/file.txt") == "\"folder/sub folder/file.txt\"")
+    }
+
+    @Test(arguments: [
+        "and/or this needs spaces",
+        "A/B testing is useful",
+        "i/o matters a lot",
+    ])
+    func `does not quote a sentence whose first word contains a slash`(text: String) {
+        #expect(self.cleaner.quotePathWithSpaces(text) == nil)
+        let config = TrimConfig(aggressiveness: .low, preserveBlankLines: false, removeBoxDrawing: false)
+        let result = self.cleaner.transform(text, config: config)
+        #expect(result.wasTransformed == false)
+        #expect(result.trimmed == text)
+    }
+
+    @Test
     func `does not quote UR ls`() {
         let url = "https://example.com/path with spaces"
         #expect(self.cleaner.quotePathWithSpaces(url) == nil)
