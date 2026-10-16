@@ -149,6 +149,37 @@ struct TextCleanerTests {
         #expect(self.cleaner.repairWrappedURL(text) == nil)
     }
 
+    @Test(arguments: [
+        "https://example.com please",
+        "https://example.com/docs\nLet me know",
+        "https://example.com thanks!",
+        "https://example.com version2",
+    ])
+    func `repair wrapped URL leaves a following word`(text: String) {
+        #expect(self.cleaner.repairWrappedURL(text) == nil)
+        let config = TrimConfig(aggressiveness: .low, preserveBlankLines: false, removeBoxDrawing: false)
+        let result = self.cleaner.transform(text, config: config)
+        #expect(result.wasTransformed == false)
+        #expect(result.trimmed == text)
+    }
+
+    @Test
+    func `repair wrapped URL joins a host split across lines`() {
+        #expect(self.cleaner.repairWrappedURL("https://exam\nple.com") == "https://example.com")
+        #expect(self.cleaner.repairWrappedURL("https://example.\ncom") == "https://example.com")
+    }
+
+    @Test
+    func `repair wrapped URL leaves a word after a finished trailing dot`() {
+        #expect(self.cleaner.repairWrappedURL("https://example.com.\nthanks") == nil)
+    }
+
+    @Test
+    func `repair wrapped URL joins a fragment split across lines`() {
+        #expect(self.cleaner.repairWrappedURL("https://example.com/docs#\ninstallation") ==
+            "https://example.com/docs#installation")
+    }
+
     @Test
     func `collapses blank lines when not preserved`() {
         let config = TrimConfig(aggressiveness: .high, preserveBlankLines: false, removeBoxDrawing: true)

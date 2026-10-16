@@ -2,6 +2,8 @@
 
 ## 0.11.3 — Unreleased
 
+- URL cleanup: collapse whitespace only inside one wrapped URL. Words that follow a finished URL, such as "https://example.com please", stay separate. A host label split before its dot, such as "https://example." plus "com", still joins.
+
 ## 0.11.2 — 2026-09-22
 
 **Highlights:** Safer shell prompt cleanup, clearer CLI errors, and more reliable app updates.
