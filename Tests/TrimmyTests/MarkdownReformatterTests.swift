@@ -262,6 +262,177 @@ struct MarkdownReformatterTests {
         #expect(!MarkdownReformatter.isLikelyReflowable(input))
     }
 
+    @Test
+    func `reflow keeps a free standing hyphen separate`() {
+        let input = """
+        Please do not use the final trailing dash -
+        option when you invoke this command today please
+        """
+        #expect(MarkdownReformatter.isLikelyReflowable(input))
+        #expect(MarkdownReformatter.reformat(input) ==
+            "Please do not use the final trailing dash - option when you invoke this command today please")
+    }
+
+    @Test
+    func `reflow still joins a hyphen attached to the previous word`() {
+        let input = """
+        This deliberately long wrapped sentence ends with the compound well-
+        known result that should stay one word today please
+        """
+        let expected = "This deliberately long wrapped sentence ends with the compound well-known "
+            + "result that should stay one word today please"
+        #expect(MarkdownReformatter.reformat(input) == expected)
+    }
+
+    @Test
+    func `reflow keeps a space when a bracket is not a link`() {
+        let input = """
+        This deliberately long sentence describes a literal closing bracket ]
+        (parentheses are covered later) in the same paragraph of ordinary prose
+        and then the last line can be shorter today
+        """
+        let reformatted = MarkdownReformatter.reformat(input)
+        #expect(reformatted.contains("bracket ] (parentheses"))
+        #expect(!reformatted.contains("bracket ](parentheses"))
+    }
+
+    @Test
+    func `reflow keeps a symbol suffix attached to a wrapped hyphen`() {
+        let cpp = """
+        This deliberately long sentence describes a C++-
+        based library used throughout the application today please
+        """
+        #expect(MarkdownReformatter.reformat(cpp).contains("C++-based"))
+        let csharp = """
+        This deliberately long sentence describes a C#-
+        compatible library used throughout the application today
+        """
+        #expect(MarkdownReformatter.reformat(csharp).contains("C#-compatible"))
+    }
+
+    @Test
+    func `reflow keeps a markdown link split after the label`() {
+        let input = """
+        Read the project notes in the [documentation]
+        (https://example.com/guide) before you continue with the setup
+        and then keep this paragraph long enough to reflow cleanly
+        """
+        #expect(MarkdownReformatter.isLikelyReflowable(input))
+        let reformatted = MarkdownReformatter.reformat(input)
+        #expect(reformatted.contains("[documentation](https://example.com/guide)"))
+        #expect(!reformatted.contains("[documentation] ("))
+    }
+
+    @Test
+    func `reflow keeps a space when a url parenthesis is prose`() {
+        let input = """
+        This deliberately long sentence describes the literal token [documentation]
+        (https://example.com is only an example) and continues with more ordinary prose today
+        """
+        #expect(MarkdownReformatter.isLikelyReflowable(input))
+        let reformatted = MarkdownReformatter.reformat(input)
+        #expect(reformatted.contains("[documentation] (https://example.com is only an example)"))
+        #expect(!reformatted.contains("[documentation](https://example.com is only an example)"))
+    }
+
+    @Test
+    func `reflow joins a split link that has a quoted title`() {
+        let input = """
+        Read the project notes in the [documentation]
+        (https://example.com/guide "Guide") before you continue with the setup
+        and then keep this paragraph long enough to reflow cleanly
+        """
+        let reformatted = MarkdownReformatter.reformat(input)
+        #expect(reformatted.contains("[documentation](https://example.com/guide \"Guide\")"))
+        #expect(!reformatted.contains("[documentation] ("))
+    }
+
+    @Test
+    func `reflow keeps a space when a parenthesized url is only an example`() {
+        let input = """
+        This deliberately long sentence describes the literal token [documentation]
+        (https://en.wikipedia.org/wiki/Function_(mathematics) is only an example) \
+        and continues with ordinary prose today
+        """
+        #expect(MarkdownReformatter.isLikelyReflowable(input))
+        let reformatted = MarkdownReformatter.reformat(input)
+        let kept = "[documentation] (https://en.wikipedia.org/wiki/Function_(mathematics) is only an example)"
+        #expect(reformatted.contains(kept))
+        #expect(!reformatted.contains("[documentation](https://en.wikipedia.org/wiki/Function_(mathematics)"))
+    }
+
+    @Test
+    func `reflow keeps a space after an escaped closing bracket`() {
+        let input = """
+        This deliberately long sentence describes the literal token [documentation\\]
+        (https://example.com/guide) and continues with ordinary prose today
+        """
+        #expect(MarkdownReformatter.isLikelyReflowable(input))
+        let reformatted = MarkdownReformatter.reformat(input)
+        #expect(reformatted.contains("[documentation\\] (https://example.com/guide)"))
+        #expect(!reformatted.contains("[documentation\\](https://example.com/guide)"))
+    }
+
+    @Test
+    func `reflow keeps a space after an escaped bracket`() {
+        let input = """
+        This deliberately long sentence describes the literal token \\[documentation]
+        (https://example.com/guide) and continues with ordinary prose today
+        """
+        #expect(MarkdownReformatter.isLikelyReflowable(input))
+        let reformatted = MarkdownReformatter.reformat(input)
+        #expect(reformatted.contains("\\[documentation] (https://example.com/guide)"))
+        #expect(!reformatted.contains("\\[documentation](https://example.com/guide)"))
+    }
+
+    @Test
+    func `reflow keeps a space when a split link is inside inline code`() {
+        let input = """
+        This deliberately long sentence describes the literal code `[documentation]
+        (https://example.com/guide)` and continues with ordinary prose today
+        """
+        #expect(MarkdownReformatter.isLikelyReflowable(input))
+        let reformatted = MarkdownReformatter.reformat(input)
+        #expect(reformatted.contains("`[documentation] (https://example.com/guide)`"))
+        #expect(!reformatted.contains("`[documentation](https://example.com/guide)`"))
+
+        let doubled = """
+        This deliberately long sentence describes the literal code ``[documentation]
+        (https://example.com/guide)`` and continues with ordinary prose today
+        """
+        #expect(MarkdownReformatter.isLikelyReflowable(doubled))
+        let doubledResult = MarkdownReformatter.reformat(doubled)
+        #expect(doubledResult.contains("``[documentation] (https://example.com/guide)``"))
+        #expect(!doubledResult.contains("``[documentation](https://example.com/guide)``"))
+    }
+
+    @Test
+    func `reflow still joins a link after a closed inline code span`() {
+        let input = """
+        Read the project notes in `code` and the [documentation]
+        (https://example.com/guide) before you continue with the setup
+        and then keep this paragraph long enough to reflow cleanly
+        """
+        #expect(MarkdownReformatter.isLikelyReflowable(input))
+        let reformatted = MarkdownReformatter.reformat(input)
+        #expect(reformatted.contains("`code`"))
+        #expect(reformatted.contains("[documentation](https://example.com/guide)"))
+        #expect(!reformatted.contains("[documentation] ("))
+    }
+
+    @Test
+    func `reflow joins a link whose url contains parentheses`() {
+        let input = """
+        Read the project notes in the [documentation]
+        (https://en.wikipedia.org/wiki/Function_(mathematics)) before you continue with the setup
+        and then keep this paragraph long enough to reflow cleanly
+        """
+        let reformatted = MarkdownReformatter.reformat(input)
+        let joined = "[documentation](https://en.wikipedia.org/wiki/Function_(mathematics))"
+        #expect(reformatted.contains(joined))
+        #expect(!reformatted.contains("[documentation] ("))
+    }
+
     @Test(arguments: [
         "name,description,enabled\nexample,A deliberately long description with many words,true\n"
             + "other,Another value,false",

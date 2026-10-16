@@ -2,6 +2,8 @@
 
 ## 0.11.3 — Unreleased
 
+- Text reflow: keep a free-standing hyphen separate from the next word, and keep a Markdown link together when the label ends one line and the URL starts the next. A parenthesis that explains a bracket, rather than holding a destination, keeps its space, including when the URL itself contains parentheses. An escaped opening or closing bracket keeps the space before an explanation. A link written inside inline code keeps its space.
+
 ## 0.11.2 — 2026-09-22
 
 **Highlights:** Safer shell prompt cleanup, clearer CLI errors, and more reliable app updates.
