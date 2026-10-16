@@ -28,8 +28,10 @@ public final class AppSettings: ObservableObject {
     @AppStorage("showMarkdownReformatOption") var showMarkdownReformatOption: Bool = true
     @AppStorage("autoReflowTextEnabled") var autoReflowTextEnabled: Bool = false
     @AppStorage("trimLeadingBlankLinesOnReflow") var trimLeadingBlankLinesOnReflow: Bool = false
+    @Published var launchAtLoginError: String?
+    private var isApplyingLaunchAtLogin = false
     @AppStorage("launchAtLogin") var launchAtLogin: Bool = false {
-        didSet { LaunchAtLoginManager.setEnabled(self.launchAtLogin) }
+        didSet { self.applyLaunchAtLoginChange(from: oldValue) }
     }
 
     @AppStorage("trimHotkeyEnabled") var pasteTrimmedHotkeyEnabled: Bool = true {
@@ -55,8 +57,31 @@ public final class AppSettings: ObservableObject {
     public init() {
         Self.migrateShortcutDefaults(.standard)
         Self.migrateAggressivenessDefaults()
-        LaunchAtLoginManager.setEnabled(self.launchAtLogin)
+        self.applyLaunchAtLoginOnLaunch()
         self.refreshParsedURLQueryParamRules()
+    }
+
+    private func applyLaunchAtLoginChange(from previous: Bool) {
+        guard !self.isApplyingLaunchAtLogin else { return }
+        let change = LaunchAtLoginChange.applying(self.launchAtLogin, previous: previous) {
+            try LaunchAtLoginManager.setEnabled($0)
+        }
+        if change.enabled != self.launchAtLogin {
+            self.isApplyingLaunchAtLogin = true
+            self.launchAtLogin = change.enabled
+            self.isApplyingLaunchAtLogin = false
+        }
+        self.launchAtLoginError = change.error
+    }
+
+    /// Startup applies the saved choice. A failure is shown later and does not rewrite the saved toggle.
+    private func applyLaunchAtLoginOnLaunch() {
+        do {
+            try LaunchAtLoginManager.setEnabled(self.launchAtLogin)
+            self.launchAtLoginError = nil
+        } catch {
+            self.launchAtLoginError = LaunchAtLoginChange.recoveryMessage(for: error)
+        }
     }
 
     private func refreshParsedURLQueryParamRules() {
@@ -104,14 +129,68 @@ extension AppSettings {
     }
 }
 
+struct LaunchAtLoginChange: Equatable {
+    var enabled: Bool
+    var error: String?
+
+    static func recoveryMessage(for error: Error) -> String {
+        "Start at Login could not be changed (\(error.localizedDescription)). "
+            + "Try the toggle again, or allow Trimmy in System Settings, General, Login Items."
+    }
+
+    static func applying(
+        _ requested: Bool,
+        previous: Bool,
+        perform: (Bool) throws -> Void) -> LaunchAtLoginChange
+    {
+        do {
+            try perform(requested)
+            return LaunchAtLoginChange(enabled: requested, error: nil)
+        } catch {
+            return LaunchAtLoginChange(enabled: previous, error: self.recoveryMessage(for: error))
+        }
+    }
+}
+
 enum LaunchAtLoginManager {
+    struct Failure: LocalizedError {
+        var message: String
+        var errorDescription: String? {
+            self.message
+        }
+    }
+
+    /// Nil in the app, which then uses SMAppService. A caller can supply a closure to exercise failures.
+    @MainActor static var setEnabledBody: ((Bool) throws -> Void)?
+
     @MainActor
-    static func setEnabled(_ enabled: Bool) {
+    static func setEnabled(_ enabled: Bool) throws {
+        if let setEnabledBody {
+            try setEnabledBody(enabled)
+            return
+        }
+        try Self.updateService(enabled)
+    }
+
+    @MainActor
+    private static func updateService(_ enabled: Bool) throws {
         let service = SMAppService.mainApp
         if enabled {
-            try? service.register()
+            switch service.status {
+            case .enabled:
+                return
+            case .requiresApproval:
+                throw Failure(message: "Start at Login is waiting for approval in System Settings.")
+            default:
+                try service.register()
+            }
         } else {
-            try? service.unregister()
+            switch service.status {
+            case .notRegistered, .notFound:
+                return
+            default:
+                try service.unregister()
+            }
         }
     }
 }

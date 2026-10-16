@@ -2,6 +2,10 @@
 
 ## 0.11.3 — Unreleased
 
+- URL cleanup: a kept query value keeps the percent-encoding from the clipboard. `q=100%` is no longer rewritten to `q=100%25` when other parameters are removed.
+- Settings: if Start at Login cannot be turned on or off, the toggle returns to its previous position and the App section shows the error.
+- CLI: text output adds a final newline only when the trimmed text does not already end with one. Exit 2 still means the cleaner did not change the text, including when that newline was added. JSON uses the same exit codes.
+
 ## 0.11.2 — 2026-09-22
 
 **Highlights:** Safer shell prompt cleanup, clearer CLI errors, and more reliable app updates.

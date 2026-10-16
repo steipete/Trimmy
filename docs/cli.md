@@ -31,10 +31,12 @@ Or install the packaged helper from the app: Settings → Advanced → “Instal
 `-` also selects stdin on its own. Qualify a filename that matches an option, such as `./-f`, to treat it as a file. Unknown arguments and invalid sensitivity levels produce an error before input is read.
 
 ## Exit codes
-- `0`: success
+- `0`: the cleaner changed the text
 - `1`: invalid arguments / no input / read error
-- `2`: no transformation applied
+- `2`: the cleaner did not change the text
 - `3`: JSON encoding error
+
+Text mode adds a final newline only when the trimmed text does not already end with one. That newline alone does not count as a change. JSON uses the same exit codes.
 
 Read failures identify the input file or stdin and report the underlying error. Input must be valid UTF-8; invalid bytes are a read error, while an empty stdin stream reports that no input was provided.
 

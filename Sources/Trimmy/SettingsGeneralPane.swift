@@ -65,6 +65,12 @@ struct GeneralSettingsPane: View {
                         title: "Start at Login",
                         subtitle: "Launch Trimmy automatically when you sign in.",
                         binding: self.$settings.launchAtLogin)
+                    if let launchAtLoginError = self.settings.launchAtLoginError, !launchAtLoginError.isEmpty {
+                        Text(launchAtLoginError)
+                            .font(.footnote)
+                            .foregroundStyle(.red)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
 
                     Divider()
 

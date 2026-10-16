@@ -66,6 +66,28 @@ struct URLQueryParamRulesTests {
     }
 
     @Test
+    func `does not treat a question mark inside a fragment as a query`() {
+        #expect(TextCleaner().stripURLQueryParams("https://example.com/#/search?q=x") == nil)
+    }
+
+    @Test
+    func `does not keep a nameless equals field as a named parameter`() {
+        let url = "https://youtube.com/watch?=v&utm=1"
+        #expect(TextCleaner().stripURLQueryParams(url, keeping: ["v"]) == "https://youtube.com/watch")
+    }
+
+    @Test
+    func `keeps the original bytes of a kept query value`() {
+        let cleaner = TextCleaner()
+        #expect(cleaner.stripURLQueryParams(
+            "https://example.com/a?q=100%&utm=1",
+            keeping: ["q"]) == "https://example.com/a?q=100%")
+        #expect(cleaner.stripURLQueryParams(
+            "https://example.com/a?q=%ZZ&utm=1",
+            keeping: ["q"]) == "https://example.com/a?q=%ZZ")
+    }
+
+    @Test
     func `preserves percent encoding in kept params`() {
         let cleaner = TextCleaner()
         let url = "https://example.com/file?node-id=42%3A1&ref=foo"
