@@ -1,35 +1,12 @@
 ---
-summary: "Trimmy Homebrew cask release playbook."
+summary: "Trimmy Homebrew cask publication and verification."
 read_when:
-  - Publishing a Trimmy release via Homebrew
-  - Updating the Homebrew tap cask for Trimmy
+  - Verifying a Trimmy release in Homebrew
+  - Updating the CI Homebrew handoff
 ---
 
 # Homebrew (Trimmy)
 
-Homebrew ships the UI app via Cask.
+The [release workflow](../.github/workflows/release.yml) updates `steipete/homebrew-tap/Casks/trimmy.rb` after publishing the signed and notarized app. It uses `HOMEBREW_TAP_TOKEN`, takes the checksum from the verified release payload, and preserves the arm64/macOS 15 requirements. Dry runs never write the tap.
 
-## Prereqs
-- Homebrew installed.
-- Access to the tap repo: `../homebrew-tap`.
-
-## 1) Release Trimmy normally
-Publish `Trimmy-<version>.zip` to GitHub Releases (follow `docs/release.md` / `Scripts/release.sh`).
-
-## 2) Update the Homebrew tap cask
-In `../homebrew-tap`, add/update `Casks/trimmy.rb`:
-- `url` points to the GitHub release asset: `.../releases/download/v<version>/Trimmy-<version>.zip`
-- Update `sha256` to match that zip.
-- Keep `depends_on arch: :arm64` and `depends_on macos: ">= :sequoia"` (Trimmy is macOS 15+).
-
-## 3) Verify install
-```sh
-brew uninstall --cask trimmy || true
-brew untap steipete/tap || true
-brew tap steipete/tap
-brew install --cask steipete/tap/trimmy
-open -a Trimmy
-```
-
-## 4) Push tap changes
-Commit + push in the tap repo.
+See [the release process](release.md) to prepare or rehearse a release. No separate local tap commit is needed. Verify the published cask version and SHA-256 against `SHA256SUMS` on the GitHub Release; if the handoff fails, repair it using the retained verified payload without rebuilding or moving the tag.

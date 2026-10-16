@@ -31,7 +31,7 @@ DITTO_BIN=${DITTO_BIN:-/usr/bin/ditto}
 "$DITTO_BIN" --norsrc -c -k --keepParent "$APP_BUNDLE" "$NOTARY_ZIP"
 
 echo "Submitting for notarization"
-./Scripts/mac-release package-run -- xcrun notarytool submit "$NOTARY_ZIP" \
+xcrun notarytool submit "$NOTARY_ZIP" \
   --key "$NOTARY_KEY" \
   --key-id "$APP_STORE_CONNECT_KEY_ID" \
   --issuer "$APP_STORE_CONNECT_ISSUER_ID" \

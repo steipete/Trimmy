@@ -1,107 +1,36 @@
 ---
-summary: "Trimmy release checklist: package, sign, notarize, Sparkle appcast, and assets."
+summary: "Trimmy CI release pipeline, dry runs, signing, Sparkle, and Homebrew."
 read_when:
-  - Cutting or validating a Trimmy release
-  - Updating appcast or signing/notarization steps
+  - Preparing or verifying a Trimmy release
+  - Updating release infrastructure
 ---
 
 # Release process (Trimmy)
 
-SwiftPM only; manual package/sign/notarize. Sparkle feed served from GitHub Releases.
+[Release](../.github/workflows/release.yml) owns publication. Push an existing SSH-signed, annotated `vX.Y.Z` tag to run the pipeline, or dispatch it from protected `main` with that existing tag and `dry_run=false`. It never creates, moves, or overwrites a version tag. Local publishing through `Scripts/release.sh` and `Scripts/make_appcast.sh` has been retired.
 
-**Must read first:** open the master macOS release guide at `~/Projects/agent-scripts/docs/RELEASING-MAC.md` alongside this file and reconcile any differences in favor of Trimmy specifics before starting a release.
+## Rehearse without publishing
 
-## Expectations
-- When asked to “release” a version, execute the full, end-to-end flow: bump versions/CHANGELOG, build, sign & notarize, upload the zip to the GitHub release, generate/update the appcast with the new signature, publish the release/tag, and verify the enclosure downloads successfully via HTTP (no 404s) and installs.
-- If the version is shipped via Homebrew, update the tap cask too (see `docs/releasing-homebrew.md`).
-
-### Release automation notes (Scripts/release.sh)
-- Always forces a fresh rebuild/notarization (no cached artifacts) to avoid stale Swift outputs.
-- Fails fast if: Xcode Info.plists are stale vs `version.env`, working tree is dirty, changelog top section is still “Unreleased”, target version already exists in appcast, or build number is not greater than the latest appcast build.
-- Extracts release notes directly from the current changelog section and uses them for the GitHub release (no manual notes flag needed).
-- Sparkle appcast notes are generated as HTML from the same changelog section and embedded into the appcast entry.
-- Preflight Sparkle key sanity check; verifies signature, spctl, and codesign locally, and HEAD checks remote zip/dSYM; runs `Scripts/check-release-assets.sh v<ver>` after upload.
-- Requires `python3`, `sign_update`, `generate_keys`, `generate_appcast`, `swiftlint`, `swift`, `gh`, `zip`, `curl` in PATH plus `APP_STORE_CONNECT_*`. `SPARKLE_PRIVATE_KEY_FILE` is only needed when overriding the default Keychain Sparkle key.
-
-## Prereqs
-- Xcode 26+ installed at `/Applications/Xcode.app` (for ictool/iconutil and SDKs).
-- Developer ID Application cert installed: `Developer ID Application: Peter Steinberger (Y5PE65HELJ)`.
-- ASC API creds in env: `APP_STORE_CONNECT_API_KEY_P8`, `APP_STORE_CONNECT_KEY_ID`, `APP_STORE_CONNECT_ISSUER_ID`.
-- Sparkle keys: public key expectation lives in `.mac-release.env`; Trimmy still uses the older shared AGCY key, so the manifest includes the local Dropbox fallback path. `SPARKLE_PRIVATE_KEY_FILE` overrides it.
-- Shared release helper: `Scripts/mac-release` resolves `MAC_RELEASE_TOOL`, sibling `../agent-scripts`, or `~/Projects/agent-scripts`.
-- Sparkle auto-checks are **enabled by default** for release builds (set in `package_app.sh`); leave this on so update checks run without user toggles. Debug builds disable Sparkle even when Developer ID signed.
-
-## SwiftPM resources
-
-The packager copies resource bundles into `Contents/Resources`. SwiftPM's generated `Bundle.module` searches the app root, which macOS code signing rejects for extra resources. `Scripts/patch_keyboard_shortcuts.py` rebuilds the dependency's localization source from its pinned Git revision, changing the lookup to prefer the packaged resource location and retain normal SwiftPM lookup for tests. This replaces earlier generated patches without discarding the build cache. It fails if the pinned dependency changes that lookup; review this patch when updating KeyboardShortcuts. Treat dependency sources under `.build` as generated files.
-
-## Icon
-If the .icon changes:
-```
-./Scripts/build_icon.sh Icon.icon Trimmy
-```
-Uses ictool/iconutil to produce Icon.icns.
-
-## Build, sign, notarize (arm64)
-```
-./Scripts/sign-and-notarize.sh
-```
-What it does:
-- `swift build --build-system native -c release --arch arm64`
-- Packages `Trimmy.app` with Info.plist and Icon.icns
-- Embeds Sparkle.framework, Updater, Autoupdate, XPCs
-- Codesigns **everything** with runtime + timestamp (deep) and adds rpath
-- Zips to `Trimmy-<version>.zip`
-- Submits to notarytool, waits, staples, validates
-
-Gotchas fixed:
-- Sparkle needs signing for framework, Autoupdate, Updater, XPCs (Downloader/Installer) or notarization fails.
-- Use `--timestamp` and `--deep` when signing the app to avoid invalid signature errors.
-- Avoid `unzip` when installing locally; prefer `ditto -x -k Trimmy-<ver>.zip /Applications` to prevent AppleDouble `._*` files that can break the signature.
-- Manual sanity check before upload: `find Trimmy.app -name '._*'` should return nothing, then `spctl --assess --type execute --verbose Trimmy.app` and `codesign --verify --deep --strict --verbose Trimmy.app` should pass on the packaged bundle.
-
-## Appcast (Sparkle)
-After notarization, or let `Scripts/release.sh` do this:
-```
-./Scripts/make_appcast.sh Trimmy-<ver>.zip \
-  https://raw.githubusercontent.com/steipete/Trimmy/main/appcast.xml
-```
-Generates HTML release notes from `CHANGELOG.md` (via `Scripts/changelog-to-html.sh`) and embeds them into the appcast entry.
-Uploads not handled automatically—commit/publish appcast + zip to the feed location (GitHub Releases/raw URL).
-
-## Tag & release
-```
-./Scripts/release.sh
+```sh
+gh workflow run release.yml --ref main -f dry_run=true
 ```
 
-## Checklist (quick)
-- [ ] Read both this file and `~/Projects/agent-scripts/docs/RELEASING-MAC.md`; resolve any conflicts toward Trimmy’s specifics.
-- [ ] Update `version.env`, the standalone version fallback in `Sources/TrimmyCLI/TrimmyCLI.swift`, and CHANGELOG; run `Scripts/sync-version-plists.sh`. `Scripts/release.sh` pulls release notes from the top changelog section automatically, so finalize it first.
-- [ ] `swiftformat .`, `swiftlint lint`, `swift test` (ensure zero warnings/errors)
-- [ ] Confirm CI is green for the release commit (`gh run list/view`; rerun/fix until green).
-- [ ] `./Scripts/build_icon.sh` if icon changed
-- [ ] `./Scripts/sign-and-notarize.sh`
-- [ ] Generate Sparkle appcast via `Scripts/release.sh` or `Scripts/make_appcast.sh`; use `SPARKLE_PRIVATE_KEY_FILE` only if overriding Keychain signing.
-- [ ] Upload zip + appcast **and the Trimmy-<ver>.dSYM.zip** to the GitHub release; publish release/tag
-  - Run `Scripts/check-release-assets.sh <tag>` after publishing to ensure both zip and dSYM are attached.
-- [ ] Version continuity: confirm the new version is the immediate next patch/minor (no gaps) and CHANGELOG has no skipped numbers (e.g., after 0.2.0 use 0.2.1, not 0.2.2)
-- [ ] Changelog sanity: single top-level title, no duplicate version sections, versions strictly descending with no repeats
-- [ ] Release pages: title format `Trimmy <version>`, notes as Markdown list (no stray blank lines)
-- [ ] Changelog/release notes are user-facing: avoid internal-only bullets (build numbers, script bumps) and keep entries concise
-- [ ] Verify the release asset: download the uploaded `Trimmy-<ver>.zip`, unzip, run, and confirm code signature stubs in place (spctl + launch).
-- [ ] Confirm `appcast.xml` is updated to the new version and points to the uploaded zip (no stale version/URL); HTML release notes should render (not escaped tags).
-- [ ] Manually visit the enclosure URL (curl -I) to ensure 200/OK (no 404) after publishing assets/release
-- [ ] Ensure `sparkle:edSignature` is present for the enclosure in appcast (generated by `generate_appcast` with the ed25519 key)
-- [ ] When creating the GitHub release, paste the CHANGELOG entry as a proper Markdown list (one `-` per line, blank line between sections); verify the rendered release notes aren’t collapsed into a single line.
-- [ ] After publishing, open the GitHub release page and visually confirm bullets render correctly (no literal `\n`, no duplicated/merged entries); fix via “Edit release” if anything is off.
-- [ ] Post-publish housekeeping: bump `CHANGELOG.md` by moving the shipped notes under the released version, incrementing its patch number, and add a new `Unreleased` section for the next iteration.
-- [ ] Keep an older signed build in `/Applications/Trimmy.app` (e.g., previous version) to manually verify Sparkle delta/full update to the new release.
-- [ ] Preserve the dSYM: keep `Trimmy-<ver>.dSYM.zip` attached to the release for crash symbolication.
-- [ ] For Sparkle verification: if replacing `/Applications/Trimmy.app`, first quit Trimmy, then replace the app bundle, and relaunch from `/Applications`. If a previous version is already installed there, leave it and just use it to test the update path.
-- [ ] Manual Gatekeeper sanity: after packaging, `find Trimmy.app -name '._*'` is empty, `spctl --assess --type execute --verbose Trimmy.app` and `codesign --verify --deep --strict --verbose Trimmy.app` succeed
-- **Definition of “done” for a release:** all of the above are complete, the appcast/enclosure link resolves with the right signature, and a previous public build can update to the new one via Sparkle. Anything short of that is not a finished release.
+A dispatch defaults to a dry run of the exact protected main head. It requires green push CI for that commit, builds every shipping artifact, signs and notarizes the app, verifies metadata, architecture, deployment targets and matching dSYM UUIDs, smokes the app, and signs/verifies a candidate Sparkle feed. It retains the complete checksummed payload as an Actions artifact. It creates no tag, GitHub Release, live appcast update, or tap commit. An Unreleased changelog section is allowed for this rehearsal.
 
-## Troubleshooting
-- **Notarization invalid / app “damaged”**: repackage/sign with script; when installing locally use `ditto` to avoid `._*` files; verify with `spctl -a -t exec -vv Trimmy.app` and `stapler validate`.
-- **Feed not updating**: ensure GitHub release asset URL in appcast matches the published version and is reachable (no 404).
-- **About links missing**: check `AboutPane` and `AboutLinkRow` in `Sources/Trimmy/SettingsAboutPane.swift`.
+## Prepare a release
+
+Only release when explicitly requested. Set `version.env` and all version metadata, then finalize a nonempty `## X.Y.Z — YYYY-MM-DD` changelog section at the top. The date must not be in the future. Increment the build number beyond every published appcast entry. Merge and wait for green **push** CI on the exact commit before creating the signed annotated tag using an allowed signer in `.github/release-allowed-signers`.
+
+The pipeline verifies that the tag resolves to a commit on protected main, checks the signature and version, and refuses any existing GitHub Release, including drafts. App packaging stays in `Scripts/sign-and-notarize.sh`; the CI job supplies an ephemeral personal Developer ID keychain and App Store Connect credentials. The app and dSYM archive names stay compatible with existing downloads.
+
+All platform builds finish before publication. The publisher verifies uploaded draft bytes against the retained payload, publishes the GitHub Release with changelog notes and checksums, updates `main/appcast.xml`, and updates the Homebrew tap from those verified checksums. Existing installed clients keep their current Sparkle feed URL and public key.
+
+Required repository secrets are `MACOS_SIGNING_P12`, `MACOS_SIGNING_P12_PASSWORD`, `ASC_KEY_ID`, `ASC_ISSUER_ID`, `ASC_PRIVATE_KEY_P8`, `SPARKLE_PRIVATE_KEY`, and `HOMEBREW_TAP_TOKEN`. The Sparkle private key must match the app's existing `SUPublicEDKey`; the signing certificate must be Peter's Developer ID Application identity. No npm package is published by this repository.
+
+## Verify and recover
+
+The release is complete only after the release assets, live appcast, and tap agree. The pipeline preserves a failed draft as a version reservation and never clobbers assets. If feed or tap handoff fails after publication, inspect the retained payload and repair that handoff from the verified bytes; do not rerun packaging or recreate the tag. After a successful release, open the next Unreleased changelog section.
+
+Local read-only helpers remain: `Scripts/check-release-assets.sh`, `Scripts/verify_appcast.sh`, and `Scripts/generate-release-notes.sh` (where present). Local packaging and development scripts remain available, but publication belongs to CI. When installing a ZIP manually, use `ditto -x -k` or Finder to preserve the signed bundle and avoid AppleDouble files.
+
+The app is arm64-only. The release also includes the Linux x86_64 CLI archive. `Scripts/sync-version-plists.sh --check` checks the local metadata before release preparation.

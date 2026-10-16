@@ -1,31 +1,28 @@
 name: Release CLI
 
 on:
-  release:
-    types: [published]
-  workflow_dispatch:
+  workflow_call:
     inputs:
       ref:
-        description: "Git ref to build (tag/sha/branch)."
-        required: false
-        default: ""
+        required: true
+        type: string
       tag:
-        description: "Release tag to upload to (only used for release uploads)."
-        required: false
-        default: ""
+        required: true
+        type: string
 
-permissions:
-  contents: write
+permissions: {}
 
 jobs:
   build-linux-cli:
+    permissions:
+      contents: read
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.release.tag_name || inputs.ref }}
+          ref: ${{ inputs.ref }}
           persist-credentials: false
 
       - name: Install Swift 6.4.0
@@ -37,7 +34,7 @@ jobs:
       - name: Package Linux CLI
         id: pkg
         env:
-          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+          RELEASE_TAG: ${{ inputs.tag }}
         shell: bash
         run: |
           set -euo pipefail
@@ -72,23 +69,10 @@ jobs:
             echo "asset=$ASSET"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Upload to GitHub Release
-        if: github.event_name == 'release'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          TAG="${{ steps.pkg.outputs.tag }}"
-          OUT_DIR="${{ steps.pkg.outputs.out_dir }}"
-          ASSET="${{ steps.pkg.outputs.asset }}"
-
-          gh release upload "$TAG" "$OUT_DIR/$ASSET" "$OUT_DIR/$ASSET.sha256" --clobber
-
       - name: Upload workflow artifact (manual runs)
-        if: github.event_name == 'workflow_dispatch'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.1
         with:
-          name: trimmycli-linux
+          name: payload-cli-linux
           path: |
             ${{ steps.pkg.outputs.out_dir }}/${{ steps.pkg.outputs.asset }}
             ${{ steps.pkg.outputs.out_dir }}/${{ steps.pkg.outputs.asset }}.sha256

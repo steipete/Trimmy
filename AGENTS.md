@@ -11,7 +11,7 @@
 - `./Scripts/compile_and_run.sh` — build, test, package, and launch the signed dev app; run after code changes.
 - `swift build --build-system native` / `swift build --build-system native -c release` — package builds for macOS 15+/Swift 6.3.
 - `./Scripts/package_app.sh [debug|release]` — produce `Trimmy.app`; run before validation.
-- `./Scripts/sign-and-notarize.sh` — ship-ready signing + notarization.
+- `.github/workflows/release.yml` — CI signing, notarization, and publication; dispatch `dry_run=true` to rehearse.
 - `swift test --build-system native [--filter …]` — executes the Swift Testing suites.
 - `swiftformat .` then `swiftlint lint --fix` (or `swiftlint lint`) — enforce formatting and linting.
 - After any code change, run `pnpm check` and fix all reported format/lint issues before handoff.
@@ -33,7 +33,7 @@
 - Avoid new dependencies/tooling without approval; keep edits focused and avoid duplicate files.
 
 ## Release & Validation Notes
-- Package with `./Scripts/package_app.sh release`, sign/notarize via `./Scripts/sign-and-notarize.sh`, then verify (`spctl`, `stapler`) per README checklist.
+- Publish through `.github/workflows/release.yml`; see `docs/release.md`. Local package helpers remain for development; CI owns signed release publication.
 - Do not edit generated bundles directly—regenerate via scripts. Preserve per-tab settings animation behavior when touching settings views.
 - Releases must only be performed when explicitly requested in the current prompt; permission is one-time and does not persist to future sessions.
 
