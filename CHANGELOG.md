@@ -2,6 +2,9 @@
 
 ## 0.11.3 — Unreleased
 
+- Text cleanup: join an all-caps line break only when it splits one token, such as `N` and `ODE_PATH`. Separate tokens such as `FOO` and `BAR` keep a space.
+- Text cleanup: a backslash at the end of a line no longer inserts a space inside a word. Indented flag continuations still keep their space.
+
 ## 0.11.2 — 2026-09-22
 
 **Highlights:** Safer shell prompt cleanup, clearer CLI errors, and more reliable app updates.

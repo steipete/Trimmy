@@ -368,15 +368,20 @@ extension TextCleaner {
             of: #"(?<=[A-Za-z0-9._~-])-\s*\n\s*([A-Za-z0-9._~-])"#,
             with: "-$1",
             options: .regularExpression)
+        // Join a one-character fragment onto the identifier it continues (`N` / `ODE_PATH`).
+        // Do not glue two finished tokens (`FOO` / `BAR`, `FILE1` / `FILE2`).
         result = result.replacingOccurrences(
-            of: #"(?<!\n)([A-Z0-9_.-])\s*\n\s*(?!-)([A-Z0-9_.-])(?!\n)"#,
+            of: #"(?<!\n)(?<![A-Z0-9_.-])([A-Z0-9_.-])\s*\n\s*(?!-)([A-Z0-9_.-])(?=[A-Z0-9_.-])"#,
             with: "$1$2",
             options: .regularExpression)
         result = result.replacingOccurrences(
             of: #"(?<=[/~])\s*\n\s*([A-Za-z0-9._-])"#,
             with: "$1",
             options: .regularExpression)
-        result = result.replacingOccurrences(of: #"\\\s*\n"#, with: " ", options: .regularExpression)
+        // An immediate backslash-newline is deleted. Spaces between the backslash and
+        // the newline stay, so `echo foo\   ` / `bar` does not become `echofoobar`.
+        result = result.replacingOccurrences(of: #"\\[ \t]+\n"#, with: " ", options: .regularExpression)
+        result = result.replacingOccurrences(of: #"\\\n"#, with: "", options: .regularExpression)
         result = result.replacingOccurrences(of: #"\n+"#, with: " ", options: .regularExpression)
         result = result.replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
         return result.trimmingCharacters(in: .whitespacesAndNewlines)

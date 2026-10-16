@@ -88,6 +88,33 @@ struct TextCleanerTests {
     }
 
     @Test
+    func `does not concatenate separate uppercase tokens`() {
+        let config = TrimConfig(aggressiveness: .normal, preserveBlankLines: false, removeBoxDrawing: false)
+        #expect(self.cleaner.transformIfCommand("echo FOO\nBAR", config: config) == "echo FOO BAR")
+        #expect(self.cleaner.transformIfCommand("cp FILE1\nFILE2 /tmp", config: config) == "cp FILE1 FILE2 /tmp")
+        #expect(self.cleaner.transformIfCommand("echo A\nB", config: config) == "echo A B")
+        #expect(self.cleaner.transformIfCommand("echo A\nB\n", config: config) == "echo A B")
+
+        let keys = "export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE\nAWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI"
+        let high = TrimConfig(aggressiveness: .high, preserveBlankLines: false, removeBoxDrawing: false)
+        let expected = "export AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI"
+        #expect(self.cleaner.transformIfCommand(keys, config: high) == expected)
+        let forced = self.cleaner.transform(
+            keys,
+            config: TrimConfig(aggressiveness: .low, preserveBlankLines: false, removeBoxDrawing: false),
+            aggressivenessOverride: .high)
+        #expect(forced.trimmed == expected)
+        #expect(self.cleaner.transformIfCommand("NODE_PAT\nH\nls", config: high) == "NODE_PAT H ls")
+    }
+
+    @Test
+    func `backslash continuation inside a word does not insert a space`() {
+        let config = TrimConfig(aggressiveness: .normal, preserveBlankLines: false, removeBoxDrawing: false)
+        #expect(self.cleaner.transformIfCommand("echo very\\\nlong", config: config) == "echo verylong")
+        #expect(self.cleaner.transformIfCommand("echo foo\\   \nbar", config: config) == "echo foo bar")
+    }
+
+    @Test
     func `preserves space before flags after line wrap`() {
         let config = TrimConfig(aggressiveness: .normal, preserveBlankLines: false, removeBoxDrawing: true)
         let text = """
