@@ -2,6 +2,8 @@
 
 ## 0.11.3 — Unreleased
 
+- Move macOS CI and release builds to `xcode-27` while preserving macOS 15 support, native SwiftPM builds, and Linux Swift 6.3/6.4 coverage.
+
 ## 0.11.2 — 2026-09-22
 
 **Highlights:** Safer shell prompt cleanup, clearer CLI errors, and more reliable app updates.

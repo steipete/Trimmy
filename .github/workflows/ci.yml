@@ -14,10 +14,8 @@ concurrency:
 
 jobs:
   lint:
-    runs-on: macos-15
+    runs-on: xcode-27
     timeout-minutes: 10
-    env:
-      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -34,25 +32,18 @@ jobs:
         run: python3 -m unittest discover -s Scripts/tests -v
 
   test-macos:
-    name: macOS Swift ${{ matrix.swift }}
-    runs-on: macos-15
+    name: macOS (Xcode 27)
+    runs-on: xcode-27
     timeout-minutes: 20
-    strategy:
-      fail-fast: false
-      matrix:
-        swift: ["6.3", "6.4.0"]
     env:
-      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+      MACOSX_DEPLOYMENT_TARGET: '15.0'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Install Swift ${{ matrix.swift }}
-        run: ./Scripts/install_swift_ci.sh '${{ matrix.swift }}'
       - name: Swift tests
         run: swift test --build-system native --parallel
       - name: Release app build
-        if: matrix.swift == '6.4.0'
         run: swift build --build-system native -c release --product Trimmy
 
   build-linux-cli:
