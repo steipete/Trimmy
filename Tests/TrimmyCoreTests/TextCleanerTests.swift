@@ -88,6 +88,34 @@ struct TextCleanerTests {
     }
 
     @Test
+    func `does not concatenate separate uppercase tokens`() {
+        let config = TrimConfig(aggressiveness: .normal, preserveBlankLines: false, removeBoxDrawing: false)
+        #expect(self.cleaner.transformIfCommand("echo FOO\nBAR", config: config) == "echo FOO BAR")
+        #expect(self.cleaner.transformIfCommand("cp FILE1\nFILE2 /tmp", config: config) == "cp FILE1 FILE2 /tmp")
+        #expect(self.cleaner.transformIfCommand("echo A\nB", config: config) == "echo A B")
+        #expect(self.cleaner.transformIfCommand("echo A\nB\n", config: config) == "echo A B")
+
+        #expect(self.cleaner.transformIfCommand("echo A\nBC", config: config) == "echo A BC")
+        let keys = "export FIRST_VALUE=example\nSECOND_VALUE=sample"
+        let high = TrimConfig(aggressiveness: .high, preserveBlankLines: false, removeBoxDrawing: false)
+        let expected = "export FIRST_VALUE=example SECOND_VALUE=sample"
+        #expect(self.cleaner.transformIfCommand(keys, config: high) == expected)
+        let forced = self.cleaner.transform(
+            keys,
+            config: TrimConfig(aggressiveness: .low, preserveBlankLines: false, removeBoxDrawing: false),
+            aggressivenessOverride: .high)
+        #expect(forced.trimmed == expected)
+        #expect(self.cleaner.transformIfCommand("NODE_PAT\nH\nls", config: high) == "NODE_PAT H ls")
+    }
+
+    @Test
+    func `backslash continuation inside a word does not insert a space`() {
+        let config = TrimConfig(aggressiveness: .normal, preserveBlankLines: false, removeBoxDrawing: false)
+        #expect(self.cleaner.transformIfCommand("echo very\\\nlong", config: config) == "echo verylong")
+        #expect(self.cleaner.transformIfCommand("echo foo\\   \nbar", config: config) == "echo foo bar")
+    }
+
+    @Test
     func `preserves space before flags after line wrap`() {
         let config = TrimConfig(aggressiveness: .normal, preserveBlankLines: false, removeBoxDrawing: true)
         let text = """
@@ -131,6 +159,18 @@ struct TextCleanerTests {
         #expect(self.cleaner.repairWrappedURL(url) == "https://example.com/some-path?foo=1&bar=two")
     }
 
+    @Test(arguments: [
+        ("https://example.com/down\nload", "https://example.com/download"),
+        ("https://example.com/\npath", "https://example.com/path"),
+        ("https://example.com#install\nation", "https://example.com#installation"),
+        ("https://example.com/?q=down\nload", "https://example.com/?q=download"),
+        ("https://example.com/?token=abc\nDEF123", "https://example.com/?token=abcDEF123"),
+        ("https://example.com/long\nwrapped\npath", "https://example.com/longwrappedpath"),
+    ])
+    func `repair wrapped URL joins token only URL component lines`(text: String, expected: String) {
+        #expect(self.cleaner.repairWrappedURL(text) == expected)
+    }
+
     @Test
     func `repair wrapped URL noop when already tight`() {
         let url = "https://example.com/already-clean?x=1"
@@ -149,11 +189,74 @@ struct TextCleanerTests {
         #expect(self.cleaner.repairWrappedURL(text) == nil)
     }
 
+    @Test(arguments: [
+        "https://example.com please",
+        "https://example.com/ please",
+        "https://example.com/docs/ please",
+        "https://example.com/docs\nLet me know",
+        "https://example.com thanks!",
+        "https://example.com version2",
+    ])
+    func `repair wrapped URL leaves a following word`(text: String) {
+        #expect(self.cleaner.repairWrappedURL(text) == nil)
+        let config = TrimConfig(aggressiveness: .low, preserveBlankLines: false, removeBoxDrawing: false)
+        let result = self.cleaner.transform(text, config: config)
+        #expect(result.wasTransformed == false)
+        #expect(result.trimmed == text)
+    }
+
+    @Test
+    func `repair wrapped URL joins a host split across lines`() {
+        #expect(self.cleaner.repairWrappedURL("https://exam\nple.com") == "https://example.com")
+        #expect(self.cleaner.repairWrappedURL("https://example.\ncom") == "https://example.com")
+    }
+
+    @Test
+    func `repair wrapped URL leaves a word after a finished trailing dot`() {
+        #expect(self.cleaner.repairWrappedURL("https://example.com.\nthanks") == nil)
+    }
+
+    @Test
+    func `repair wrapped URL joins a fragment split across lines`() {
+        #expect(self.cleaner.repairWrappedURL("https://example.com/docs#\ninstallation") ==
+            "https://example.com/docs#installation")
+    }
+
     @Test
     func `collapses blank lines when not preserved`() {
         let config = TrimConfig(aggressiveness: .high, preserveBlankLines: false, removeBoxDrawing: true)
         let text = "echo a\n\necho b"
         #expect(self.cleaner.transformIfCommand(text, config: config) == "echo a echo b")
+    }
+
+    @Test(arguments: [
+        "show the dashboard\nthen click save",
+        "Open the door\nand walk in",
+        "Make a note\nfor later",
+        "Google the error\nthen retry",
+        "Share the notes\nwith the team",
+        "sharing the notes\nwith the team",
+        "shopping for food\ntomorrow",
+        "Cat videos are fun\nwatch later",
+        "should we\ngo now",
+    ])
+    func `does not flatten prose that only shares a command prefix`(text: String) {
+        let config = TrimConfig(aggressiveness: .normal, preserveBlankLines: false, removeBoxDrawing: false)
+        #expect(self.cleaner.transformIfCommand(text, config: config) == nil)
+    }
+
+    @Test
+    func `still flattens make when it is the command`() {
+        let config = TrimConfig(aggressiveness: .normal, preserveBlankLines: false, removeBoxDrawing: false)
+        #expect(self.cleaner.transformIfCommand("make clean\nmake test", config: config) == "make clean make test")
+    }
+
+    @Test
+    func `flattens a wrapped exact command with ordinary arguments`() {
+        let config = TrimConfig(aggressiveness: .normal, preserveBlankLines: false, removeBoxDrawing: false)
+        #expect(self.cleaner.transformIfCommand("cat the\nother", config: config) == "cat the other")
+        let made = self.cleaner.transformIfCommand("make build release install\ncheck", config: config)
+        #expect(made == "make build release install check")
     }
 
     @Test

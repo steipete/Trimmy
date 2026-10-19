@@ -64,26 +64,78 @@ extension TextCleaner {
             }
         }
 
-        let boxAfterPipePattern = #"\|\s*\#(boxDrawingCharacterClass)+\s*"#
+        // Horizontal whitespace includes NBSP, and excludes line breaks.
+        let boxAfterPipePattern = #"\|[\t\p{Zs}]*\#(boxDrawingCharacterClass)+[\t\p{Zs}]*"#
         result = result.replacingOccurrences(
             of: boxAfterPipePattern,
             with: "| ",
             options: .regularExpression)
 
-        let boxPathJoinPattern = #"([:/])\s*\#(boxDrawingCharacterClass)+\s*([A-Za-z0-9])"#
+        // Join a wrapped URL path (`releases/ │ download`). A colon joins only for
+        // `mailto:` or `user@host:`, not for a label such as `Note:`.
+        let boxPathJoinPattern = #"(/)[\t\p{Zs}]*\#(boxDrawingCharacterClass)+[\t\p{Zs}]*([A-Za-z0-9])"#
         result = result.replacingOccurrences(
             of: boxPathJoinPattern,
             with: "$1$2",
             options: .regularExpression)
+        let boxMailtoJoinPattern = #"(mailto:)[\t\p{Zs}]*\#(boxDrawingCharacterClass)+[\t\p{Zs}]*([A-Za-z0-9])"#
+        result = result.replacingOccurrences(
+            of: boxMailtoJoinPattern,
+            with: "$1$2",
+            options: .regularExpression)
+        let boxRemoteJoinPattern = #"(@[A-Za-z0-9.-]+:)[\t\p{Zs}]*"#
+            + self.boxDrawingCharacterClass + #"+[\t\p{Zs}]*([A-Za-z0-9])"#
+        result = result.replacingOccurrences(
+            of: boxRemoteJoinPattern,
+            with: "$1$2",
+            options: .regularExpression)
+        // Dotted hosts join in any case. Lowercase and all-caps hosts join
+        // without a dot. Title case such as `Note:` stays spaced.
+        // `git@[2001:db8::1]:repo` joins at the colon after the bracket.
+        let boxDottedHostJoinPattern = [
+            #"(?<![A-Za-z0-9])([A-Za-z0-9][A-Za-z0-9.-]*\.[A-Za-z0-9.-]*:)[\t\p{Zs}]*"#,
+            boxDrawingCharacterClass,
+            #"+[\t\p{Zs}]*([A-Za-z0-9._~/-]+)"#,
+        ].joined()
+        let boxPlainHostJoinPattern = [
+            #"(?<![A-Za-z0-9])([a-z0-9][a-z0-9-]*:)[\t\p{Zs}]*"#,
+            boxDrawingCharacterClass,
+            #"+[\t\p{Zs}]*([A-Za-z0-9._~/-]+)"#,
+        ].joined()
+        let boxUpperHostJoinPattern = [
+            #"(?<![A-Za-z0-9])([A-Z][A-Z0-9-]+:)[\t\p{Zs}]*"#,
+            boxDrawingCharacterClass,
+            #"+[\t\p{Zs}]*([A-Za-z0-9._~/-]+)"#,
+        ].joined()
+        let boxIPv6JoinPattern = [
+            #"(\[[0-9A-Fa-f:]+\]:)[\t\p{Zs}]*"#,
+            boxDrawingCharacterClass,
+            #"+[\t\p{Zs}]*([A-Za-z0-9._~/-]+)"#,
+        ].joined()
+        let boxCommandRemoteJoinPattern = #"\b((?:git[ \t]+clone|scp|rsync)[ \t]+(?:\S+[ \t]+)*"#
+            + #"[A-Za-z0-9][A-Za-z0-9.-]*:)[\t\p{Zs}]*"#
+            + self.boxDrawingCharacterClass + #"+[\t\p{Zs}]*([A-Za-z0-9._~/-]+)"#
+        for pattern in [
+            boxCommandRemoteJoinPattern,
+            boxDottedHostJoinPattern,
+            boxPlainHostJoinPattern,
+            boxUpperHostJoinPattern,
+            boxIPv6JoinPattern,
+        ] {
+            result = result.replacingOccurrences(
+                of: pattern,
+                with: "$1$2",
+                options: .regularExpression)
+        }
 
-        let boxMidTokenPattern = #"(\S)\s*\#(boxDrawingCharacterClass)+\s*(\S)"#
+        let boxMidTokenPattern = #"(\S)[\t\p{Zs}]*\#(boxDrawingCharacterClass)+[\t\p{Zs}]*(\S)"#
         result = result.replacingOccurrences(
             of: boxMidTokenPattern,
             with: "$1 $2",
             options: .regularExpression)
 
         result = result.replacingOccurrences(
-            of: #"\s*\#(self.boxDrawingCharacterClass)+\s*"#,
+            of: #"[\t\p{Zs}]*\#(self.boxDrawingCharacterClass)+[\t\p{Zs}]*"#,
             with: " ",
             options: .regularExpression)
 
@@ -135,12 +187,8 @@ extension TextCleaner {
             return result == text ? nil : result
         }
 
-        // C. Slash command: first line matches /command or /skill:command pattern, multi-line
-        if firstNonEmpty.range(
-            of: #"^/[A-Za-z0-9_-]+(:[A-Za-z0-9_-]+)?($|[\s"])"#,
-            options: .regularExpression) != nil,
-            nonEmptyLines.count >= 2
-        {
+        // C. Slash command: /commit or /skill:name, not a filesystem directory such as /etc or /Users.
+        if nonEmptyLines.count >= 2, Self.isClaudeSlashCommand(firstNonEmpty) {
             let result = self.flattenWrappedLines(nonEmptyLines.map { String($0) })
             return result == text ? nil : result
         }
@@ -155,6 +203,29 @@ extension TextCleaner {
         }
 
         return nil
+    }
+
+    private static let filesystemDirectoryNames: Set<String> = [
+        "Applications", "Library", "System", "Users", "Volumes",
+        "bin", "boot", "cores", "dev", "etc", "home", "mnt", "net",
+        "nix", "opt", "private", "proc", "root", "run", "sbin",
+        "srv", "tmp", "usr", "var",
+    ]
+
+    private static func isClaudeSlashCommand(_ line: String) -> Bool {
+        guard line.range(
+            of: #"^/[A-Za-z0-9_-]+(:[A-Za-z0-9_-]+)?($|[\s"])"#,
+            options: .regularExpression) != nil
+        else {
+            return false
+        }
+        let token = line.split(whereSeparator: \.isWhitespace).first.map(String.init) ?? line
+        // `/run:test` is a namespaced slash command. Only a bare `/run` is a directory.
+        if token.contains(":") {
+            return true
+        }
+        let name = token.dropFirst()
+        return !Self.filesystemDirectoryNames.contains(String(name))
     }
 
     private func flattenWrappedLines(_ lines: [String]) -> String {

@@ -2,6 +2,11 @@
 
 ## 0.11.3 — Unreleased
 
+- URL repair: preserve prose following a URL while retaining wrapped host, path, query, and fragment continuations (#58, thanks @SebTardif).
+- Text cleanup: preserve separate uppercase shell arguments and remove in-word backslash continuations without inserting a space (#59, thanks @SebTardif).
+- Text cleanup: preserve line breaks and prose spacing around box-drawing gutters, including Unicode separators and mixed-case remote hosts (#60, thanks @SebTardif).
+- Command detection: preserve prose that shares short command prefixes and filesystem notes such as `/etc`, while retaining real shell and namespaced slash commands (#61, thanks @SebTardif).
+- Text reflow: keep standalone hyphens spaced and rejoin wrapped Markdown links without changing inline code or parenthetical prose (#62, thanks @SebTardif).
 - Move macOS CI and release builds to `xcode-27` while preserving macOS 15 support, native SwiftPM builds, and Linux Swift 6.3/6.4 coverage.
 
 ## 0.11.2 — 2026-09-22

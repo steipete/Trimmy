@@ -44,11 +44,10 @@ extension TextCleaner {
         guard schemeCount == 1 else { return nil }
         guard lowercased.hasPrefix("http://") || lowercased.hasPrefix("https://") else { return nil }
 
-        let collapsed = trimmed.replacingOccurrences(
-            of: #"\s+"#,
-            with: "",
-            options: .regularExpression)
+        let pieces = trimmed.split(whereSeparator: \.isWhitespace).map(String.init)
+        guard pieces.count >= 2, Self.piecesAreOneWrappedURL(pieces, text: trimmed) else { return nil }
 
+        let collapsed = pieces.joined()
         guard collapsed != trimmed else { return nil }
 
         let validURLPattern = #"^https?://[A-Za-z0-9._~:/?#\\[\\]@!$&'()*+,;=%-]+$"#
@@ -56,6 +55,66 @@ extension TextCleaner {
 
         return collapsed
     }
+
+    /// Whitespace belongs inside one URL when each later piece continues a broken token.
+    /// `bar= two` continues the value. `https://example.com please` does not.
+    private static func piecesAreOneWrappedURL(_ pieces: [String], text: String) -> Bool {
+        let piecePattern = #"^[A-Za-z0-9._~:/?#\\[\\]@!$&'()*+,;=%-]+$"#
+        guard pieces.allSatisfy({ $0.range(of: piecePattern, options: .regularExpression) != nil }) else {
+            return false
+        }
+
+        let lineWrappedTokens = text.contains(where: \.isNewline)
+            && text.split(whereSeparator: \.isNewline).allSatisfy {
+                $0.split(whereSeparator: \.isWhitespace).count == 1
+            }
+        var accumulated = ""
+        for (index, piece) in pieces.enumerated() {
+            if index > 0, Self.wrappedURLIsComplete(accumulated), Self.isSeparateWord(piece) {
+                // Token-only lines can continue a path, query, or fragment.
+                // Spaces or multiword lines are prose; a bare host has no token to continue.
+                let components = URLComponents(string: accumulated)
+                let hasToken = !(components?.path.isEmpty ?? true)
+                    || components?.query != nil || components?.fragment != nil
+                guard lineWrappedTokens, hasToken else { return false }
+            }
+            accumulated += piece
+        }
+        return true
+    }
+
+    private static func wrappedURLIsComplete(_ text: String) -> Bool {
+        guard let url = URL(string: text), let host = url.host, !host.isEmpty else { return false }
+        if Self.unfinishedSingleHostLabel(url) {
+            return false
+        }
+        guard let last = text.last else { return false }
+        return !Self.wrappedURLBreakMarkers.contains(last)
+    }
+
+    /// `https://example.` still needs the next host label. `https://example.com.` is finished.
+    private static func unfinishedSingleHostLabel(_ url: URL) -> Bool {
+        guard let host = url.host, host.hasSuffix(".") else { return false }
+        let labels = host.split(separator: ".", omittingEmptySubsequences: false)
+        guard labels.count == 2, labels[1].isEmpty, !labels[0].isEmpty else { return false }
+        return url.path.isEmpty && url.query == nil && url.fragment == nil
+    }
+
+    /// A following token is prose when it is a word, including `thanks!` and `version2`.
+    /// `ple.com` and `path?foo=1` stay URL continuations.
+    private static func isSeparateWord(_ piece: String) -> Bool {
+        var core = piece
+        while let last = core.last, Self.trailingProsePunctuation.contains(last) {
+            core.removeLast()
+        }
+        guard let first = core.first, first.isLetter else { return false }
+        return core.allSatisfy { character in
+            character.isLetter || character.isNumber || character == "'" || character == "-"
+        }
+    }
+
+    private static let trailingProsePunctuation: Set<Character> = ["!", "?", ",", ".", ";", ":"]
+    private static let wrappedURLBreakMarkers: Set<Character> = ["-", "=", "&", "?", "%", "#"]
 
     /// Quotes a filesystem path that contains spaces so it can be used directly in shell commands.
     /// Returns nil if no transformation is needed.

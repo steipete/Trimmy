@@ -474,11 +474,149 @@ struct MarkdownReformatter {
                 result = trimmed
                 continue
             }
-            let shouldElideSpace = result.hasSuffix("-") && self.startsWithAlphaNumeric(trimmed)
+            let attachedHyphen = self.hyphenIsAttachedToPreviousWord(result)
+                && self.startsWithAlphaNumeric(trimmed)
+            let splitLink = self.isSplitMarkdownLink(previous: result, next: trimmed)
+                && !self.inlineCodeIsOpen(atEndOf: result)
+            let shouldElideSpace = attachedHyphen || splitLink
             result += shouldElideSpace ? "" : " "
             result += trimmed
         }
         return self.collapseWhitespace(result)
+    }
+
+    /// A hyphen with no space before it stays attached (`well-`, `C++-`, `C#-`).
+    /// A hyphen that is its own token (`dash -`) does not.
+    private static func hyphenIsAttachedToPreviousWord(_ text: String) -> Bool {
+        guard text.hasSuffix("-"), text.count >= 2 else { return false }
+        let previous = text[text.index(text.endIndex, offsetBy: -2)]
+        return !previous.isWhitespace
+    }
+
+    /// True when `text` ends inside a backtick span, so a later `](` is literal.
+    /// The closing run has to match the opening run. A backslash escapes the next
+    /// character only outside a span.
+    private static func inlineCodeIsOpen(atEndOf text: String) -> Bool {
+        var index = text.startIndex
+        while index < text.endIndex {
+            if text[index] == "\\" {
+                let next = text.index(after: index)
+                guard next < text.endIndex else { return false }
+                index = text.index(after: next)
+                continue
+            }
+            guard text[index] == "`" else {
+                index = text.index(after: index)
+                continue
+            }
+            let runEnd = text[index...].prefix(while: { $0 == "`" }).endIndex
+            let length = text.distance(from: index, to: runEnd)
+            var cursor = runEnd
+            var closed = false
+            while cursor < text.endIndex {
+                if text[cursor] != "`" {
+                    cursor = text.index(after: cursor)
+                    continue
+                }
+                let closeEnd = text[cursor...].prefix(while: { $0 == "`" }).endIndex
+                if text.distance(from: cursor, to: closeEnd) == length {
+                    index = closeEnd
+                    closed = true
+                    break
+                }
+                cursor = closeEnd
+            }
+            if !closed {
+                return true
+            }
+        }
+        return false
+    }
+
+    /// Join `]` and `(` only when they are a real link, not a literal bracket
+    /// followed by a parenthetical sentence.
+    private static func isSplitMarkdownLink(previous: String, next: String) -> Bool {
+        guard previous.hasSuffix("]"), next.hasPrefix("(") else { return false }
+        let closeBracket = previous.index(before: previous.endIndex)
+        if closeBracket > previous.startIndex, previous[previous.index(before: closeBracket)] == "\\" {
+            return false
+        }
+        guard let open = previous.lastIndex(of: "[") else { return false }
+        if open > previous.startIndex, previous[previous.index(before: open)] == "\\" {
+            return false
+        }
+        let labelStart = previous.index(after: open)
+        let labelEnd = previous.index(before: previous.endIndex)
+        guard labelStart < labelEnd else { return false }
+        let label = previous[labelStart..<labelEnd]
+        guard !label.isEmpty, !label.contains("]"), !label.contains("[") else { return false }
+        let destination = next.dropFirst()
+        guard let close = Self.matchingLinkClose(in: destination) else { return false }
+        return Self.markdownLinkInteriorIsValid(String(destination[..<close]))
+    }
+
+    /// The closing `)` matches the link, not a parenthesis inside the URL.
+    private static func matchingLinkClose(in text: Substring) -> String.Index? {
+        var depth = 0
+        var quote: Character?
+        var index = text.startIndex
+        while index < text.endIndex {
+            let character = text[index]
+            if let active = quote {
+                if character == active {
+                    quote = nil
+                }
+            } else if character == "\"" || character == "'" {
+                quote = character
+            } else if character == "(" {
+                depth += 1
+            } else if character == ")" {
+                if depth == 0 {
+                    return index
+                }
+                depth -= 1
+            }
+            index = text.index(after: index)
+        }
+        return nil
+    }
+
+    /// The text inside `()` is a destination, or a destination plus a quoted title.
+    /// `https://example.com is only an example` is prose.
+    private static func markdownLinkInteriorIsValid(_ interior: String) -> Bool {
+        let trimmed = interior.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return false }
+        if trimmed.hasPrefix("<") {
+            guard let end = trimmed.firstIndex(of: ">") else { return false }
+            let after = trimmed[trimmed.index(after: end)...].drop(while: \.isWhitespace)
+            if after.isEmpty {
+                return true
+            }
+            return Self.isQuotedTitle(String(after))
+        }
+        let parts = trimmed.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
+        guard let destination = parts.first, Self.isMarkdownDestination(String(destination)) else {
+            return false
+        }
+        if parts.count == 1 {
+            return true
+        }
+        return Self.isQuotedTitle(String(parts[1]))
+    }
+
+    private static func isQuotedTitle(_ text: String) -> Bool {
+        guard text.count >= 2, let first = text.first, first == "\"" || first == "'" else { return false }
+        return text.last == first
+    }
+
+    private static func isMarkdownDestination(_ destination: String) -> Bool {
+        guard !destination.isEmpty, !destination.contains(" ") else { return false }
+        if destination.hasPrefix("http://") || destination.hasPrefix("https://")
+            || destination.hasPrefix("/") || destination.hasPrefix("#")
+        {
+            return true
+        }
+        return destination.contains(".") || destination.contains("/")
     }
 
     private static func startsWithAlphaNumeric(_ text: String) -> Bool {

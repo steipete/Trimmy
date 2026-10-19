@@ -55,7 +55,7 @@ Trimmy uses separate sensitivity settings for general apps and terminals. It rec
 | **Normal** | Handles typical multi-line commands with flags. This is the terminal default. |
 | **High** | Flattens most command-shaped text. **Paste Trimmed** always uses this level. |
 
-Prompt gutters such as `$` and `#` are removed when separated from a command by whitespace. Shell variable references such as `$HOME/bin/tool` and Markdown headings such as `# GitHub Actions` remain intact. Automatic trimming skips large clipboard blobs as a safety valve.
+Prompt gutters such as `$` and `#` are removed when separated from a command by whitespace. Shell variable references such as `$HOME/bin/tool` and Markdown headings such as `# GitHub Actions` remain intact. Automatic trimming skips large clipboard blobs as a safety valve. Filesystem notes such as `/etc` are left alone. URL repair preserves same-line trailing prose and multiword prose lines, while still joining path, query, or fragment components copied as token-only continuation lines.
 
 Low and Normal sensitivity preserve YAML block scalars and their required indentation. High sensitivity and manual **Paste Trimmed** still flatten on request.
 
@@ -67,7 +67,7 @@ These paste actions need macOS Accessibility permission. Trimmy prompts for it w
 
 ## Other cleanup actions
 
-Enable **Settings → General → Automatically reflow copied text** to join hard-wrapped prose and Markdown during Auto-Trim. It defaults off, respects app/site exclusions, and preserves headings, lists, paragraph breaks, and fenced code. Recognized source code and configuration are excluded. The manual **Paste Reflowed Text** action uses the same checks; optional removal of leading blank lines also defaults off. Recognized documents are reflowed before command cleanup so fenced examples stay intact. Closing fences require only trailing spaces or tabs, and numbered list markers require one to nine ASCII digits followed by a period or parenthesis and whitespace. A separate action removes URL query parameters while retaining configured identity parameters such as YouTube video IDs, GitHub tabs, and Figma node IDs.
+Enable **Settings → General → Automatically reflow copied text** to join hard-wrapped prose and Markdown during Auto-Trim. It defaults off, respects app/site exclusions, and preserves headings, lists, paragraph breaks, and fenced code. Recognized source code and configuration are excluded. The manual **Paste Reflowed Text** action uses the same checks; optional removal of leading blank lines also defaults off. Recognized documents are reflowed before command cleanup so fenced examples stay intact. Closing fences require only trailing spaces or tabs, and numbered list markers require one to nine ASCII digits followed by a period or parenthesis and whitespace. Wrapped Markdown links are rejoined during text reflow, while inline code and parenthetical prose stay spaced. A separate action removes URL query parameters while retaining configured identity parameters such as YouTube video IDs, GitHub tabs, and Figma node IDs.
 
 Box-drawing gutters such as `│` and `┃` can also be removed from copied terminal output without stripping real shell pipes. Paths containing spaces are quoted for the shell while preserving literal dollar signs, backticks, backslashes, and quotes; a leading `~/` still expands to your home directory. Command continuations accept LF, CRLF, and CR line endings.
 
