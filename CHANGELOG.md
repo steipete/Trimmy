@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.11.6 — Unreleased
+
 ## 0.11.5 — 2026-10-21
 
 - CLI: keep the standalone version synchronized with the app version and reject stale versions in CI before release.
