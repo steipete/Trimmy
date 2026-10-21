@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.11.4 — Unreleased
+
 ## 0.11.3 — 2026-10-20
 
 **Highlights:** Safer URL, shell-command, and Markdown cleanup without changing copied prose.
