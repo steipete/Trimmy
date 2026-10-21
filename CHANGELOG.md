@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.11.3 — Unreleased
+## 0.11.3 — 2026-10-20
+
+**Highlights:** Safer URL, shell-command, and Markdown cleanup without changing copied prose.
 
 - URL repair: preserve prose following a URL while retaining wrapped host, path, query, and fragment continuations (#58, thanks @SebTardif).
 - Text cleanup: preserve separate uppercase shell arguments and remove in-word backslash continuations without inserting a space (#59, thanks @SebTardif).
