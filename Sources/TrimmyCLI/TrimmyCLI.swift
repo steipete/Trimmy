@@ -13,7 +13,7 @@ struct TrimmyCLI {
         if let infoVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String {
             return infoVersion
         }
-        return "0.11.3"
+        return "0.11.5"
     }()
 
     static func main() {

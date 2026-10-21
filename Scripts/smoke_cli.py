@@ -52,4 +52,7 @@ with tempfile.TemporaryDirectory() as temporary:
     assert b'Failed to read stdin' in unreadable.stderr, unreadable
     print('PASS stdin read failure: exit 1, source and read error reported')
 version = subprocess.run([binary, '--version'], text=True, capture_output=True, check=True)
+version_lines = (Path(__file__).resolve().parents[1] / 'version.env').read_text().splitlines()
+expected_version = next(line.split('=', 1)[1] for line in version_lines if line.startswith('MARKETING_VERSION='))
+assert version.stdout.strip() == f'TrimmyCLI {expected_version}', (version.stdout, expected_version)
 print(version.stdout.strip())

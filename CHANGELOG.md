@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.11.4 — 2026-10-21
+## 0.11.5 — 2026-10-21
+
+- CLI: keep the standalone version synchronized with the app version and reject stale versions in CI before release.
 
 - Path quoting: quote only existing filesystem paths, preserving slash-containing prose and missing paths while supporting home-relative and relative paths with spaces (#57, thanks @SebTardif).
 
