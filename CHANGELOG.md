@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.11.6 — Unreleased
+## 0.11.6 — 2026-10-23
+
+**Highlights:** Preserve URL query bytes, recover cleanly from Start at Login failures, and avoid duplicate CLI newlines.
 
 - URL cleanup: preserve retained query fields exactly, including malformed percent escapes (#63, thanks @SebTardif).
 - Settings: show Start at Login failures with recovery guidance, restore failed toggle changes, and preserve the saved choice when startup registration fails (#63, thanks @SebTardif).
