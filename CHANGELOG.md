@@ -2,6 +2,10 @@
 
 ## 0.11.6 — Unreleased
 
+- URL cleanup: preserve retained query fields exactly, including malformed percent escapes (#63, thanks @SebTardif).
+- Settings: show Start at Login failures with recovery guidance, restore failed toggle changes, and preserve the saved choice when startup registration fails (#63, thanks @SebTardif).
+- CLI: avoid appending a duplicate final newline while keeping exit codes tied to actual text cleaning (#63, thanks @SebTardif).
+
 ## 0.11.5 — 2026-10-21
 
 - CLI: keep the standalone version synchronized with the app version and reject stale versions in CI before release.

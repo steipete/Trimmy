@@ -255,7 +255,9 @@
        <span class="prompt">$</span> pbpaste | swift run TrimmyCLI --trim - --force
        <span class="prompt">$</span> swift run TrimmyCLI --trim ~/snippet.sh --json
 
-<span class="man-h">EXIT</span>     0 success      1 no input / error      2 no transformation      3 json error</code></pre>
+<span class="man-h">EXIT</span>     0 trimmed   1 no input / error
+            2 not trimmed   3 json error
+            Text mode adds a final newline only when one is missing. That newline alone does not count as a change.</code></pre>
         </div>
       </section>
 

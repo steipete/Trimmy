@@ -6,6 +6,17 @@ import sys
 import tempfile
 
 binary = sys.argv[1]
+for original, expected, code in [
+    ('hello', 'hello\n', 2),
+    ('hello\n', 'hello\n', 2),
+    ('hello\n\n', 'hello\n\n', 2),
+    ('echo hi\nls -la', 'echo hi ls -la\n', 0),
+]:
+    completed = subprocess.run([binary], input=original, text=True, capture_output=True)
+    assert completed.returncode == code, (original, completed.returncode, completed.stderr)
+    assert completed.stdout == expected, (original, completed.stdout, expected)
+    print(f'PASS text output: {original!r} -> {completed.stdout!r}, exit {code}')
+
 cases = [
     ('explicit stdin', 'echo hello \\\n  world', ['--trim', '-'], 'echo hello world', 0),
     ('short force option', 'echo one\necho two\necho three', ['--trim', '-f'], 'echo one echo two echo three', 0),

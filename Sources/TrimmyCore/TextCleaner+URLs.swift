@@ -3,7 +3,7 @@ import Foundation
 extension TextCleaner {
     /// Strips query parameters from a clipboard URL, preserving any param names in `keeping`.
     /// Returns nil if the text is not a single bare URL, has no query string, or nothing was removed.
-    /// Uses percentEncodedQueryItems to preserve the original percent-encoding in values (e.g. %3A).
+    /// Copies retained fields verbatim so malformed escapes and their original spelling are preserved.
     public func stripURLQueryParams(_ text: String, keeping: Set<String> = []) -> String? {
         self.stripURLQueryParams(text) { _ in keeping }
     }
@@ -18,21 +18,47 @@ extension TextCleaner {
         guard !trimmed.contains(where: \.isWhitespace) else { return nil }
         let lowered = trimmed.lowercased()
         guard lowered.hasPrefix("http://") || lowered.hasPrefix("https://") else { return nil }
-        guard var components = URLComponents(string: trimmed) else { return nil }
-        let original = components.percentEncodedQueryItems ?? []
-        guard !original.isEmpty else { return nil }
+        guard let components = URLComponents(string: trimmed) else { return nil }
+        guard let queryIndex = trimmed.firstIndex(of: "?") else { return nil }
+        if let hashIndex = trimmed.firstIndex(of: "#"), hashIndex < queryIndex {
+            return nil
+        }
         let keeping = resolveKeeping(components.host ?? "")
-        if keeping.isEmpty {
-            components.percentEncodedQueryItems = nil
+        let head = trimmed[..<queryIndex]
+        let remainder = trimmed[trimmed.index(after: queryIndex)...]
+        let rawQuery: Substring
+        let fragment: Substring
+        if let hash = remainder.firstIndex(of: "#") {
+            rawQuery = remainder[..<hash]
+            fragment = remainder[hash...]
         } else {
-            let filtered = original.filter { item in
-                guard let name = item.name.removingPercentEncoding else { return false }
+            rawQuery = remainder
+            fragment = ""
+        }
+        guard !rawQuery.isEmpty else { return nil }
+
+        let parts = rawQuery.split(separator: "&", omittingEmptySubsequences: false)
+        let kept: [Substring]
+        if keeping.isEmpty {
+            kept = []
+        } else {
+            kept = parts.filter { part in
+                let nameSource: Substring = if let equals = part.firstIndex(of: "=") {
+                    part[..<equals]
+                } else {
+                    part
+                }
+                guard let name = String(nameSource).removingPercentEncoding else { return false }
                 return keeping.contains(name)
             }
-            guard filtered.count < original.count else { return nil }
-            components.percentEncodedQueryItems = filtered.isEmpty ? nil : filtered
+            guard kept.count < parts.count else { return nil }
         }
-        guard let stripped = components.url?.absoluteString else { return nil }
+
+        let stripped = if kept.isEmpty {
+            String(head) + String(fragment)
+        } else {
+            String(head) + "?" + kept.joined(separator: "&") + String(fragment)
+        }
         return stripped == trimmed ? nil : stripped
     }
 

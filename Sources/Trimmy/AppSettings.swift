@@ -28,8 +28,11 @@ public final class AppSettings: ObservableObject {
     @AppStorage("showMarkdownReformatOption") var showMarkdownReformatOption: Bool = true
     @AppStorage("autoReflowTextEnabled") var autoReflowTextEnabled: Bool = false
     @AppStorage("trimLeadingBlankLinesOnReflow") var trimLeadingBlankLinesOnReflow: Bool = false
+    @Published private(set) var launchAtLoginError: String?
+    private let updateLoginItem: (Bool) throws -> Void
+    private var isApplyingLaunchAtLogin = false
     @AppStorage("launchAtLogin") var launchAtLogin: Bool = false {
-        didSet { LaunchAtLoginManager.setEnabled(self.launchAtLogin) }
+        didSet { self.applyLaunchAtLoginChange(from: oldValue) }
     }
 
     @AppStorage("trimHotkeyEnabled") var pasteTrimmedHotkeyEnabled: Bool = true {
@@ -52,11 +55,39 @@ public final class AppSettings: ObservableObject {
     @AppStorage("debugPaneEnabled") var debugPaneEnabled: Bool = false
     #endif
 
-    public init() {
+    public convenience init() {
+        self.init(updateLoginItem: LaunchAtLoginManager.setEnabled)
+    }
+
+    init(updateLoginItem: @escaping (Bool) throws -> Void) {
+        self.updateLoginItem = updateLoginItem
         Self.migrateShortcutDefaults(.standard)
         Self.migrateAggressivenessDefaults()
-        LaunchAtLoginManager.setEnabled(self.launchAtLogin)
+        self.applyLaunchAtLoginOnLaunch()
         self.refreshParsedURLQueryParamRules()
+    }
+
+    private func applyLaunchAtLoginChange(from previous: Bool) {
+        guard !self.isApplyingLaunchAtLogin else { return }
+        do {
+            try self.updateLoginItem(self.launchAtLogin)
+            self.launchAtLoginError = nil
+        } catch {
+            self.isApplyingLaunchAtLogin = true
+            self.launchAtLogin = previous
+            self.isApplyingLaunchAtLogin = false
+            self.launchAtLoginError = LaunchAtLoginManager.recoveryMessage(for: error)
+        }
+    }
+
+    /// Startup applies the saved choice. A failure is shown later and does not rewrite the saved toggle.
+    private func applyLaunchAtLoginOnLaunch() {
+        do {
+            try self.updateLoginItem(self.launchAtLogin)
+            self.launchAtLoginError = nil
+        } catch {
+            self.launchAtLoginError = LaunchAtLoginManager.recoveryMessage(for: error)
+        }
     }
 
     private func refreshParsedURLQueryParamRules() {
@@ -105,13 +136,29 @@ extension AppSettings {
 }
 
 enum LaunchAtLoginManager {
+    static func recoveryMessage(for error: Error) -> String {
+        "Start at Login could not be changed (\(error.localizedDescription)). "
+            + "Try the toggle again, or allow Trimmy in System Settings, General, Login Items."
+    }
+
     @MainActor
-    static func setEnabled(_ enabled: Bool) {
+    static func setEnabled(_ enabled: Bool) throws {
         let service = SMAppService.mainApp
         if enabled {
-            try? service.register()
+            switch service.status {
+            case .enabled, .requiresApproval:
+                // Pending approval is a successful registration; keep the requested preference.
+                return
+            default:
+                try service.register()
+            }
         } else {
-            try? service.unregister()
+            switch service.status {
+            case .notRegistered, .notFound:
+                return
+            default:
+                try service.unregister()
+            }
         }
     }
 }

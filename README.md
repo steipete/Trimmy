@@ -63,7 +63,7 @@ Low and Normal sensitivity preserve YAML block scalars and their required indent
 
 **Paste Trimmed** and **Paste Original** can be assigned global shortcuts. Clearing a shortcut keeps it unset after restarting Trimmy. Their menu previews name the target app and show what trimming removed before sending a paste keystroke. Manual pastes use the latest copy and temporarily replace the clipboard, then restore every available item and format unless another app has copied something newer.
 
-These paste actions need macOS Accessibility permission. Trimmy prompts for it when necessary and links to **System Settings → Privacy & Security → Accessibility**. Automatic clipboard rewriting still works without simulated paste access.
+These paste actions need macOS Accessibility permission. Trimmy prompts for it when necessary and links to **System Settings → Privacy & Security → Accessibility**. Automatic clipboard rewriting still works without simulated paste access. If **Start at Login** cannot be changed, Settings shows the failure and recovery steps and restores the previous toggle. A failure at launch preserves your saved choice so it can be retried.
 
 ## Other cleanup actions
 
