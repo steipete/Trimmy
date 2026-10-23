@@ -2,6 +2,21 @@
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
   <channel>
     <item>
+      <title>0.11.6</title>
+      <pubDate>Fri, 23 Oct 2026 22:57:50 +0000</pubDate>
+      <sparkle:version>39</sparkle:version>
+      <sparkle:shortVersionString>0.11.6</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+      <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+      <description>&lt;pre&gt;**Highlights:** Preserve URL query bytes, recover cleanly from Start at Login failures, and avoid duplicate CLI newlines.
+
+- URL cleanup: preserve retained query fields exactly, including malformed percent escapes (#63, thanks @SebTardif).
+- Settings: show Start at Login failures with recovery guidance, restore failed toggle changes, and preserve the saved choice when startup registration fails (#63, thanks @SebTardif).
+- CLI: avoid appending a duplicate final newline while keeping exit codes tied to actual text cleaning (#63, thanks @SebTardif).
+&lt;/pre&gt;</description>
+      <enclosure url="https://github.com/steipete/Trimmy/releases/download/v0.11.6/Trimmy-0.11.6.zip" length="2763525" type="application/octet-stream" sparkle:edSignature="FnZPImp8pfsInnxngPNHFrKDLSjKHfRDRxRVKvN3g7L1+1SQyt1X6EUGx7GjAjr+6ojheSgLbm2SQXbi2IysCQ==" />
+    </item>
+    <item>
       <title>0.11.5</title>
       <pubDate>Wed, 21 Oct 2026 08:49:46 +0000</pubDate>
       <sparkle:version>38</sparkle:version>
