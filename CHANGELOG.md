@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.11.7 — Unreleased
+
 ## 0.11.6 — 2026-10-23
 
 **Highlights:** Preserve URL query bytes, recover cleanly from Start at Login failures, and avoid duplicate CLI newlines.
