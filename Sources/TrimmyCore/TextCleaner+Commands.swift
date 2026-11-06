@@ -10,6 +10,7 @@ extension TextCleaner {
 
     private static let exactOnlyCommandPrefixes: Set<String> = [
         "go", "sh", "cat", "open", "make", "cd", "ls", "az",
+        "java", "echo", "env", "export", "node", "fish", "brew", "bundle",
     ]
 
     private static let commandAliases: Set<String> = ["lsblk", "shuf"]
@@ -246,8 +247,7 @@ extension TextCleaner {
     }
 
     private func isSingleCommandWithIndentedContinuations(_ lines: [Substring]) -> Bool {
-        guard lines.count >= 2 else { return false }
-        guard self.isLikelyCommandLine(lines[0]) else { return false }
+        guard lines.count >= 2, self.isLikelyCommandLine(lines[0]) else { return false }
 
         var sawIndentedLine = false
 

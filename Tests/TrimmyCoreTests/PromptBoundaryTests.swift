@@ -33,6 +33,43 @@ struct PromptBoundaryTests {
     }
 
     @Test(arguments: [
+        ("$ echo hello", "echo hello"),
+        ("$ java -version", "java -version"),
+        ("$ node server.js", "node server.js"),
+        ("$ brew upgrade", "brew upgrade"),
+        ("$ bundle exec fastlane", "bundle exec fastlane"),
+        ("$ env", "env"),
+        ("$ export PATH", "export PATH"),
+        ("$ fish", "fish"),
+    ])
+    func `still strips a prompt from the exact command name`(text: String, expected: String) {
+        #expect(self.cleaner.stripPromptPrefixes(text) == expected)
+    }
+
+    @Test(arguments: [
+        "$ javascript tutorial",
+        "$ echoing hello",
+        "$ NodeJS Guide",
+        "$ environment variables",
+        "$ exported names",
+        "$ fishy story",
+        "$ brewery tour",
+        "$ bundles of joy",
+    ])
+    func `does not strip a dollar prompt from a longer word that starts with a command`(text: String) {
+        #expect(self.cleaner.stripPromptPrefixes(text) == nil)
+    }
+
+    @Test
+    func `normal aggressiveness keeps two prose lines that share a command stem`() {
+        let text = "javascript errors\nkeep happening"
+        let normal = TrimConfig(aggressiveness: .normal, preserveBlankLines: false, removeBoxDrawing: true)
+        let low = TrimConfig(aggressiveness: .low, preserveBlankLines: false, removeBoxDrawing: true)
+        #expect(self.cleaner.transform(text, config: normal).trimmed == text)
+        #expect(self.cleaner.transform(text, config: low).trimmed == text)
+    }
+
+    @Test(arguments: [
         ("$ git status", "git status"),
         ("$ gitk", "gitk"),
         ("$ GIT status", "GIT status"),
