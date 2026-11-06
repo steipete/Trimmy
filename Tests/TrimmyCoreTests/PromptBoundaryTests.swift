@@ -22,6 +22,9 @@ struct PromptBoundaryTests {
         ("$ make build release install", "make build release install"),
         ("$ lsblk", "lsblk"),
         ("$ shuf words", "shuf words"),
+        ("$ nodemon server", "nodemon server"),
+        ("$ envsubst", "envsubst"),
+        ("$ fish_indent source", "fish_indent source"),
     ])
     func `strips a prompt from a real command with several arguments`(text: String, expected: String) {
         #expect(self.cleaner.stripPromptPrefixes(text) == expected)

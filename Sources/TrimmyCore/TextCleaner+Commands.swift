@@ -13,7 +13,9 @@ extension TextCleaner {
         "java", "echo", "env", "export", "node", "fish", "brew", "bundle",
     ]
 
-    private static let commandAliases: Set<String> = ["lsblk", "shuf"]
+    private static let commandAliases: Set<String> = [
+        "envsubst", "fish_indent", "lsblk", "nodemon", "shuf",
+    ]
 
     private static let proseSecondWords: Set<String> = [
         "a", "an", "the", "my", "your", "our", "their", "this", "that", "these", "those",
