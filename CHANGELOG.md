@@ -2,6 +2,8 @@
 
 ## 0.11.7 — Unreleased
 
+- Clipboard: when the frontmost app is not the app that sent a recent Cmd-C, attribute the pasteboard change to the frontmost app. A failed copy no longer claims the next copy.
+
 ## 0.11.6 — 2026-10-23
 
 **Highlights:** Preserve URL query bytes, recover cleanly from Start at Login failures, and avoid duplicate CLI newlines.
