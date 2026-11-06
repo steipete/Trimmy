@@ -61,7 +61,8 @@ struct ClipboardSourceTrackerTests {
             appName: "Terminal",
             bundleIdentifier: "com.apple.Terminal",
             processIdentifier: 10,
-            changeCount: 5))
+            changeCount: 5,
+            timestamp: Date().addingTimeInterval(-1)))
 
         let context = tracker.recordObservedChangeCount(6)
 
@@ -69,6 +70,28 @@ struct ClipboardSourceTrackerTests {
         #expect(context.bundleIdentifier == "com.google.Chrome")
         #expect(context.appName == "Google Chrome")
         #expect(context.processIdentifier == 20)
+    }
+
+    @Test
+    func `a Cmd-C still claims a copy when the user switches apps before the next poll`() {
+        let browser = FrontmostAppSnapshot(
+            bundleIdentifier: "com.google.Chrome",
+            appName: "Google Chrome",
+            processIdentifier: 20)
+        let tracker = self.makeTracker(front: browser)
+        tracker.recordCopyKeypress(self.keypress(
+            appName: "Terminal",
+            bundleIdentifier: "com.apple.Terminal",
+            processIdentifier: 10,
+            changeCount: 5,
+            timestamp: Date().addingTimeInterval(-0.05)))
+
+        let context = tracker.recordObservedChangeCount(6)
+
+        #expect(context.capture == .eventTap)
+        #expect(context.bundleIdentifier == "com.apple.Terminal")
+        #expect(context.appName == "Terminal")
+        #expect(context.processIdentifier == 10)
     }
 
     @Test

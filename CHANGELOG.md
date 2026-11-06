@@ -2,7 +2,7 @@
 
 ## 0.11.7 — Unreleased
 
-- Clipboard: when the frontmost app is not the app that sent a recent Cmd-C, attribute the pasteboard change to the frontmost app. A failed copy no longer claims the next copy.
+- Clipboard: a failed Cmd-C no longer claims a later copy in another app. A copy seen on the next poll still belongs to the app that sent Cmd-C, even if the user has already switched apps.
 
 ## 0.11.6 — 2026-10-23
 

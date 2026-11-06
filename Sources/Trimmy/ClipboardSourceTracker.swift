@@ -33,6 +33,9 @@ final class ClipboardSourceTracker {
     private let pasteboard: NSPasteboard
     private let accessibilityPermission: AccessibilityPermissionChecking
     private var copyEventTap: CopyEventTap?
+    /// One clipboard poll is 150 ms, plus 50 ms of timer leeway. A Cmd-Tab
+    /// inside that gap is still this copy. A later copy in the new app is not.
+    private static let samePollWindow: TimeInterval = 0.25
     private var lastCopyKeypress: CopyEventTap.CopyKeypressContext?
     private var pending: [Int: ClipboardSourceContext] = [:]
     var frontmostApp: @MainActor () -> FrontmostAppSnapshot
@@ -119,7 +122,8 @@ final class ClipboardSourceTracker {
            now.timeIntervalSince(keypress.timestamp) < 2.0
         {
             self.lastCopyKeypress = nil
-            if self.keypressMatches(keypress, front: front) {
+            let age = now.timeIntervalSince(keypress.timestamp)
+            if self.keypressMatches(keypress, front: front) || age < Self.samePollWindow {
                 return ClipboardSourceContext(
                     timestamp: now,
                     capture: .eventTap,
