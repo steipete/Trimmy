@@ -2,6 +2,8 @@
 
 ## 0.11.7 — Unreleased
 
+- URL cleanup: when several custom domain rules match a host, keep the parameters from the longest domain, and combine lists that share that length.
+
 ## 0.11.6 — 2026-10-23
 
 **Highlights:** Preserve URL query bytes, recover cleanly from Start at Login failures, and avoid duplicate CLI newlines.
