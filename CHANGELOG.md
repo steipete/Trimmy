@@ -2,7 +2,8 @@
 
 ## 0.11.7 — Unreleased
 
-- Command detection: match `java`, `echo`, `env`, `export`, `node`, `fish`, `brew`, and `bundle` as whole tokens, so prose such as `javascript` and `NodeJS` is not treated as a shell command. `gitk`, `python3`, `nodemon`, `envsubst`, and `fish_indent` still match.
+- Command detection: match `java`, `echo`, `env`, `export`, `node`, `fish`, `brew`, and `bundle` as whole tokens, so prose such as `javascript` and `NodeJS` is not treated as a shell command. `gitk`, `python3`, `nodemon`, `envsubst`, and `fish_indent` still match. Thanks @SebTardif.
+- Updates: refresh Sparkle to 2.10.1.
 
 ## 0.11.6 — 2026-10-23
 
