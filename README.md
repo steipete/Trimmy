@@ -59,6 +59,8 @@ Prompt gutters such as `$` and `#` are removed when separated from a command by 
 
 Low and Normal sensitivity preserve YAML block scalars and their required indentation. High sensitivity and manual **Paste Trimmed** still flatten on request.
 
+Command-name prefixes in prose, such as `javascript` and `NodeJS`, do not trigger command cleanup. Executable aliases such as `nodemon`, `envsubst`, and `fish_indent` remain recognized.
+
 ## Paste actions and permissions
 
 **Paste Trimmed** and **Paste Original** can be assigned global shortcuts. Clearing a shortcut keeps it unset after restarting Trimmy. Their menu previews name the target app and show what trimming removed before sending a paste keystroke. Manual pastes use the latest copy and temporarily replace the clipboard, then restore every available item and format unless another app has copied something newer.
