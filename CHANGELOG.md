@@ -1,6 +1,8 @@
 # Changelog
 
-## 0.11.7 — Unreleased
+## 0.11.7 — 2026-11-15
+
+**Highlights:** Preserve prose that starts with shell-command prefixes and update Sparkle to 2.10.1.
 
 - Command detection: match `java`, `echo`, `env`, `export`, `node`, `fish`, `brew`, and `bundle` as whole tokens, so prose such as `javascript` and `NodeJS` is not treated as a shell command. `gitk`, `python3`, `nodemon`, `envsubst`, and `fish_indent` still match. Thanks @SebTardif.
 - Updates: refresh Sparkle to 2.10.1.
