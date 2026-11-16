@@ -2,6 +2,20 @@
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
   <channel>
     <item>
+      <title>0.11.7</title>
+      <pubDate>Mon, 16 Nov 2026 07:23:25 +0000</pubDate>
+      <sparkle:version>40</sparkle:version>
+      <sparkle:shortVersionString>0.11.7</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+      <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+      <description>&lt;pre&gt;**Highlights:** Preserve prose that starts with shell-command prefixes and update Sparkle to 2.10.1.
+
+- Command detection: match `java`, `echo`, `env`, `export`, `node`, `fish`, `brew`, and `bundle` as whole tokens, so prose such as `javascript` and `NodeJS` is not treated as a shell command. `gitk`, `python3`, `nodemon`, `envsubst`, and `fish_indent` still match. Thanks @SebTardif.
+- Updates: refresh Sparkle to 2.10.1.
+&lt;/pre&gt;</description>
+      <enclosure url="https://github.com/steipete/Trimmy/releases/download/v0.11.7/Trimmy-0.11.7.zip" length="2766420" type="application/octet-stream" sparkle:edSignature="seQ+/4ehx5mrCr4VODRmp24WuVG7oJbJMO4/hAvUn8jO0ggmgMDqxLB8du3TSxA32uh6oyto3Uyx80zhyYo0AQ==" />
+    </item>
+    <item>
       <title>0.11.6</title>
       <pubDate>Fri, 23 Oct 2026 22:57:50 +0000</pubDate>
       <sparkle:version>39</sparkle:version>
