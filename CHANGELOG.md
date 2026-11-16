@@ -1,5 +1,7 @@
 # Changelog
 
+## 0.11.8 — Unreleased
+
 ## 0.11.7 — 2026-11-15
 
 **Highlights:** Preserve prose that starts with shell-command prefixes and update Sparkle to 2.10.1.
