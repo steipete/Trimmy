@@ -3,6 +3,12 @@ import Foundation
 
 enum ClipboardSourceCapture: String { case eventTap, snapshot }
 
+struct FrontmostAppSnapshot {
+    let bundleIdentifier: String?
+    let appName: String?
+    let processIdentifier: pid_t?
+}
+
 struct ClipboardSourceContext {
     let timestamp: Date
     let capture: ClipboardSourceCapture
@@ -27,13 +33,24 @@ final class ClipboardSourceTracker {
     private let pasteboard: NSPasteboard
     private let accessibilityPermission: AccessibilityPermissionChecking
     private var copyEventTap: CopyEventTap?
+    /// One clipboard poll is 150 ms, plus 50 ms of timer leeway. A Cmd-Tab
+    /// inside that gap is still this copy. A later copy in the new app is not.
+    private static let samePollWindow: TimeInterval = 0.25
     private var lastCopyKeypress: CopyEventTap.CopyKeypressContext?
     private var pending: [Int: ClipboardSourceContext] = [:]
+    var frontmostApp: @MainActor () -> FrontmostAppSnapshot
 
     init(settings: AppSettings, pasteboard: NSPasteboard, accessibilityPermission: AccessibilityPermissionChecking) {
         self.settings = settings
         self.pasteboard = pasteboard
         self.accessibilityPermission = accessibilityPermission
+        self.frontmostApp = {
+            let app = NSWorkspace.shared.frontmostApplication
+            return FrontmostAppSnapshot(
+                bundleIdentifier: app?.bundleIdentifier,
+                appName: app?.localizedName,
+                processIdentifier: app?.processIdentifier)
+        }
     }
 
     func updateIfNeeded() {
@@ -87,7 +104,7 @@ final class ClipboardSourceTracker {
         self.pending.removeValue(forKey: observed)
     }
 
-    private func recordCopyKeypress(_ ctx: CopyEventTap.CopyKeypressContext) {
+    func recordCopyKeypress(_ ctx: CopyEventTap.CopyKeypressContext) {
         self.lastCopyKeypress = ctx
         Telemetry.eventTap.debug(
             """
@@ -99,25 +116,48 @@ final class ClipboardSourceTracker {
 
     private func captureSourceContext(forObservedChangeCount observed: Int) -> ClipboardSourceContext {
         let now = Date()
+        let front = self.frontmostApp()
         if let keypress = self.lastCopyKeypress,
            observed > keypress.pasteboardChangeCount,
            now.timeIntervalSince(keypress.timestamp) < 2.0
         {
             self.lastCopyKeypress = nil
-            return ClipboardSourceContext(
-                timestamp: now,
-                capture: .eventTap,
-                bundleIdentifier: keypress.bundleIdentifier,
-                appName: keypress.appName,
-                processIdentifier: keypress.processIdentifier)
+            let age = now.timeIntervalSince(keypress.timestamp)
+            if self.keypressMatches(keypress, front: front) || age < Self.samePollWindow {
+                return ClipboardSourceContext(
+                    timestamp: now,
+                    capture: .eventTap,
+                    bundleIdentifier: keypress.bundleIdentifier,
+                    appName: keypress.appName,
+                    processIdentifier: keypress.processIdentifier)
+            }
+            return self.snapshotContext(at: now, front: front)
         }
 
-        let app = NSWorkspace.shared.frontmostApplication
-        return ClipboardSourceContext(
+        return self.snapshotContext(at: now, front: front)
+    }
+
+    private func snapshotContext(at now: Date, front: FrontmostAppSnapshot) -> ClipboardSourceContext {
+        ClipboardSourceContext(
             timestamp: now,
             capture: .snapshot,
-            bundleIdentifier: app?.bundleIdentifier,
-            appName: app?.localizedName,
-            processIdentifier: app?.processIdentifier)
+            bundleIdentifier: front.bundleIdentifier,
+            appName: front.appName,
+            processIdentifier: front.processIdentifier)
+    }
+
+    private func keypressMatches(
+        _ keypress: CopyEventTap.CopyKeypressContext,
+        front: FrontmostAppSnapshot) -> Bool
+    {
+        if let keyPID = keypress.processIdentifier, let frontPID = front.processIdentifier, keyPID > 0, frontPID > 0 {
+            return keyPID == frontPID
+        }
+        if let keyBundle = keypress.bundleIdentifier, let frontBundle = front.bundleIdentifier,
+           !keyBundle.isEmpty, !frontBundle.isEmpty
+        {
+            return keyBundle == frontBundle
+        }
+        return true
     }
 }

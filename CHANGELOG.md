@@ -9,6 +9,8 @@
 - Command detection: match `java`, `echo`, `env`, `export`, `node`, `fish`, `brew`, and `bundle` as whole tokens, so prose such as `javascript` and `NodeJS` is not treated as a shell command. `gitk`, `python3`, `nodemon`, `envsubst`, and `fish_indent` still match. Thanks @SebTardif.
 - Updates: refresh Sparkle to 2.10.1.
 
+- Clipboard: a failed Cmd-C no longer claims a later copy in another app. A copy seen on the next poll still belongs to the app that sent Cmd-C, even if the user has already switched apps.
+
 ## 0.11.6 — 2026-10-23
 
 **Highlights:** Preserve URL query bytes, recover cleanly from Start at Login failures, and avoid duplicate CLI newlines.
