@@ -227,6 +227,20 @@ struct URLQueryParamRulesTests {
     }
 
     @Test
+    func `longest matching domain wins and equal domains combine`() {
+        let rules = URLQueryParamRules.parseCustomRules(
+            """
+            google.com: q
+            docs.google.com: tab
+            example.com: a
+            example.com: b
+            """)
+        #expect(URLQueryParamRules.keepParams(for: "docs.google.com", customRules: rules) == ["tab"])
+        #expect(URLQueryParamRules.keepParams(for: "www.google.com", customRules: rules) == ["q"])
+        #expect(URLQueryParamRules.keepParams(for: "example.com", customRules: rules) == ["a", "b"])
+    }
+
+    @Test
     func `default rules text round trips through parser`() {
         let rules = URLQueryParamRules.parseCustomRules(URLQueryParamRules.defaultRulesText)
         #expect(rules.count == URLQueryParamRules.builtIn.count)

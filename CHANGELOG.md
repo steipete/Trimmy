@@ -9,6 +9,8 @@
 - Command detection: match `java`, `echo`, `env`, `export`, `node`, `fish`, `brew`, and `bundle` as whole tokens, so prose such as `javascript` and `NodeJS` is not treated as a shell command. `gitk`, `python3`, `nodemon`, `envsubst`, and `fish_indent` still match. Thanks @SebTardif.
 - Updates: refresh Sparkle to 2.10.1.
 
+- URL cleanup: when several custom domain rules match a host, keep the parameters from the longest domain, and combine lists that share that length.
+
 ## 0.11.6 — 2026-10-23
 
 **Highlights:** Preserve URL query bytes, recover cleanly from Start at Login failures, and avoid duplicate CLI newlines.

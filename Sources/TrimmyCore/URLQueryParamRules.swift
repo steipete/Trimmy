@@ -70,11 +70,16 @@ public enum URLQueryParamRules {
     /// Matching is done on host suffix so `youtube.com` catches `www.youtube.com`.
     public static func keepParams(for host: String, customRules: [URLQueryParamRule]) -> Set<String> {
         let normalizedHost = host.lowercased()
-        guard let match = customRules.first(where: {
-            let domain = $0.domain.lowercased()
+        let matches = customRules.filter { rule in
+            let domain = rule.domain.lowercased()
             return normalizedHost == domain || normalizedHost.hasSuffix(".\(domain)")
-        }) else { return [] }
-        return match.keepParams
+        }
+        guard let longest = matches.map({ $0.domain.lowercased().count }).max() else { return [] }
+        return matches.reduce(into: Set<String>()) { result, rule in
+            if rule.domain.lowercased().count == longest {
+                result.formUnion(rule.keepParams)
+            }
+        }
     }
 
     /// The default rules text to pre-populate the settings text area on first launch.
